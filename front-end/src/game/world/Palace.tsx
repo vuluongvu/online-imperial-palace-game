@@ -2,6 +2,7 @@ import React from 'react';
 import { Environment } from './Environment';
 import { MainHall } from './MainHall';
 import { ImperialDragons } from './ImperialDragons';
+import { SideWingsAndAnnex } from './SideWingsAndAnnex';
 import { ImperialCompoundMap } from './ImperialCompoundMap';
 import { useGameStore } from '../../stores/useGameStore';
 
@@ -17,6 +18,7 @@ export const Palace: React.FC = () => {
       <Environment />
       <MainHall />
       <ImperialDragons />
+      <SideWingsAndAnnex />
     </group>
   );
 };

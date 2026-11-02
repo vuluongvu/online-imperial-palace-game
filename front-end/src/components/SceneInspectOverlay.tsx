@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   CAMERA_PRESETS,
   CameraViewPreset,
+  InteriorRoomKey,
   SEATING_SPOTS,
   useGameStore,
 } from '../stores/useGameStore';
@@ -13,11 +14,45 @@ import {
 import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 import { PALACE_LANDMARKS } from '../game/world/compoundLayout';
 
+const INTERIOR_ROOM_TABS: {
+  key: InteriorRoomKey;
+  label: string;
+  subtitle: string;
+}[] = [
+  {
+    key: 'main_hall',
+    label: '🏛️ Chính Điện Thái Hòa',
+    subtitle: 'Long Ngai, Bửu Tán, Vì Kèo Chồng Rường & 12 Án Thư Bá Quan',
+  },
+  {
+    key: 'corridors',
+    label: '🚪 Hành Lang Đông – Tây',
+    subtitle: 'Trường lang gỗ đỏ, lan can cung đình & hệ cửa gỗ liên thông',
+  },
+  {
+    key: 'ta_vu',
+    label: '📜 Tả Vu (Gian Chờ Quan)',
+    subtitle: 'Án thư trực phòng, Trường kỷ trà đạo, Tủ điển tịch & Quan viên chờ triều',
+  },
+  {
+    key: 'huu_vu',
+    label: '🍵 Hữu Vu (Phòng Tiếp Khách)',
+    subtitle: 'Sập gụ tủ chè, Ghế Thái Sư, Lư trầm đồng & Đôi lục bình Pháp Lam',
+  },
+  {
+    key: 'hau_sanh',
+    label: '⛩️ Hậu Sảnh (Lối Ra Sau)',
+    subtitle: 'Ngự Án Hậu Sảnh Cần Chánh & Cổng Tam Quan Hậu Điện',
+  },
+];
+
 export const SceneInspectOverlay: React.FC = () => {
   const sceneMode = useGameStore((s) => s.sceneMode);
   const setSceneMode = useGameStore((s) => s.setSceneMode);
   const activeLandmarkId = useGameStore((s) => s.activeLandmarkId);
   const navigateToLandmark = useGameStore((s) => s.navigateToLandmark);
+  const activeInteriorRoom = useGameStore((s) => s.activeInteriorRoom);
+  const navigateToInteriorRoom = useGameStore((s) => s.navigateToInteriorRoom);
 
   const cameraMode = useGameStore((s) => s.cameraMode);
   const cameraPreset = useGameStore((s) => s.cameraPreset);
@@ -166,29 +201,66 @@ export const SceneInspectOverlay: React.FC = () => {
       </header>
 
       {/* ================================================================= */}
-      {/* 2. BẢNG NHIỆM VỤ BÊN PHẢI (QUEST TRACKER GIỐNG HỆT ẢNH MẪU)      */}
+      {/* 2. BẢNG NHIỆM VỤ & ĐIỀU HƯỚNG CÁC GIAN THÁI HÒA ĐIỆN              */}
       {/* ================================================================= */}
       <aside className="hud-quest-card">
         <div className="quest-header">
           <span className="quest-diamond">✦</span>
-          <span className="quest-header-title">Nhiệm Vụ</span>
+          <span className="quest-header-title">
+            {sceneMode === 'main_hall_interior'
+              ? 'Khu Vực Thái Hòa Điện'
+              : 'Nhiệm Vụ'}
+          </span>
         </div>
         <div className="quest-body">
-          <div className="quest-main-name">Nhiệm vụ nhập môn</div>
-          <div
-            className={`quest-step-item ${laiBoQuestCompleted ? 'done' : ''}`}
-            onClick={() => navigateToLandmark('lai_bo')}
-            title="Nhấn để di chuyển đến Lại Bộ"
-          >
-            • Đến Lại Bộ nhận nhiệm vụ kiểm tra hồ sơ ({laiBoQuestCompleted ? '1/1' : '0/1'})
-          </div>
-          <div
-            className={`quest-step-item ${seatedSpotId === 'imperial_throne' ? 'done' : ''}`}
-            onClick={() => sitAtSpot('imperial_throne')}
-            title="Nhấn để vào Chính Điện và Ngự lên Long Ngai"
-          >
-            • Vào Chính Điện ngự lên Long Ngai ({seatedSpotId === 'imperial_throne' ? '1/1' : '0/1'})
-          </div>
+          {sceneMode === 'main_hall_interior' ? (
+            <>
+              <div className="quest-main-name">Các Gian & Hành Lang Liên Thông</div>
+              {INTERIOR_ROOM_TABS.map((room) => (
+                <div
+                  key={room.key}
+                  className={`quest-step-item ${
+                    activeInteriorRoom === room.key ? 'done' : ''
+                  }`}
+                  onClick={() => navigateToInteriorRoom(room.key)}
+                  title={room.subtitle}
+                >
+                  • {room.label}
+                </div>
+              ))}
+              <div
+                className={`quest-step-item ${
+                  seatedSpotId === 'imperial_throne' ? 'done' : ''
+                }`}
+                onClick={() => sitAtSpot('imperial_throne')}
+                title="Nhấn để Ngự lên Long Ngai"
+              >
+                • 👑 Ngự lên Long Ngai ({seatedSpotId === 'imperial_throne' ? '1/1' : '0/1'})
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="quest-main-name">Nhiệm vụ nhập môn</div>
+              <div
+                className={`quest-step-item ${laiBoQuestCompleted ? 'done' : ''}`}
+                onClick={() => navigateToLandmark('lai_bo')}
+                title="Nhấn để di chuyển đến Lại Bộ"
+              >
+                • Đến Lại Bộ nhận nhiệm vụ kiểm tra hồ sơ (
+                {laiBoQuestCompleted ? '1/1' : '0/1'})
+              </div>
+              <div
+                className={`quest-step-item ${
+                  seatedSpotId === 'imperial_throne' ? 'done' : ''
+                }`}
+                onClick={() => sitAtSpot('imperial_throne')}
+                title="Nhấn để vào Chính Điện và Ngự lên Long Ngai"
+              >
+                • Vào Chính Điện ngự lên Long Ngai (
+                {seatedSpotId === 'imperial_throne' ? '1/1' : '0/1'})
+              </div>
+            </>
+          )}
         </div>
       </aside>
 
@@ -325,7 +397,7 @@ export const SceneInspectOverlay: React.FC = () => {
       {activeBottomDrawer === 'landmarks' && (
         <div className="floating-drawer right-drawer">
           <div className="panel-title">
-            <span>BẢN ĐỒ CÁC CUNG ĐIỆN & NHA MÔN</span>
+            <span>CÁC GIAN THÁI HÒA ĐIỆN & BẢN ĐỒ HOÀNG CUNG</span>
             <button
               type="button"
               className="drawer-close"
@@ -334,12 +406,35 @@ export const SceneInspectOverlay: React.FC = () => {
               ✕
             </button>
           </div>
+          <div className="sub-section-title">NỘI ĐIỆN THÁI HÒA & CÁC GIAN PHỤ</div>
+          <div className="preset-list" style={{ marginBottom: 10 }}>
+            {INTERIOR_ROOM_TABS.map((room) => (
+              <button
+                key={room.key}
+                type="button"
+                className={`preset-btn ${
+                  sceneMode === 'main_hall_interior' && activeInteriorRoom === room.key
+                    ? 'selected'
+                    : ''
+                }`}
+                onClick={() => navigateToInteriorRoom(room.key)}
+              >
+                <span className="preset-name">{room.label}</span>
+                <span className="preset-desc">{room.subtitle}</span>
+              </button>
+            ))}
+          </div>
+          <div className="sub-section-title">QUẦN THỂ CUNG ĐIỆN & LỤC BỘ (OUTDOOR MAP)</div>
           <div className="preset-list">
             {PALACE_LANDMARKS.map((lm) => (
               <button
                 key={lm.id}
                 type="button"
-                className={`preset-btn ${activeLandmarkId === lm.id ? 'selected' : ''}`}
+                className={`preset-btn ${
+                  sceneMode === 'compound_map' && activeLandmarkId === lm.id
+                    ? 'selected'
+                    : ''
+                }`}
                 onClick={() => {
                   navigateToLandmark(lm.id);
                 }}

@@ -16,10 +16,10 @@ export const ThirdPersonCamera: React.FC = () => {
   const { camera } = useThree();
 
   const desiredPosition = useRef(
-    new THREE.Vector3(...CAMERA_PRESETS.compound_panorama.position)
+    new THREE.Vector3(...CAMERA_PRESETS.overview.position)
   );
   const desiredTarget = useRef(
-    new THREE.Vector3(...CAMERA_PRESETS.compound_panorama.target)
+    new THREE.Vector3(...CAMERA_PRESETS.overview.target)
   );
   const isTransitioning = useRef(true);
   const prevPlayerPos = useRef<THREE.Vector3 | null>(null);
@@ -61,9 +61,9 @@ export const ThirdPersonCamera: React.FC = () => {
       controls.target.lerp(targetFocus, followLerp);
 
       if (sceneMode === 'main_hall_interior') {
-        camera.position.x = THREE.MathUtils.clamp(camera.position.x, -14.8, 14.8);
-        camera.position.z = THREE.MathUtils.clamp(camera.position.z, -20.8, 20.8);
-        camera.position.y = THREE.MathUtils.clamp(camera.position.y, 0.65, 10.5);
+        camera.position.x = THREE.MathUtils.clamp(camera.position.x, -30.0, 30.0);
+        camera.position.z = THREE.MathUtils.clamp(camera.position.z, -33.0, 20.8);
+        camera.position.y = THREE.MathUtils.clamp(camera.position.y, 0.65, 11.2);
       } else {
         camera.position.y = THREE.MathUtils.clamp(camera.position.y, 2.0, 58.0);
       }
