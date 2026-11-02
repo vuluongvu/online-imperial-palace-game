@@ -1284,3 +1284,122 @@ body,
   display: flex;
   gap: 8px;
 }
+
+
+/* ===================================================================== */
+/* GIAO DIỆN CHẾ ĐỘ KHÓA CHUỘT (MOUSE LOCK / POINTER LOCK 360°)          */
+/* ===================================================================== */
+.mouse-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, rgba(64, 28, 18, 0.92), rgba(38, 18, 11, 0.95));
+  border: 1.5px solid #e2b44f;
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: #ffe28a;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: all 0.16s ease;
+}
+
+.mouse-lock-pill:hover {
+  border-color: #fff0a8;
+  transform: translateY(-1px);
+}
+
+.mouse-lock-pill.locked {
+  background: linear-gradient(135deg, #b82820, #7d1510);
+  border-color: #ffe48f;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(246, 211, 121, 0.45);
+}
+
+.pointer-lock-top-hint {
+  pointer-events: none;
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(28, 12, 8, 0.88);
+  border: 1px solid rgba(240, 195, 94, 0.65);
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 0.76rem;
+  color: #f6e3ba;
+  white-space: nowrap;
+  z-index: 25;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.pointer-lock-reticle {
+  pointer-events: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 226, 138, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.pointer-lock-reticle.target-active {
+  transform: translate(-50%, -50%) scale(1.25);
+  border-color: #ff6b4a;
+  box-shadow: 0 0 14px rgba(255, 210, 90, 0.75);
+}
+
+.reticle-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffe28a;
+}
+
+.reticle-action-tag {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(132, 24, 20, 0.92);
+  border: 1px solid #ffd875;
+  color: #fff5db;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mouse-lock-settings-box {
+  background: rgba(28, 12, 8, 0.68);
+  border: 1px solid rgba(226, 180, 79, 0.32);
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sensitivity-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #f4ead5;
+}
+
+.sensitivity-row input[type='range'] {
+  width: 100%;
+  accent-color: #e2b44f;
+  cursor: pointer;
+}

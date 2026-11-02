@@ -172,6 +172,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   openInteraction: (interactableId, tabOverride) => {
     const entity = INTERACTABLE_ENTITIES.find((e) => e.id === interactableId);
     if (!entity) return;
+    useGameStore.getState().exitMouseLock();
     set({
       activeInteractableId: interactableId,
       activeTab: tabOverride ?? entity.defaultTab,

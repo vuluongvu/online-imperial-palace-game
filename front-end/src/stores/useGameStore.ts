@@ -252,6 +252,10 @@ interface GameState {
   showAssetModal: boolean;
   showWireframe: boolean;
   lanternAnimationEnabled: boolean;
+  isPointerLocked: boolean;
+  clickToLockEnabled: boolean;
+  mouseSensitivity: number;
+  invertY: boolean;
   metrics: PerformanceMetrics;
   setSceneMode: (mode: SceneZoneMode) => void;
   navigateToLandmark: (landmarkId: string) => void;
@@ -273,6 +277,12 @@ interface GameState {
   setShowAssetModal: (show: boolean) => void;
   toggleWireframe: () => void;
   toggleLanternAnimation: () => void;
+  setPointerLocked: (locked: boolean) => void;
+  toggleClickToLock: () => void;
+  setMouseSensitivity: (val: number) => void;
+  toggleInvertY: () => void;
+  requestMouseLock: () => void;
+  exitMouseLock: () => void;
   updateMetrics: (metrics: PerformanceMetrics) => void;
 }
 
@@ -297,6 +307,10 @@ export const useGameStore = create<GameState>((set) => ({
   showAssetModal: false,
   showWireframe: false,
   lanternAnimationEnabled: true,
+  isPointerLocked: false,
+  clickToLockEnabled: true,
+  mouseSensitivity: 1.0,
+  invertY: false,
   metrics: {
     fps: 60,
     drawCalls: 0,
@@ -398,10 +412,42 @@ export const useGameStore = create<GameState>((set) => ({
   setNearbySeatId: (nearbySeatId) => set({ nearbySeatId }),
   completeLaiBoQuest: () => set({ laiBoQuestCompleted: true }),
   toggleInspectorDrawer: () =>
-    set((state) => ({ showInspectorDrawer: !state.showInspectorDrawer })),
-  setShowAssetModal: (showAssetModal) => set({ showAssetModal }),
+    set((state) => {
+      if (!state.showInspectorDrawer && document.pointerLockElement) {
+        document.exitPointerLock?.();
+      }
+      return { showInspectorDrawer: !state.showInspectorDrawer };
+    }),
+  setShowAssetModal: (showAssetModal) => {
+    if (showAssetModal && document.pointerLockElement) {
+      document.exitPointerLock?.();
+    }
+    set({ showAssetModal });
+  },
   toggleWireframe: () => set((state) => ({ showWireframe: !state.showWireframe })),
   toggleLanternAnimation: () =>
     set((state) => ({ lanternAnimationEnabled: !state.lanternAnimationEnabled })),
+  setPointerLocked: (isPointerLocked) => set({ isPointerLocked }),
+  toggleClickToLock: () =>
+    set((state) => ({ clickToLockEnabled: !state.clickToLockEnabled })),
+  setMouseSensitivity: (mouseSensitivity) => set({ mouseSensitivity }),
+  toggleInvertY: () => set((state) => ({ invertY: !state.invertY })),
+  requestMouseLock: () => {
+    const canvas = document.querySelector('canvas');
+    if (canvas && canvas.requestPointerLock) {
+      set({ cameraMode: 'follow' });
+      try {
+        canvas.requestPointerLock();
+      } catch {
+        // Bỏ qua lỗi nếu trình duyệt yêu cầu tương tác trực tiếp từ sự kiện click
+      }
+    }
+  },
+  exitMouseLock: () => {
+    if (document.pointerLockElement) {
+      document.exitPointerLock?.();
+    }
+    set({ isPointerLocked: false });
+  },
   updateMetrics: (metrics) => set({ metrics }),
 }));

@@ -86,6 +86,15 @@ export const SceneInspectOverlay: React.FC = () => {
   const setShowAssetModal = useGameStore((s) => s.setShowAssetModal);
   const showWireframe = useGameStore((s) => s.showWireframe);
   const toggleWireframe = useGameStore((s) => s.toggleWireframe);
+  const isPointerLocked = useGameStore((s) => s.isPointerLocked);
+  const clickToLockEnabled = useGameStore((s) => s.clickToLockEnabled);
+  const mouseSensitivity = useGameStore((s) => s.mouseSensitivity);
+  const invertY = useGameStore((s) => s.invertY);
+  const requestMouseLock = useGameStore((s) => s.requestMouseLock);
+  const exitMouseLock = useGameStore((s) => s.exitMouseLock);
+  const toggleClickToLock = useGameStore((s) => s.toggleClickToLock);
+  const setMouseSensitivity = useGameStore((s) => s.setMouseSensitivity);
+  const toggleInvertY = useGameStore((s) => s.toggleInvertY);
   const metrics = useGameStore((s) => s.metrics);
 
   // Gameplay Store
@@ -181,8 +190,28 @@ export const SceneInspectOverlay: React.FC = () => {
           </button>
         </div>
 
-        {/* Thanh Tiền Tệ & Công Trạng góc trên bên phải */}
+        {/* Thanh Tiền Tệ, Công Trạng & Nút Khóa Chuột góc trên bên phải */}
         <div className="hud-top-right">
+          <button
+            type="button"
+            className={`mouse-lock-pill ${isPointerLocked ? 'locked' : ''}`}
+            onClick={() => {
+              if (isPointerLocked) {
+                exitMouseLock();
+              } else {
+                requestMouseLock();
+              }
+            }}
+            title="Phím tắt [L] hoặc đúp chuột vào màn hình 3D để Khóa Chuột xoay Camera 360° (Nhấn ESC để thoát)"
+          >
+            <span>{isPointerLocked ? '🔒' : '🖱️'}</span>
+            <span>
+              {isPointerLocked
+                ? 'Đang Khóa Chuột [ESC / L]'
+                : 'Khóa Chuột 360° [Phím L]'}
+            </span>
+          </button>
+
           <div
             className="currency-pill"
             onClick={() => openBuildingModal('lai_bo', 'promotion')}
@@ -212,12 +241,39 @@ export const SceneInspectOverlay: React.FC = () => {
             type="button"
             className={`hud-icon-circle ${showInspectorDrawer ? 'active' : ''}`}
             onClick={toggleInspectorDrawer}
-            title="Bật/Tắt bảng Góc Máy & FPS"
+            title="Bật/Tắt bảng Góc Máy, Khóa Chuột & FPS"
           >
             ⚙️
           </button>
         </div>
       </header>
+
+      {/* Tâm ngắm (Crosshair Reticle) & Chỉ dẫn khi đang ở chế độ Khóa Chuột */}
+      {isPointerLocked && (
+        <>
+          <div className="pointer-lock-top-hint">
+            🔒 <strong>Chế Độ Khóa Chuột 360°</strong>: Di chuột để xoay góc nhìn •
+            Cuộn chuột để Zoom • <strong>[Click Trái / E]</strong> Tương tác • Nhấn{' '}
+            <strong>[ESC]</strong>, <strong>[Phím L]</strong> hoặc{' '}
+            <strong>[Chuột Phải]</strong> để hiện con trỏ
+          </div>
+          <div
+            className={`pointer-lock-reticle ${
+              currentNearbyEntity || currentNearbySpot ? 'target-active' : ''
+            }`}
+          >
+            <span className="reticle-dot" />
+            {(currentNearbyEntity || currentNearbySpot) && (
+              <span className="reticle-action-tag">
+                [Click Trái / E]{' '}
+                {currentNearbyEntity
+                  ? currentNearbyEntity.name
+                  : currentNearbySpot?.label}
+              </span>
+            )}
+          </div>
+        </>
+      )}
 
       {/* ================================================================= */}
       {/* 2. BẢNG NHIỆM VỤ XUYÊN SUỐT 5 BƯỚC & ĐIỀU HƯỚNG CÔNG TRÌNH         */}
@@ -563,6 +619,54 @@ export const SceneInspectOverlay: React.FC = () => {
             >
               Wireframe
             </button>
+          </div>
+
+          <div className="sub-section-title">CHẾ ĐỘ KHÓA CHUỘT (MOUSE LOCK 360°)</div>
+          <div className="mouse-lock-settings-box">
+            <button
+              type="button"
+              className="action-btn gold full-width"
+              onClick={() => {
+                if (isPointerLocked) {
+                  exitMouseLock();
+                } else {
+                  requestMouseLock();
+                }
+              }}
+            >
+              {isPointerLocked
+                ? '🔓 Mở Khóa Chuột [ESC / Phím L]'
+                : '🔒 Bật Khóa Chuột Xoay Camera [Phím L]'}
+            </button>
+
+            <div className="sensitivity-row">
+              <span>Độ nhạy chuột: {mouseSensitivity.toFixed(1)}x</span>
+              <input
+                type="range"
+                min="0.3"
+                max="2.5"
+                step="0.1"
+                value={mouseSensitivity}
+                onChange={(e) => setMouseSensitivity(parseFloat(e.target.value))}
+              />
+            </div>
+
+            <div className="seat-btn-grid">
+              <button
+                type="button"
+                className={`mini-btn ${clickToLockEnabled ? 'active' : ''}`}
+                onClick={toggleClickToLock}
+              >
+                {clickToLockEnabled ? '✓ Click 3D Khóa Chuột' : 'Tắt Click Khóa Chuột'}
+              </button>
+              <button
+                type="button"
+                className={`mini-btn ${invertY ? 'active' : ''}`}
+                onClick={toggleInvertY}
+              >
+                {invertY ? '✓ Đảo Trục Dọc Y' : 'Trục Y Chuẩn'}
+              </button>
+            </div>
           </div>
 
           <button
