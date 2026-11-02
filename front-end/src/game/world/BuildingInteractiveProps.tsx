@@ -226,6 +226,39 @@ export const BuildingInteractiveProps: React.FC = () => {
               <ringGeometry args={[0.72, 0.92, 24]} />
             </mesh>
 
+            {/* Cột Sáng Vàng Dẫn Đường 3D (Waypoint Light Beacon) cho mục tiêu nhiệm vụ */}
+            {isQuestTarget && (
+              <group position={[0, 0, 0]}>
+                {/* Luồng sáng vàng rực rỡ chiếu thẳng lên trời */}
+                <mesh position={[0, 10, 0]}>
+                  <cylinderGeometry args={[0.35, 0.75, 20, 16, 1, true]} />
+                  <meshBasicMaterial
+                    color="#FFD700"
+                    transparent
+                    opacity={0.32}
+                    side={THREE.DoubleSide}
+                    depthWrite={false}
+                  />
+                </mesh>
+                {/* Tia lõi sáng trắng tập trung ở giữa */}
+                <mesh position={[0, 10, 0]}>
+                  <cylinderGeometry args={[0.08, 0.18, 20, 12, 1, true]} />
+                  <meshBasicMaterial
+                    color="#FFFFFF"
+                    transparent
+                    opacity={0.65}
+                    side={THREE.DoubleSide}
+                    depthWrite={false}
+                  />
+                </mesh>
+                {/* Mũi tên dẫn hướng lấp lánh phía trên đầu mục tiêu */}
+                <mesh position={[0, 3.8, 0]} rotation={[0, 0, Math.PI]}>
+                  <coneGeometry args={[0.3, 0.65, 6]} />
+                  <meshBasicMaterial color="#FFD700" />
+                </mesh>
+              </group>
+            )}
+
             {/* Render NPC Chibi hoặc Vật thể 3D */}
             {entity.type === 'npc' ? (
               <Player rank={entity.npcRank ?? 'minister'} animationState="idle" />

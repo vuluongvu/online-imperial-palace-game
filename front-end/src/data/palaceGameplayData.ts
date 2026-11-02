@@ -411,8 +411,8 @@ export const PALACE_QUEST_CHAIN: QuestDefinition[] = [
     stepNumber: 3,
     title: 'Nhiệm vụ 3: Khảo Thí Hàn Lâm Viện',
     description:
-      'Để đủ tư cách thăng chức, quan viên phải vượt qua kỳ khảo thí 5 câu hỏi kiến thức điển chế & tư duy logic tại Hàn Lâm Viện.',
-    requirementText: 'Hoàn thành bài thi 5 câu tại Hàn Lâm Viện (đạt từ 3/5 câu)',
+      'Để đủ tư cách thăng chức, quan viên phải vượt qua kỳ khảo thí 3 câu hỏi kiến thức điển chế & văn hóa tại Hàn Lâm Viện.',
+    requirementText: 'Hoàn thành bài thi tại Hàn Lâm Viện (đạt từ 2/3 câu)',
     targetBuildingId: 'han_lam_vien',
     targetBuildingName: 'Hàn Lâm Viện',
     targetInteractableId: 'obj_hlv_exam_desk',
@@ -886,38 +886,18 @@ export const IMPERIAL_EXAM_QUESTIONS: ExamQuestion[] = [
   },
   {
     id: 'q3',
-    category: 'Mưu Lược Logic',
-    question:
-      'Câu 3 [Tư duy Logic]: Có 3 tráp văn thư Vàng, Bạc, Đồng. Chỉ có 1 tráp chứa Ấn Ngọc, và chỉ có 1 nhãn khắc trên tráp là ĐÚNG. Tráp Vàng ghi: "Ấn ở tráp này"; Tráp Bạc ghi: "Ấn không ở tráp này"; Tráp Đồng ghi: "Ấn không ở tráp Vàng". Hỏi Ấn Ngọc nằm ở tráp nào?',
-    options: ['Tráp Vàng', 'Tráp Bạc', 'Tráp Đồng', 'Không xác định được'],
-    correctIndex: 1,
-    explanation:
-      'Nếu Ấn ở Tráp Bạc: Nhãn Vàng sai, Nhãn Bạc sai, Nhãn Đồng đúng (duy nhất 1 nhãn đúng). Vậy Ấn Ngọc nằm ở Tráp Bạc!',
-  },
-  {
-    id: 'q4',
     category: 'Điển Chế',
     question:
-      'Câu 4: Trong nghi thức Đại Triều tại Điện Thái Hòa, chỉ bậc Cửu Ngũ Chí Tôn (Hoàng Đế) mới được đội mũ gì có 12 chuỗi ngọc rủ trước và sau?',
-    options: ['Mũ Ô Sa cánh chuồn', 'Mũ Miện Lưu (Thập Nhị Lưu)', 'Mũ Phương Sơn', 'Mũ Phốc Đầu'],
-    correctIndex: 1,
-    explanation:
-      'Mũ Miện Lưu với 12 chuỗi ngọc (Thập nhị lưu) là mũ đại triều dành riêng cho Hoàng Đế.',
-  },
-  {
-    id: 'q5',
-    category: 'Mưu Lược Logic',
-    question:
-      'Câu 5 [Tình huống Quan trường]: Khi phát hiện hai bản tấu chương của Hộ Bộ và Binh Bộ có số liệu lương thảo chênh lệch nhau 500 thạch, bước xử lý đúng đắn nhất của quan Ngự Sử là gì?',
+      'Câu 3: Trong nghi thức Đại Triều tại Điện Thái Hòa, bậc Cửu Ngũ Chí Tôn (Hoàng Đế) đội loại mũ nào có 12 chuỗi ngọc rủ trước và sau?',
     options: [
-      'Bác bỏ cả hai bản tấu ngay lập tức mà không cần kiểm tra',
-      'Đối chiếu sổ gốc tại Thường Bình Thương và triệu tập thư lại hai bộ xác minh trước khi trình Hoàng Đế',
-      'Tự ý sửa số liệu cho khớp nhau',
-      'Giấu bản tấu đi để tránh liên lụy',
+      'Mũ Ô Sa cánh chuồn',
+      'Mũ Miện Lưu (Thập Nhị Lưu)',
+      'Mũ Phương Sơn',
+      'Mũ Phốc Đầu',
     ],
     correctIndex: 1,
     explanation:
-      'Đối chiếu chứng từ gốc tại kho và xác minh khách quan là nguyên tắc minh bạch trong điều hành triều chính.',
+      'Mũ Miện Lưu với 12 chuỗi ngọc (Thập nhị lưu) là mũ đại triều dành riêng cho Hoàng Đế.',
   },
 ];
 

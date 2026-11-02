@@ -135,12 +135,61 @@ interface GameplayState {
   // Toast Actions
   pushToast: (type: GameplayToast['type'], title: string, message: string) => void;
   dismissToast: (id: string) => void;
+  resetProgress: () => void;
 }
 
+const STORAGE_SAVE_KEY = 'dai_nghiep_gameplay_save_v2';
+
+interface SavedGameplayData {
+  meritPoints: number;
+  silverCoins: number;
+  officialGradeIndex: number;
+  currentQuestStep: number;
+  questStatuses: Record<string, QuestStatus>;
+  solvedCaseIds: string[];
+}
+
+function loadSavedGameplayData(): Partial<SavedGameplayData> | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function persistGameplayData(data: {
+  meritPoints: number;
+  silverCoins: number;
+  officialGradeIndex: number;
+  currentQuestStep: number;
+  questStatuses: Record<string, QuestStatus>;
+  solvedCaseIds: string[];
+}) {
+  try {
+    localStorage.setItem(
+      STORAGE_SAVE_KEY,
+      JSON.stringify({
+        meritPoints: data.meritPoints,
+        silverCoins: data.silverCoins,
+        officialGradeIndex: data.officialGradeIndex,
+        currentQuestStep: data.currentQuestStep,
+        questStatuses: data.questStatuses,
+        solvedCaseIds: data.solvedCaseIds,
+      })
+    );
+  } catch {
+    // Ignore quota errors
+  }
+}
+
+const savedData = loadSavedGameplayData();
+
 export const useGameplayStore = create<GameplayState>((set, get) => ({
-  meritPoints: 40,
-  silverCoins: 1000,
-  officialGradeIndex: 0,
+  meritPoints: savedData?.meritPoints ?? 40,
+  silverCoins: savedData?.silverCoins ?? 1000,
+  officialGradeIndex: savedData?.officialGradeIndex ?? 0,
   meritLogs: [
     {
       id: 'log_init',
@@ -154,8 +203,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   activeInteractableId: null,
   activeTab: 'overview',
 
-  currentQuestStep: 1,
-  questStatuses: {
+  currentQuestStep: savedData?.currentQuestStep ?? 1,
+  questStatuses: savedData?.questStatuses ?? {
     quest_1_lai_bo_init: 'in_progress',
     quest_2_hinh_bo_case: 'locked',
     quest_3_han_lam_exam: 'locked',
@@ -172,7 +221,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
 
   activeCaseId: CRIMINAL_CASES[0].id,
   inspectedClueIds: [],
-  solvedCaseIds: [],
+  solvedCaseIds: savedData?.solvedCaseIds ?? [],
   lastVerdictFeedback: null,
 
   bestExamScore: 0,
@@ -289,6 +338,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     if (stepNumber === 1) {
       useGameStore.getState().completeLaiBoQuest();
     }
+
+    persistGameplayData(get());
 
     get().pushToast(
       'quest_complete',
@@ -452,6 +503,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     // Cập nhật trang phục 3D của nhân vật theo phẩm cấp mới
     useGameStore.getState().setCharacterRank(nextGrade.visualRank);
 
+    persistGameplayData(get());
+
     get().pushToast(
       'promotion',
       `Thăng Chức Thành Công: ${nextGrade.gradeCode}!`,
@@ -525,6 +578,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       ],
     });
 
+    persistGameplayData(get());
+
     get().pushToast(
       'reward',
       `Phá Án Thành Công: ${targetCase.code}!`,
@@ -539,19 +594,19 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   submitExamResult: (correctCount, totalQuestions, timeSpentSec) => {
     const state = get();
     const score = correctCount * 100;
-    const passed = correctCount >= 3;
-    const gainedMerit = passed ? correctCount * 35 : correctCount * 15;
-    const gainedCoins = passed ? correctCount * 70 : 50;
+    const passed = correctCount >= 2;
+    const gainedMerit = passed ? 150 : correctCount * 30;
+    const gainedCoins = passed ? 350 : 100;
 
     const currentGrade = OFFICIAL_PROMOTION_LADDER[state.officialGradeIndex];
     const playerEntry: ExamLeaderboardEntry = {
       rank: 1,
       scholarName: 'Minh Vương (Bạn)',
       title:
-        score === 500
+        score === 300
           ? 'Tân Khoa Trạng Nguyên'
-          : score >= 400
-            ? 'Tân Khoa Bảng Nhãn'
+          : score >= 200
+            ? 'Tân Khoa Tiến Sĩ'
             : currentGrade.gradeCode,
       score,
       timeTakenSec: Math.max(5, timeSpentSec),
@@ -581,6 +636,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
         ...state.meritLogs,
       ],
     });
+
+    persistGameplayData(get());
 
     get().pushToast(
       'reward',
@@ -672,5 +729,29 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       'Khai Tiệc Ngự Hoa Viên!',
       'Tổ chức thành công Hội Thơ Hoa Đào cùng bá quan (+30 Công Trạng).'
     );
+  },
+
+  resetProgress: () => {
+    try {
+      localStorage.removeItem(STORAGE_SAVE_KEY);
+    } catch {
+      // Ignore
+    }
+    set({
+      meritPoints: 40,
+      silverCoins: 1000,
+      officialGradeIndex: 0,
+      currentQuestStep: 1,
+      questStatuses: {
+        quest_1_lai_bo_init: 'in_progress',
+        quest_2_hinh_bo_case: 'locked',
+        quest_3_han_lam_exam: 'locked',
+        quest_4_lai_bo_report: 'locked',
+        quest_5_promotion_rank: 'locked',
+      },
+      solvedCaseIds: [],
+    });
+    useGameStore.getState().setCharacterRank('low_official');
+    get().pushToast('info', 'Làm Mới Tiến Độ', 'Đã đặt lại tiến độ nhân vật về trạng thái Tân Khoa Cửu Phẩm.');
   },
 }));
