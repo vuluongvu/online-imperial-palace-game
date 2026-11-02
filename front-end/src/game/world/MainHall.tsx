@@ -5,74 +5,103 @@ import { createPalaceMaterialSet } from '../assets/PalaceMaterials';
 import { useGameStore } from '../../stores/useGameStore';
 
 /**
- * Kích thước & tọa độ bố cục Chính Điện (Imperial Main Hall)
- * Xuất dữ liệu để tái sử dụng cho hệ thống Physics/Collision ở Phase 2.
+ * Kích thước & tọa độ bố cục Thái Hòa Chính Điện (Imperial Main Hall)
+ * Đã chuẩn hóa theo kiến trúc cung đình:
+ * - Khu vực Minh Gian (Sân chầu trung tâm) rộng 16.4m (X từ -8.2m đến +8.2m), hoàn toàn thông thoáng.
+ * - 6 Cột Bàn Long Thếp Vàng (Golden Dragon Pillars) đứng chầu trên Bệ Rồng quanh Long Ngai.
+ * - 16 Cột Đại Điện Sơn Son (Red Palace Pillars) chia thành 4 trục gian (Z = -8.5, -1.0, +6.5, +14.0)
+ *   tại X = ±8.2m (Nội điện) và X = ±13.6m (Ngoại điện), không cắt vào Bệ Rồng hay bàn quan viên.
  */
 export const MAIN_HALL_LAYOUT = {
   width: 32,
   length: 44,
   wallHeight: 11.5,
+  // 6 Cột Rồng Vàng (Bàn Long Kim Trụ) bao quanh Long Ngai trên khu vực Bệ Rồng
+  goldenDragonPillarPositions: [
+    [-4.5, 0, -13.0],
+    [4.5, 0, -13.0],
+    [-4.5, 0, -16.8],
+    [4.5, 0, -16.8],
+    [-4.5, 0, -20.4],
+    [4.5, 0, -20.4],
+  ] as [number, number, number][],
+  // 16 Cột Đại Điện Sơn Son (Hàng cột Nội điện X = ±8.2m & Ngoại điện X = ±13.6m)
   pillarPositions: [
-    // Hàng cột nội điện bên trái (X = -6.2)
-    [-6.2, 0, -13.5],
-    [-6.2, 0, -4.5],
-    [-6.2, 0, 4.5],
-    [-6.2, 0, 13.5],
-    // Hàng cột nội điện bên phải (X = +6.2)
-    [6.2, 0, -13.5],
-    [6.2, 0, -4.5],
-    [6.2, 0, 4.5],
-    [6.2, 0, 13.5],
-    // Hàng cột ngoại điện bên trái (X = -12.6)
-    [-12.6, 0, -13.5],
-    [-12.6, 0, -4.5],
-    [-12.6, 0, 4.5],
-    [-12.6, 0, 13.5],
-    // Hàng cột ngoại điện bên phải (X = +12.6)
-    [12.6, 0, -13.5],
-    [12.6, 0, -4.5],
-    [12.6, 0, 4.5],
-    [12.6, 0, 13.5],
+    // Hàng cột Nội điện bên trái (X = -8.2m, thẳng mép Bệ Rồng, ngoài hàng ghế quan viên)
+    [-8.2, 0, -8.5],
+    [-8.2, 0, -1.0],
+    [-8.2, 0, 6.5],
+    [-8.2, 0, 14.0],
+    // Hàng cột Nội điện bên phải (X = +8.2m)
+    [8.2, 0, -8.5],
+    [8.2, 0, -1.0],
+    [8.2, 0, 6.5],
+    [8.2, 0, 14.0],
+    // Hàng cột Ngoại điện bên trái (X = -13.6m)
+    [-13.6, 0, -8.5],
+    [-13.6, 0, -1.0],
+    [-13.6, 0, 6.5],
+    [-13.6, 0, 14.0],
+    // Hàng cột Ngoại điện bên phải (X = +13.6m)
+    [13.6, 0, -8.5],
+    [13.6, 0, -1.0],
+    [13.6, 0, 6.5],
+    [13.6, 0, 14.0],
   ] as [number, number, number][],
   officialDeskPositions: [
-    // Hàng quan văn bên trái hướng mặt vào Ngự Đạo (X = -4.0)
-    { pos: [-4.0, 0, -7.5] as [number, number, number], rotY: Math.PI / 2 },
-    { pos: [-4.0, 0, -4.0] as [number, number, number], rotY: Math.PI / 2 },
-    { pos: [-4.0, 0, -0.5] as [number, number, number], rotY: Math.PI / 2 },
-    { pos: [-4.0, 0, 3.0] as [number, number, number], rotY: Math.PI / 2 },
-    { pos: [-4.0, 0, 6.5] as [number, number, number], rotY: Math.PI / 2 },
-    { pos: [-4.0, 0, 10.0] as [number, number, number], rotY: Math.PI / 2 },
-    // Hàng quan võ bên phải hướng mặt vào Ngự Đạo (X = +4.0)
-    { pos: [4.0, 0, -7.5] as [number, number, number], rotY: -Math.PI / 2 },
-    { pos: [4.0, 0, -4.0] as [number, number, number], rotY: -Math.PI / 2 },
-    { pos: [4.0, 0, -0.5] as [number, number, number], rotY: -Math.PI / 2 },
-    { pos: [4.0, 0, 3.0] as [number, number, number], rotY: -Math.PI / 2 },
-    { pos: [4.0, 0, 6.5] as [number, number, number], rotY: -Math.PI / 2 },
-    { pos: [4.0, 0, 10.0] as [number, number, number], rotY: -Math.PI / 2 },
+    // Hàng quan văn bên trái hướng mặt vào Ngự Đạo (X = -4.3m)
+    { pos: [-4.3, 0, -7.2] as [number, number, number], rotY: Math.PI / 2 },
+    { pos: [-4.3, 0, -3.6] as [number, number, number], rotY: Math.PI / 2 },
+    { pos: [-4.3, 0, 0.0] as [number, number, number], rotY: Math.PI / 2 },
+    { pos: [-4.3, 0, 3.6] as [number, number, number], rotY: Math.PI / 2 },
+    { pos: [-4.3, 0, 7.2] as [number, number, number], rotY: Math.PI / 2 },
+    { pos: [-4.3, 0, 10.8] as [number, number, number], rotY: Math.PI / 2 },
+    // Hàng quan võ bên phải hướng mặt vào Ngự Đạo (X = +4.3m)
+    { pos: [4.3, 0, -7.2] as [number, number, number], rotY: -Math.PI / 2 },
+    { pos: [4.3, 0, -3.6] as [number, number, number], rotY: -Math.PI / 2 },
+    { pos: [4.3, 0, 0.0] as [number, number, number], rotY: -Math.PI / 2 },
+    { pos: [4.3, 0, 3.6] as [number, number, number], rotY: -Math.PI / 2 },
+    { pos: [4.3, 0, 7.2] as [number, number, number], rotY: -Math.PI / 2 },
+    { pos: [4.3, 0, 10.8] as [number, number, number], rotY: -Math.PI / 2 },
   ],
+  // 12 Đèn lồng cung đình treo tại tâm các gian giữa hàng cột
   lanternPositions: [
-    [-5.0, 8.6, -11.5],
-    [-5.0, 8.6, -6.5],
-    [-5.0, 8.6, -1.5],
-    [-5.0, 8.6, 3.5],
-    [-5.0, 8.6, 8.5],
-    [-5.0, 8.6, 13.5],
-    [5.0, 8.6, -11.5],
-    [5.0, 8.6, -6.5],
-    [5.0, 8.6, -1.5],
-    [5.0, 8.6, 3.5],
-    [5.0, 8.6, 8.5],
-    [5.0, 8.6, 13.5],
+    [-6.6, 8.6, -8.5],
+    [-6.6, 8.6, -4.75],
+    [-6.6, 8.6, -1.0],
+    [-6.6, 8.6, 2.75],
+    [-6.6, 8.6, 6.5],
+    [-6.6, 8.6, 10.25],
+    [6.6, 8.6, -8.5],
+    [6.6, 8.6, -4.75],
+    [6.6, 8.6, -1.0],
+    [6.6, 8.6, 2.75],
+    [6.6, 8.6, 6.5],
+    [6.6, 8.6, 10.25],
   ] as [number, number, number][],
+  // 8 Phướn lụa Hoàng Gia treo dọc hành lang nội điện
+  silkBannerPositions: [
+    [-7.4, 7.2, -8.5],
+    [-7.4, 7.2, -1.0],
+    [-7.4, 7.2, 6.5],
+    [-7.4, 7.2, 14.0],
+    [7.4, 7.2, -8.5],
+    [7.4, 7.2, -1.0],
+    [7.4, 7.2, 6.5],
+    [7.4, 7.2, 14.0],
+  ] as [number, number, number][],
+  // 10 Bình hoa sứ Thanh Hoa & Bảo Bình đặt tại các gian điện
   vasePositions: [
-    [-9.2, 0, -12.0],
-    [9.2, 0, -12.0],
-    [-9.2, 0, -4.5],
-    [9.2, 0, -4.5],
-    [-9.2, 0, 4.5],
-    [9.2, 0, 4.5],
-    [-9.2, 0, 13.0],
-    [9.2, 0, 13.0],
+    [-10.8, 0, -11.5],
+    [10.8, 0, -11.5],
+    [-10.8, 0, -4.8],
+    [10.8, 0, -4.8],
+    [-10.8, 0, 2.8],
+    [10.8, 0, 2.8],
+    [-10.8, 0, 10.2],
+    [10.8, 0, 10.2],
+    [-5.8, 0.6, -12.4],
+    [5.8, 0.6, -12.4],
   ] as [number, number, number][],
 };
 
@@ -80,7 +109,6 @@ export const MainHall: React.FC = () => {
   const showWireframe = useGameStore((s) => s.showWireframe);
   const lanternAnimationEnabled = useGameStore((s) => s.lanternAnimationEnabled);
 
-  // Khởi tạo bộ vật liệu dùng chung và tự động dispose khi unmount
   const materials = useMemo(() => createPalaceMaterialSet(showWireframe), [showWireframe]);
 
   useEffect(() => {
@@ -89,67 +117,80 @@ export const MainHall: React.FC = () => {
     };
   }, [materials]);
 
-  // Shared Geometries cho InstancedMesh (dispose tự động khi unmount)
+  // Shared Geometries cho InstancedMesh (Tối ưu draw calls)
   const geometries = useMemo(() => {
-    const pillarShaft = new THREE.CylinderGeometry(0.46, 0.5, 10.6, 20);
-    const pillarBase = new THREE.CylinderGeometry(0.64, 0.74, 0.55, 16);
-    const pillarGoldRing = new THREE.CylinderGeometry(0.52, 0.52, 0.24, 20);
-    const pillarCapital = new THREE.BoxGeometry(1.45, 0.65, 1.45);
+    const pillarShaft = new THREE.CylinderGeometry(0.48, 0.52, 10.6, 22);
+    const pillarBase = new THREE.CylinderGeometry(0.68, 0.82, 0.58, 18);
+    const pillarGoldRing = new THREE.CylinderGeometry(0.55, 0.55, 0.24, 20);
+    // Đấu củng 2 tầng (DouGong bracket capital)
+    const pillarCapitalLower = new THREE.BoxGeometry(1.35, 0.42, 1.35);
+    const pillarCapitalUpper = new THREE.BoxGeometry(1.75, 0.45, 1.75);
 
-    const tableTop = new THREE.BoxGeometry(1.15, 0.14, 1.9);
-    const tableSubFrame = new THREE.BoxGeometry(0.95, 0.25, 1.7);
+    const tableTop = new THREE.BoxGeometry(1.18, 0.14, 1.95);
+    const tableSubFrame = new THREE.BoxGeometry(0.98, 0.68, 1.75);
+    const tableScroll = new THREE.CylinderGeometry(0.055, 0.055, 0.55, 10);
 
-    const chairSeat = new THREE.BoxGeometry(0.82, 0.12, 0.82);
-    const chairBack = new THREE.BoxGeometry(0.1, 1.05, 0.78);
-    const chairCushion = new THREE.BoxGeometry(0.7, 0.08, 0.7);
+    const chairSeat = new THREE.BoxGeometry(0.84, 0.12, 0.84);
+    const chairBack = new THREE.BoxGeometry(0.1, 1.08, 0.8);
+    const chairCushion = new THREE.BoxGeometry(0.72, 0.08, 0.72);
 
-    const lanternBody = new THREE.SphereGeometry(0.46, 16, 12);
-    lanternBody.scale(1, 1.25, 1);
-    const lanternCap = new THREE.CylinderGeometry(0.28, 0.32, 0.18, 12);
+    const lanternBody = new THREE.SphereGeometry(0.48, 16, 12);
+    lanternBody.scale(1, 1.28, 1);
+    const lanternCap = new THREE.CylinderGeometry(0.3, 0.34, 0.18, 12);
     const lanternCord = new THREE.CylinderGeometry(0.025, 0.025, 2.2, 8);
+    const lanternTassel = new THREE.ConeGeometry(0.12, 0.48, 8);
 
-    // Bình hoa sứ cổ trang bằng LatheGeometry
+    const bannerCloth = new THREE.PlaneGeometry(0.78, 3.6);
+
     const vasePoints = [
       new THREE.Vector2(0.0, 0.0),
       new THREE.Vector2(0.28, 0.0),
       new THREE.Vector2(0.24, 0.18),
-      new THREE.Vector2(0.42, 0.58),
-      new THREE.Vector2(0.38, 0.96),
-      new THREE.Vector2(0.18, 1.22),
-      new THREE.Vector2(0.26, 1.42),
-      new THREE.Vector2(0.22, 1.45),
+      new THREE.Vector2(0.44, 0.62),
+      new THREE.Vector2(0.38, 0.98),
+      new THREE.Vector2(0.18, 1.24),
+      new THREE.Vector2(0.28, 1.46),
+      new THREE.Vector2(0.22, 1.5),
     ];
     const porcelainVase = new THREE.LatheGeometry(vasePoints, 18);
-    const vaseStand = new THREE.CylinderGeometry(0.36, 0.42, 0.55, 12);
+    const vaseStand = new THREE.CylinderGeometry(0.38, 0.44, 0.55, 14);
 
     return {
       pillarShaft,
       pillarBase,
       pillarGoldRing,
-      pillarCapital,
+      pillarCapitalLower,
+      pillarCapitalUpper,
       tableTop,
       tableSubFrame,
+      tableScroll,
       chairSeat,
       chairBack,
       chairCushion,
       lanternBody,
       lanternCap,
       lanternCord,
+      lanternTassel,
+      bannerCloth,
       porcelainVase,
       vaseStand,
       dispose: () => {
         pillarShaft.dispose();
         pillarBase.dispose();
         pillarGoldRing.dispose();
-        pillarCapital.dispose();
+        pillarCapitalLower.dispose();
+        pillarCapitalUpper.dispose();
         tableTop.dispose();
         tableSubFrame.dispose();
+        tableScroll.dispose();
         chairSeat.dispose();
         chairBack.dispose();
         chairCushion.dispose();
         lanternBody.dispose();
         lanternCap.dispose();
         lanternCord.dispose();
+        lanternTassel.dispose();
+        bannerCloth.dispose();
         porcelainVase.dispose();
         vaseStand.dispose();
       },
@@ -162,14 +203,21 @@ export const MainHall: React.FC = () => {
     };
   }, [geometries]);
 
-  // Refs cho các InstancedMesh
-  const pillarShaftRef = useRef<THREE.InstancedMesh>(null);
+  const totalPillarsCount =
+    MAIN_HALL_LAYOUT.pillarPositions.length +
+    MAIN_HALL_LAYOUT.goldenDragonPillarPositions.length;
+
+  // Refs cho InstancedMesh
+  const redPillarShaftRef = useRef<THREE.InstancedMesh>(null);
+  const goldPillarShaftRef = useRef<THREE.InstancedMesh>(null);
   const pillarBaseRef = useRef<THREE.InstancedMesh>(null);
   const pillarRingRef = useRef<THREE.InstancedMesh>(null);
-  const pillarCapitalRef = useRef<THREE.InstancedMesh>(null);
+  const pillarCapLowerRef = useRef<THREE.InstancedMesh>(null);
+  const pillarCapUpperRef = useRef<THREE.InstancedMesh>(null);
 
   const tableTopRef = useRef<THREE.InstancedMesh>(null);
   const tableFrameRef = useRef<THREE.InstancedMesh>(null);
+  const tableScrollRef = useRef<THREE.InstancedMesh>(null);
   const chairSeatRef = useRef<THREE.InstancedMesh>(null);
   const chairBackRef = useRef<THREE.InstancedMesh>(null);
   const chairCushionRef = useRef<THREE.InstancedMesh>(null);
@@ -177,70 +225,103 @@ export const MainHall: React.FC = () => {
   const lanternBodyRef = useRef<THREE.InstancedMesh>(null);
   const lanternCapRef = useRef<THREE.InstancedMesh>(null);
   const lanternCordRef = useRef<THREE.InstancedMesh>(null);
+  const lanternTasselRef = useRef<THREE.InstancedMesh>(null);
+  const bannerRef = useRef<THREE.InstancedMesh>(null);
 
   const vaseStandRef = useRef<THREE.InstancedMesh>(null);
   const vaseBodyRef = useRef<THREE.InstancedMesh>(null);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  // Thiết lập ma trận tĩnh cho Cột, Bàn ghế, Bình hoa
   useEffect(() => {
-    // 1. 16 Cột gỗ đỏ hoàng cung
-    MAIN_HALL_LAYOUT.pillarPositions.forEach(([x, , z], idx) => {
+    // 1A. 16 Cột Đại Điện Sơn Son
+    MAIN_HALL_LAYOUT.pillarPositions.forEach(([x, y, z], idx) => {
       dummy.rotation.set(0, 0, 0);
       dummy.scale.set(1, 1, 1);
 
-      dummy.position.set(x, 5.55, z);
+      dummy.position.set(x, y + 5.55, z);
       dummy.updateMatrix();
-      pillarShaftRef.current?.setMatrixAt(idx, dummy.matrix);
+      redPillarShaftRef.current?.setMatrixAt(idx, dummy.matrix);
+    });
+    if (redPillarShaftRef.current) redPillarShaftRef.current.instanceMatrix.needsUpdate = true;
 
-      dummy.position.set(x, 0.275, z);
+    // 1B. 6 Cột Bàn Long Thếp Vàng quanh Long Ngai
+    MAIN_HALL_LAYOUT.goldenDragonPillarPositions.forEach(([x, y, z], idx) => {
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1.06, 1, 1.06);
+
+      dummy.position.set(x, y + 5.55, z);
+      dummy.updateMatrix();
+      goldPillarShaftRef.current?.setMatrixAt(idx, dummy.matrix);
+    });
+    if (goldPillarShaftRef.current) goldPillarShaftRef.current.instanceMatrix.needsUpdate = true;
+
+    // 1C. Chân tảng đá cánh sen + Đai vàng + Đấu củng 2 tầng cho toàn bộ 22 cột
+    const allPillars = [
+      ...MAIN_HALL_LAYOUT.pillarPositions,
+      ...MAIN_HALL_LAYOUT.goldenDragonPillarPositions,
+    ];
+    allPillars.forEach(([x, y, z], idx) => {
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+
+      const isOnDais = z < -11.5;
+      const baseHeightOffset = isOnDais ? 0.6 : 0;
+
+      dummy.position.set(x, y + baseHeightOffset + 0.28, z);
       dummy.updateMatrix();
       pillarBaseRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      dummy.position.set(x, 0.68, z);
+      dummy.position.set(x, y + baseHeightOffset + 0.68, z);
       dummy.updateMatrix();
       pillarRingRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      dummy.position.set(x, 10.65, z);
+      dummy.position.set(x, 10.35, z);
       dummy.updateMatrix();
-      pillarCapitalRef.current?.setMatrixAt(idx, dummy.matrix);
+      pillarCapLowerRef.current?.setMatrixAt(idx, dummy.matrix);
+
+      dummy.position.set(x, 10.78, z);
+      dummy.updateMatrix();
+      pillarCapUpperRef.current?.setMatrixAt(idx, dummy.matrix);
     });
 
-    if (pillarShaftRef.current) pillarShaftRef.current.instanceMatrix.needsUpdate = true;
     if (pillarBaseRef.current) pillarBaseRef.current.instanceMatrix.needsUpdate = true;
     if (pillarRingRef.current) pillarRingRef.current.instanceMatrix.needsUpdate = true;
-    if (pillarCapitalRef.current) pillarCapitalRef.current.instanceMatrix.needsUpdate = true;
+    if (pillarCapLowerRef.current) pillarCapLowerRef.current.instanceMatrix.needsUpdate = true;
+    if (pillarCapUpperRef.current) pillarCapUpperRef.current.instanceMatrix.needsUpdate = true;
 
-    // 2. 12 Bộ bàn ghế quan viên
+    // 2. 12 Bộ bàn ghế quan viên + Tấu chương vàng trên bàn
     MAIN_HALL_LAYOUT.officialDeskPositions.forEach(({ pos, rotY }, idx) => {
       const [x, , z] = pos;
-      const chairOffsetX = x < 0 ? -1.05 : 1.05;
+      const chairOffsetX = x < 0 ? -1.08 : 1.08;
 
-      // Mặt bàn gỗ
       dummy.position.set(x, 0.78, z);
       dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       tableTopRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      // Khung chân bàn
-      dummy.position.set(x, 0.39, z);
+      dummy.position.set(x, 0.38, z);
       dummy.updateMatrix();
       tableFrameRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      // Mặt ghế quan viên
+      // Cuộn tấu chương đặt trên mỗi bàn quan viên
+      dummy.position.set(x, 0.89, z - 0.25);
+      dummy.rotation.set(0, 0, Math.PI / 2);
+      dummy.updateMatrix();
+      tableScrollRef.current?.setMatrixAt(idx, dummy.matrix);
+
+      // Ghế quan viên
       dummy.position.set(x + chairOffsetX, 0.46, z);
       dummy.rotation.set(0, rotY, 0);
       dummy.updateMatrix();
       chairSeatRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      // Đệm gấm đỏ trên ghế
       dummy.position.set(x + chairOffsetX, 0.55, z);
       dummy.rotation.set(0, rotY, 0);
       dummy.updateMatrix();
       chairCushionRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      // Lưng tựa ghế thái sư
       const backShift = x < 0 ? -0.36 : 0.36;
       dummy.position.set(x + chairOffsetX + backShift, 0.96, z);
       dummy.rotation.set(0, 0, 0);
@@ -250,18 +331,21 @@ export const MainHall: React.FC = () => {
 
     if (tableTopRef.current) tableTopRef.current.instanceMatrix.needsUpdate = true;
     if (tableFrameRef.current) tableFrameRef.current.instanceMatrix.needsUpdate = true;
+    if (tableScrollRef.current) tableScrollRef.current.instanceMatrix.needsUpdate = true;
     if (chairSeatRef.current) chairSeatRef.current.instanceMatrix.needsUpdate = true;
     if (chairCushionRef.current) chairCushionRef.current.instanceMatrix.needsUpdate = true;
     if (chairBackRef.current) chairBackRef.current.instanceMatrix.needsUpdate = true;
 
-    // 3. 8 Bình hoa sứ Thanh Hoa trên đôn gỗ
-    MAIN_HALL_LAYOUT.vasePositions.forEach(([x, , z], idx) => {
+    // 3. 10 Bình hoa sứ Thanh Hoa trên đôn gỗ
+    MAIN_HALL_LAYOUT.vasePositions.forEach(([x, y, z], idx) => {
       dummy.rotation.set(0, 0, 0);
-      dummy.position.set(x, 0.275, z);
+      dummy.scale.set(1, 1, 1);
+
+      dummy.position.set(x, y + 0.275, z);
       dummy.updateMatrix();
       vaseStandRef.current?.setMatrixAt(idx, dummy.matrix);
 
-      dummy.position.set(x, 0.55, z);
+      dummy.position.set(x, y + 0.55, z);
       dummy.updateMatrix();
       vaseBodyRef.current?.setMatrixAt(idx, dummy.matrix);
     });
@@ -270,44 +354,65 @@ export const MainHall: React.FC = () => {
     if (vaseBodyRef.current) vaseBodyRef.current.instanceMatrix.needsUpdate = true;
   }, [dummy]);
 
-  // Chuyển động đung đưa nhẹ nhàng của 12 Đèn lồng cung đình (không phụ thuộc frame rate)
+  // Chuyển động đung đưa nhẹ của 12 Đèn lồng cung đình & 8 Phướn lụa Hoàng Gia
   useFrame(({ clock }) => {
-    if (!lanternBodyRef.current || !lanternCapRef.current || !lanternCordRef.current) return;
-
     const t = lanternAnimationEnabled ? clock.getElapsedTime() : 0;
 
-    MAIN_HALL_LAYOUT.lanternPositions.forEach(([x, y, z], idx) => {
-      const swayAngle = Math.sin(t * 1.35 + idx * 0.8) * 0.045;
-      const swayOffsetX = Math.sin(swayAngle) * 0.8;
+    if (
+      lanternBodyRef.current &&
+      lanternCapRef.current &&
+      lanternCordRef.current &&
+      lanternTasselRef.current
+    ) {
+      MAIN_HALL_LAYOUT.lanternPositions.forEach(([x, y, z], idx) => {
+        const swayAngle = Math.sin(t * 1.35 + idx * 0.8) * 0.045;
+        const swayOffsetX = Math.sin(swayAngle) * 0.8;
 
-      // Dây treo đèn lồng
-      dummy.position.set(x + swayOffsetX * 0.5, y + 1.1, z);
-      dummy.rotation.set(0, 0, -swayAngle);
-      dummy.updateMatrix();
-      lanternCordRef.current!.setMatrixAt(idx, dummy.matrix);
+        dummy.scale.set(1, 1, 1);
+        dummy.position.set(x + swayOffsetX * 0.5, y + 1.1, z);
+        dummy.rotation.set(0, 0, -swayAngle);
+        dummy.updateMatrix();
+        lanternCordRef.current!.setMatrixAt(idx, dummy.matrix);
 
-      // Bầu đèn lồng lụa đỏ
-      dummy.position.set(x + swayOffsetX, y, z);
-      dummy.rotation.set(0, t * 0.2 + idx, -swayAngle);
-      dummy.updateMatrix();
-      lanternBodyRef.current!.setMatrixAt(idx, dummy.matrix);
+        dummy.position.set(x + swayOffsetX, y, z);
+        dummy.rotation.set(0, t * 0.2 + idx, -swayAngle);
+        dummy.updateMatrix();
+        lanternBodyRef.current!.setMatrixAt(idx, dummy.matrix);
 
-      // Nắp vàng đèn lồng
-      dummy.position.set(x + swayOffsetX, y + 0.58, z);
-      dummy.rotation.set(0, 0, -swayAngle);
-      dummy.updateMatrix();
-      lanternCapRef.current!.setMatrixAt(idx, dummy.matrix);
-    });
+        dummy.position.set(x + swayOffsetX, y + 0.6, z);
+        dummy.rotation.set(0, 0, -swayAngle);
+        dummy.updateMatrix();
+        lanternCapRef.current!.setMatrixAt(idx, dummy.matrix);
 
-    lanternCordRef.current.instanceMatrix.needsUpdate = true;
-    lanternBodyRef.current.instanceMatrix.needsUpdate = true;
-    lanternCapRef.current.instanceMatrix.needsUpdate = true;
+        dummy.position.set(x + swayOffsetX, y - 0.72, z);
+        dummy.rotation.set(Math.PI, 0, -swayAngle * 1.3);
+        dummy.updateMatrix();
+        lanternTasselRef.current!.setMatrixAt(idx, dummy.matrix);
+      });
+
+      lanternCordRef.current.instanceMatrix.needsUpdate = true;
+      lanternBodyRef.current.instanceMatrix.needsUpdate = true;
+      lanternCapRef.current.instanceMatrix.needsUpdate = true;
+      lanternTasselRef.current.instanceMatrix.needsUpdate = true;
+    }
+
+    if (bannerRef.current) {
+      MAIN_HALL_LAYOUT.silkBannerPositions.forEach(([x, y, z], idx) => {
+        const waveZ = Math.sin(t * 1.6 + idx) * 0.035;
+        dummy.position.set(x, y, z);
+        dummy.rotation.set(waveZ, x < 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        bannerRef.current!.setMatrixAt(idx, dummy.matrix);
+      });
+      bannerRef.current.instanceMatrix.needsUpdate = true;
+    }
   });
 
   return (
     <group name="ImperialMainHall">
       {/* ================================================================= */}
-      {/* 1. WOODEN FLOOR (Sàn gỗ nâu bóng + bó vỉa đá cẩm thạch xung quanh) */}
+      {/* 1. WOODEN FLOOR & IMPERIAL CARPET (Sàn Kim Chuyên & Thảm Ngự Đạo) */}
       {/* ================================================================= */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
@@ -318,68 +423,122 @@ export const MainHall: React.FC = () => {
         <planeGeometry args={[MAIN_HALL_LAYOUT.width, MAIN_HALL_LAYOUT.length]} />
       </mesh>
 
-      {/* ================================================================= */}
-      {/* 6. RED CARPET (Thảm đỏ Ngự Đạo thêu viền vàng từ cửa chính tới bệ) */}
-      {/* ================================================================= */}
+      {/* Đường đá bạch ngọc dẫn hai bên mép Thảm Đỏ Ngự Đạo */}
+      {[-2.45, 2.45].map((xBorder) => (
+        <mesh
+          key={`jade-carpet-border-${xBorder}`}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[xBorder, 0.012, 5.2]}
+          receiveShadow
+          material={materials.stoneBase}
+        >
+          <planeGeometry args={[0.35, 33.2]} />
+        </mesh>
+      ))}
+
+      {/* Thảm Đỏ Ngự Đạo dệt Đoàn Long Vàng từ cửa Nam tới chân Bệ Rồng */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.018, 4.5]}
+        position={[0, 0.02, 5.2]}
         receiveShadow
         material={materials.redCarpet}
       >
-        <planeGeometry args={[4.4, 33.5]} />
+        <planeGeometry args={[4.6, 33.2]} />
       </mesh>
 
       {/* ================================================================= */}
-      {/* 2. RED PALACE PILLARS (16 Cột đại điện bằng InstancedMesh)        */}
+      {/* 2. PILLARS: 16 CỘT ĐẠI ĐIỆN SƠN SON + 6 CỘT RỒNG VÀNG BÀN LONG    */}
       {/* ================================================================= */}
       <instancedMesh
-        ref={pillarShaftRef}
-        args={[geometries.pillarShaft, materials.redPillar, MAIN_HALL_LAYOUT.pillarPositions.length]}
+        ref={redPillarShaftRef}
+        args={[
+          geometries.pillarShaft,
+          materials.redPillar,
+          MAIN_HALL_LAYOUT.pillarPositions.length,
+        ]}
+        castShadow
+        receiveShadow
+      />
+      <instancedMesh
+        ref={goldPillarShaftRef}
+        args={[
+          geometries.pillarShaft,
+          materials.goldenDragonPillar,
+          MAIN_HALL_LAYOUT.goldenDragonPillarPositions.length,
+        ]}
         castShadow
         receiveShadow
       />
       <instancedMesh
         ref={pillarBaseRef}
-        args={[geometries.pillarBase, materials.stoneBase, MAIN_HALL_LAYOUT.pillarPositions.length]}
+        args={[geometries.pillarBase, materials.stoneBase, totalPillarsCount]}
         receiveShadow
       />
       <instancedMesh
         ref={pillarRingRef}
-        args={[geometries.pillarGoldRing, materials.warmGold, MAIN_HALL_LAYOUT.pillarPositions.length]}
+        args={[geometries.pillarGoldRing, materials.warmGold, totalPillarsCount]}
       />
       <instancedMesh
-        ref={pillarCapitalRef}
-        args={[geometries.pillarCapital, materials.mutedJade, MAIN_HALL_LAYOUT.pillarPositions.length]}
+        ref={pillarCapLowerRef}
+        args={[geometries.pillarCapitalLower, materials.redPillar, totalPillarsCount]}
+      />
+      <instancedMesh
+        ref={pillarCapUpperRef}
+        args={[geometries.pillarCapitalUpper, materials.paintedBeam, totalPillarsCount]}
       />
 
-      {/* Hệ thống Xà ngang (Hoành phi & Dầm gỗ sơn xanh ngọc / đỏ thếp vàng) */}
-      {[-13.5, -4.5, 4.5, 13.5].map((zPos) => (
-        <group key={`crossbeam-${zPos}`} position={[0, 10.75, zPos]}>
-          <mesh material={materials.redPillar} castShadow>
-            <boxGeometry args={[31.6, 0.55, 0.55]} />
+      {/* Đôi Câu Đối Sơn Son Thếp Vàng treo trên 2 Cột Rồng Vàng tiền điện (Z = -13.0) */}
+      {[-4.5, 4.5].map((xCol) => (
+        <group key={`dragon-pillar-couplet-${xCol}`} position={[xCol, 5.2, -12.44]}>
+          <mesh material={materials.darkWood} castShadow>
+            <boxGeometry args={[0.46, 5.4, 0.08]} />
           </mesh>
-          <mesh position={[0, -0.35, 0]} material={materials.mutedJade}>
-            <boxGeometry args={[31.4, 0.25, 0.42]} />
+          <mesh position={[0, 0, 0.045]} material={materials.warmGold}>
+            <boxGeometry args={[0.36, 5.1, 0.02]} />
           </mesh>
         </group>
       ))}
 
-      {/* Dầm dọc nối hai hàng cột trung tâm */}
-      {[-6.2, 6.2].map((xPos) => (
-        <mesh
-          key={`longbeam-${xPos}`}
-          position={[xPos, 10.8, 0]}
-          material={materials.redPillar}
-        >
-          <boxGeometry args={[0.52, 0.55, 43.6]} />
+      {/* Bức Đại Tự Hoành Phi "CHÍNH ĐẠI QUANG MINH" treo giữa 2 Cột Rồng Vàng phía trên Long Ngai */}
+      <group position={[0, 8.85, -12.9]}>
+        <mesh material={materials.warmGold} castShadow>
+          <boxGeometry args={[7.6, 1.95, 0.28]} />
         </mesh>
+        <mesh position={[0, 0, 0.15]} material={materials.imperialPlaque}>
+          <planeGeometry args={[7.2, 1.65]} />
+        </mesh>
+      </group>
+
+      {/* Hệ thống Xà Ngang & Dầm Hoa Văn Hòa Tỷ Thái Bình theo đúng 5 trục gian */}
+      {[-13.0, -8.5, -1.0, 6.5, 14.0].map((zPos) => (
+        <group key={`crossbeam-${zPos}`} position={[0, 10.75, zPos]}>
+          <mesh material={materials.paintedBeam} castShadow>
+            <boxGeometry args={[31.6, 0.62, 0.58]} />
+          </mesh>
+          <mesh position={[0, -0.38, 0]} material={materials.redPillar}>
+            <boxGeometry args={[31.4, 0.24, 0.44]} />
+          </mesh>
+          <mesh position={[0, -0.52, 0]} material={materials.warmGold}>
+            <boxGeometry args={[31.4, 0.06, 0.46]} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Dầm dọc nối các hàng cột Nội điện (X = ±8.2m) & Ngoại điện (X = ±13.6m) */}
+      {[-13.6, -8.2, 8.2, 13.6].map((xPos) => (
+        <group key={`longbeam-${xPos}`} position={[xPos, 10.8, 0]}>
+          <mesh material={materials.paintedBeam}>
+            <boxGeometry args={[0.56, 0.58, 43.6]} />
+          </mesh>
+          <mesh position={[0, -0.35, 0]} material={materials.redPillar}>
+            <boxGeometry args={[0.44, 0.22, 43.6]} />
+          </mesh>
+        </group>
       ))}
 
       {/* ================================================================= */}
-      {/* 3. PALACE WALLS & COFFERED CEILING (Tường cung điện & Trần tảo tỉnh) */}
+      {/* 3. COFFERED CEILING & CAISSON DRAGON DOME (Tảo Tỉnh Hiên Viên Kính) */}
       {/* ================================================================= */}
-      {/* Trần tảo tỉnh cổ trang (Coffered Ceiling) */}
       <mesh
         rotation={[Math.PI / 2, 0, 0]}
         position={[0, MAIN_HALL_LAYOUT.wallHeight, 0]}
@@ -388,95 +547,131 @@ export const MainHall: React.FC = () => {
         <planeGeometry args={[MAIN_HALL_LAYOUT.width, MAIN_HALL_LAYOUT.length]} />
       </mesh>
 
-      {/* Tường Bắc (Phía sau Long Ngai) */}
-      <group position={[0, 0, -22]}>
-        {/* Chân tường ốp gỗ trầm */}
-        <mesh position={[0, 1.6, 0]} material={materials.darkWood} receiveShadow>
-          <boxGeometry args={[32, 3.2, 0.6]} />
+      {/* Tảo Tỉnh Bát Giác Thếp Vàng & Hiên Viên Kính (Caisson Dome ngay trên Long Ngai) */}
+      <group position={[0, 11.4, -16.8]}>
+        {/* Khung vuông ngoài Tảo Tỉnh */}
+        <mesh position={[0, -0.15, 0]} material={materials.redPillar}>
+          <boxGeometry args={[7.8, 0.35, 7.2]} />
         </mesh>
-        {/* Thân tường màu kem hoàng gia */}
-        <mesh position={[0, 6.8, 0]} material={materials.creamWall} receiveShadow>
-          <boxGeometry args={[32, 7.2, 0.5]} />
+        {/* Tầng bát giác thứ nhất */}
+        <mesh position={[0, -0.45, 0]} material={materials.warmGold}>
+          <cylinderGeometry args={[2.8, 3.3, 0.45, 8]} />
         </mesh>
-        {/* Cổ diềm xanh ngọc & đỏ */}
-        <mesh position={[0, 10.9, 0.1]} material={materials.mutedJade}>
-          <boxGeometry args={[32, 1.1, 0.65]} />
+        {/* Tầng bát giác thứ hai chạm rồng */}
+        <mesh position={[0, -0.82, 0]} material={materials.paintedBeam}>
+          <cylinderGeometry args={[1.9, 2.5, 0.42, 8]} />
+        </mesh>
+        {/* Đỉnh vòm vàng Tảo Tỉnh */}
+        <mesh position={[0, -1.12, 0]} material={materials.warmGold}>
+          <cylinderGeometry args={[0.9, 1.7, 0.35, 16]} />
+        </mesh>
+        {/* Dây treo và Quả cầu Hiên Viên Kính (Xuanyuan Mirror Pearl) */}
+        <mesh position={[0, -1.55, 0]} material={materials.warmGold}>
+          <cylinderGeometry args={[0.04, 0.04, 0.8, 8]} />
+        </mesh>
+        <mesh position={[0, -1.95, 0]} material={materials.warmGold} castShadow>
+          <sphereGeometry args={[0.38, 20, 20]} />
         </mesh>
       </group>
 
-      {/* Tường Tây (Bên trái) & Tường Đông (Bên phải) kèm cửa sổ song gỗ đón nắng */}
+      {/* ================================================================= */}
+      {/* 4. PALACE WALLS & TRADITIONAL WOODEN DOORS                        */}
+      {/* ================================================================= */}
+      {/* Tường Bắc (Phía sau Long Ngai) */}
+      <group position={[0, 0, -22]}>
+        <mesh position={[0, 1.8, 0]} material={materials.redPillar} receiveShadow>
+          <boxGeometry args={[32, 3.6, 0.6]} />
+        </mesh>
+        <mesh position={[0, 6.9, 0]} material={materials.creamWall} receiveShadow>
+          <boxGeometry args={[32, 6.8, 0.5]} />
+        </mesh>
+        <mesh position={[0, 10.8, 0.1]} material={materials.paintedBeam}>
+          <boxGeometry args={[32, 1.2, 0.65]} />
+        </mesh>
+        {/* Hoành phi & Bích họa trang trí tường hậu */}
+        {[-10.5, 10.5].map((xMural) => (
+          <group key={`north-mural-${xMural}`} position={[xMural, 6.2, 0.3]}>
+            <mesh material={materials.warmGold}>
+              <boxGeometry args={[4.4, 3.4, 0.08]} />
+            </mesh>
+            <mesh position={[0, 0, 0.05]} material={materials.dragonScreen}>
+              <planeGeometry args={[4.0, 3.0]} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+
+      {/* Tường Tây (Bên trái) & Tường Đông (Bên phải) có bổ trụ đỏ và cửa sổ song hoa */}
       {[-16, 16].map((xWall) => (
         <group key={`side-wall-${xWall}`} position={[xWall, 0, 0]}>
-          {/* Chân tường ốp gỗ */}
-          <mesh position={[0, 1.5, 0]} material={materials.darkWood} receiveShadow>
-            <boxGeometry args={[0.6, 3.0, 44]} />
+          <mesh position={[0, 1.6, 0]} material={materials.darkWood} receiveShadow>
+            <boxGeometry args={[0.6, 3.2, 44]} />
           </mesh>
-          {/* Tường kem phía trên */}
           <mesh position={[0, 6.8, 0]} material={materials.creamWall} receiveShadow>
-            <boxGeometry args={[0.5, 7.6, 44]} />
+            <boxGeometry args={[0.5, 7.4, 44]} />
           </mesh>
-          {/* Khung cửa sổ song hoa cổ trang phát sáng ấm */}
-          {[-9, 0, 9].map((zWin) => (
+          {/* Các bổ trụ tường màu đỏ theo từng gian */}
+          {[-14, -6.5, 1, 8.5, 16].map((zPilaster) => (
+            <mesh
+              key={`pilaster-${xWall}-${zPilaster}`}
+              position={[xWall < 0 ? 0.26 : -0.26, 5.75, zPilaster]}
+              material={materials.redPillar}
+            >
+              <boxGeometry args={[0.25, 11.5, 0.55]} />
+            </mesh>
+          ))}
+          {/* Cửa sổ song hoa cổ trang đón nắng */}
+          {[-10.25, -2.75, 4.75, 12.25].map((zWin) => (
             <mesh
               key={`window-${xWall}-${zWin}`}
-              position={[xWall < 0 ? 0.28 : -0.28, 5.8, zWin]}
+              position={[xWall < 0 ? 0.28 : -0.28, 6.0, zWin]}
               rotation={[0, xWall < 0 ? Math.PI / 2 : -Math.PI / 2, 0]}
               material={materials.latticeWindow}
             >
-              <planeGeometry args={[5.2, 3.6]} />
+              <planeGeometry args={[5.4, 3.8]} />
             </mesh>
           ))}
         </group>
       ))}
 
-      {/* ================================================================= */}
-      {/* 4. TRADITIONAL WOODEN DOORS (Cửa gỗ 6 cánh phía Nam đinh đồng vàng) */}
-      {/* ================================================================= */}
+      {/* Cổng Gỗ Cổ Trang 6 Cánh Phía Nam (Z = +22) */}
       <group position={[0, 0, 22]}>
-        {/* Tường hai bên cổng chính */}
         <mesh position={[-10.5, 5.75, 0]} material={materials.redPillar} receiveShadow>
           <boxGeometry args={[11, 11.5, 0.65]} />
         </mesh>
         <mesh position={[10.5, 5.75, 0]} material={materials.redPillar} receiveShadow>
           <boxGeometry args={[11, 11.5, 0.65]} />
         </mesh>
-
-        {/* Bức hoành phi và thượng lương trên cổng chính */}
         <mesh position={[0, 9.2, 0]} material={materials.redPillar}>
           <boxGeometry args={[10, 4.6, 0.65]} />
         </mesh>
-        {/* Biển ngạch thếp vàng "THÁI HÒA ĐIỆN" */}
         <mesh position={[0, 8.2, -0.4]} material={materials.warmGold}>
-          <boxGeometry args={[4.6, 1.35, 0.25]} />
+          <boxGeometry args={[5.2, 1.45, 0.25]} />
         </mesh>
-        <mesh position={[0, 8.2, -0.54]} material={materials.darkWood}>
-          <boxGeometry args={[4.2, 1.05, 0.08]} />
+        <mesh position={[0, 8.2, -0.54]} material={materials.imperialPlaque}>
+          <planeGeometry args={[4.8, 1.15]} />
         </mesh>
 
-        {/* Cánh cửa gỗ cổ trang bên trái & phải (Mở 2 cánh giữa đón ánh nắng) */}
         {[-4.1, -2.6, 2.6, 4.1].map((xDoor, idx) => (
           <group key={`door-leaf-${idx}`} position={[xDoor, 3.4, -0.1]}>
             <mesh material={materials.redPillar} castShadow>
               <boxGeometry args={[1.38, 6.8, 0.18]} />
             </mesh>
-            {/* Ô nan hoa cửa trên */}
             <mesh position={[0, 1.2, -0.11]} material={materials.latticeWindow}>
               <planeGeometry args={[1.05, 2.8]} />
             </mesh>
-            {/* Hàng đinh đồng môn hoàng gia */}
-            {[-1.2, -1.7, -2.2].map((yStud, sIdx) => (
+            {[-1.1, -1.6, -2.1, -2.6].map((yStud, sIdx) => (
               <mesh
                 key={`stud-${sIdx}`}
                 position={[0, yStud, -0.12]}
                 material={materials.warmGold}
               >
-                <boxGeometry args={[1.0, 0.08, 0.06]} />
+                <boxGeometry args={[1.05, 0.08, 0.06]} />
               </mesh>
             ))}
           </group>
         ))}
 
-        {/* Hai cánh cửa chính giữa mở hé về phía trong */}
         {[-1.85, 1.85].map((xOpen, idx) => (
           <group
             key={`open-door-${idx}`}
@@ -495,141 +690,253 @@ export const MainHall: React.FC = () => {
       </group>
 
       {/* ================================================================= */}
-      {/* 5. IMPERIAL THRONE & RAISED DAIS (Bệ Rồng 3 cấp & Long Ngai vàng) */}
+      {/* 5. IMPERIAL THRONE DAIS (Bệ Rồng Tu Di Tọa 3 Cấp & Bảo Vật Ngự Tiền) */}
       {/* ================================================================= */}
-      <group name="ImperialThroneDais" position={[0, 0, -16.2]}>
-        {/* Cấp bệ 1 (Rộng nhất) */}
+      <group name="ImperialThroneDais" position={[0, 0, -16.4]}>
+        {/* Cấp bệ 1 (Rộng 16.4m khớp chuẩn hàng cột Nội điện X = ±8.2m) */}
         <mesh position={[0, 0.3, 0]} material={materials.stoneBase} receiveShadow>
-          <boxGeometry args={[16.5, 0.6, 9.2]} />
+          <boxGeometry args={[16.4, 0.6, 9.6]} />
+        </mesh>
+        <mesh position={[0, 0.58, 0]} material={materials.warmGold}>
+          <boxGeometry args={[16.5, 0.06, 9.7]} />
         </mesh>
         <mesh position={[0, 0.61, 0]} material={materials.redCarpet} receiveShadow>
-          <boxGeometry args={[16.1, 0.04, 8.8]} />
+          <boxGeometry args={[15.8, 0.03, 9.2]} />
         </mesh>
 
         {/* Cấp bệ 2 */}
-        <mesh position={[0, 0.9, -0.5]} material={materials.stoneBase} receiveShadow>
-          <boxGeometry args={[13.6, 0.6, 7.6]} />
+        <mesh position={[0, 0.9, -0.4]} material={materials.stoneBase} receiveShadow>
+          <boxGeometry args={[13.2, 0.6, 8.0]} />
         </mesh>
-        <mesh position={[0, 1.21, -0.5]} material={materials.redCarpet} receiveShadow>
-          <boxGeometry args={[13.2, 0.04, 7.2]} />
+        <mesh position={[0, 1.18, -0.4]} material={materials.warmGold}>
+          <boxGeometry args={[13.3, 0.06, 8.1]} />
         </mesh>
-
-        {/* Cấp bệ 3 (Đỉnh Bệ Rồng) */}
-        <mesh position={[0, 1.5, -1.0]} material={materials.stoneBase} receiveShadow>
-          <boxGeometry args={[10.8, 0.6, 6.0]} />
-        </mesh>
-        <mesh position={[0, 1.81, -1.0]} material={materials.redCarpet} receiveShadow>
-          <boxGeometry args={[10.4, 0.04, 5.6]} />
+        <mesh position={[0, 1.21, -0.4]} material={materials.redCarpet} receiveShadow>
+          <boxGeometry args={[12.6, 0.03, 7.6]} />
         </mesh>
 
-        {/* Bậc thang Ngự Đạo và Đan Bệ chạm rồng vàng ở chính giữa */}
+        {/* Cấp bệ 3 (Đỉnh Bệ Rồng nơi đặt Long Ngai) */}
+        <mesh position={[0, 1.5, -0.85]} material={materials.stoneBase} receiveShadow>
+          <boxGeometry args={[10.4, 0.6, 6.4]} />
+        </mesh>
+        <mesh position={[0, 1.78, -0.85]} material={materials.warmGold}>
+          <boxGeometry args={[10.5, 0.06, 6.5]} />
+        </mesh>
+        <mesh position={[0, 1.81, -0.85]} material={materials.redCarpet} receiveShadow>
+          <boxGeometry args={[9.8, 0.03, 6.0]} />
+        </mesh>
+
+        {/* Bậc Tam Cấp Ngự Đạo (Hai làn bậc thang hai bên + Đan Bệ chạm rồng ở giữa) */}
         {[0, 1, 2, 3, 4, 5].map((step) => (
           <mesh
             key={`throne-step-${step}`}
-            position={[0, 0.15 + step * 0.3, 4.8 - step * 0.52]}
+            position={[0, 0.15 + step * 0.3, 5.0 - step * 0.52]}
             material={step % 2 === 0 ? materials.redCarpet : materials.warmGold}
             receiveShadow
           >
-            <boxGeometry args={[4.4, 0.3, 0.56]} />
+            <boxGeometry args={[4.8, 0.3, 0.56]} />
           </mesh>
         ))}
 
-        {/* Lan can đá & trụ rồng thếp vàng bao quanh Bệ Rồng */}
-        {[-7.8, 7.8].map((xBal) => (
-          <mesh
-            key={`balustrade-side-${xBal}`}
-            position={[xBal, 1.05, 0]}
-            material={materials.stoneBase}
-            castShadow
-          >
-            <boxGeometry args={[0.35, 0.9, 8.8]} />
-          </mesh>
-        ))}
-        {[-2.4, 2.4].map((xRail) => (
-          <mesh
-            key={`stair-rail-${xRail}`}
-            position={[xRail, 1.15, 3.4]}
-            rotation={[0.52, 0, 0]}
-            material={materials.warmGold}
-            castShadow
-          >
-            <boxGeometry args={[0.26, 0.45, 3.8]} />
-          </mesh>
+        {/* Tấm Đá Đan Bệ Chạm Nổi Cửu Long Vờn Mây ở chính tâm bậc tam cấp */}
+        <mesh
+          position={[0, 0.96, 3.65]}
+          rotation={[-0.98, 0, 0]}
+          material={materials.danBeStone}
+          receiveShadow
+        >
+          <boxGeometry args={[1.95, 3.45, 0.16]} />
+        </mesh>
+
+        {/* Lan can đá Bạch Ngọc & Cột Vọng Trụ đầu rồng quanh Bệ Rồng */}
+        {[-7.9, 7.9].map((xBal) => (
+          <group key={`balustrade-side-${xBal}`} position={[xBal, 1.0, 0]}>
+            <mesh material={materials.stoneBase} castShadow>
+              <boxGeometry args={[0.3, 0.75, 9.2]} />
+            </mesh>
+            {[-4.2, -1.4, 1.4, 4.2].map((zPost) => (
+              <mesh
+                key={`post-${zPost}`}
+                position={[0, 0.55, zPost]}
+                material={materials.warmGold}
+              >
+                <cylinderGeometry args={[0.16, 0.2, 0.45, 10]} />
+              </mesh>
+            ))}
+          </group>
         ))}
 
-        {/* Bình Phong Cửu Long 5 tấm phía sau Long Ngai */}
-        <group position={[0, 1.82, -3.1]}>
-          <mesh position={[0, 2.2, 0]} material={materials.dragonScreen} castShadow>
-            <boxGeometry args={[6.8, 4.4, 0.24]} />
+        {/* Lan can bậc tam cấp dẫn lên Bệ Rồng */}
+        {[-2.5, -1.05, 1.05, 2.5].map((xRail) => (
+          <group key={`stair-rail-${xRail}`} position={[xRail, 1.15, 3.6]}>
+            <mesh
+              rotation={[0.52, 0, 0]}
+              material={materials.stoneBase}
+              castShadow
+            >
+              <boxGeometry args={[0.22, 0.42, 3.6]} />
+            </mesh>
+            <mesh position={[0, -0.45, 1.65]} material={materials.warmGold}>
+              <cylinderGeometry args={[0.16, 0.18, 0.75, 10]} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Bình Phong Cửu Long 7 Bức Gấp Khúc (Folding Nine-Dragon Screen) */}
+        <group position={[0, 1.82, -3.15]}>
+          {/* Tấm chính giữa */}
+          <mesh position={[0, 2.35, 0]} material={materials.dragonScreen} castShadow>
+            <boxGeometry args={[4.4, 4.7, 0.22]} />
           </mesh>
-          {/* Khung đỉnh bình phong chạm vàng */}
-          <mesh position={[0, 4.5, 0]} material={materials.warmGold}>
-            <boxGeometry args={[7.2, 0.35, 0.34]} />
+          <mesh position={[0, 4.82, 0]} material={materials.warmGold}>
+            <boxGeometry args={[4.6, 0.36, 0.32]} />
           </mesh>
+          {/* Hai cánh bình phong mở góc 25 độ hai bên */}
+          {[-3.15, 3.15].map((xWing) => (
+            <group
+              key={`screen-wing-${xWing}`}
+              position={[xWing, 2.2, 0.42]}
+              rotation={[0, xWing < 0 ? 0.38 : -0.38, 0]}
+            >
+              <mesh material={materials.dragonScreen} castShadow>
+                <boxGeometry args={[2.2, 4.4, 0.2]} />
+              </mesh>
+              <mesh position={[0, 2.3, 0]} material={materials.warmGold}>
+                <boxGeometry args={[2.35, 0.32, 0.28]} />
+              </mesh>
+            </group>
+          ))}
         </group>
 
-        {/* LONG NGAI (Imperial Dragon Throne) */}
-        <group position={[0, 1.82, -1.25]}>
-          {/* Bệ ngai thếp vàng */}
-          <mesh position={[0, 0.32, 0]} material={materials.warmGold} castShadow>
-            <boxGeometry args={[2.6, 0.64, 1.9]} />
-          </mesh>
-          {/* Đệm ngồi hoàng bào */}
-          <mesh position={[0, 0.7, 0.05]} material={materials.cushionBrocade}>
-            <boxGeometry args={[2.1, 0.16, 1.55]} />
-          </mesh>
-          {/* Tựa lưng chạm rồng 3 bậc */}
-          <mesh position={[0, 1.65, -0.78]} material={materials.warmGold} castShadow>
-            <boxGeometry args={[2.3, 1.9, 0.22]} />
-          </mesh>
-          <mesh position={[0, 2.75, -0.78]} material={materials.warmGold} castShadow>
-            <boxGeometry args={[1.5, 0.55, 0.24]} />
-          </mesh>
-          {/* Tay vịn Long Ngai trái & phải */}
-          {[-1.08, 1.08].map((xArm) => (
+        {/* Đôi Quạt Chướng Phiến Lông Công Hoàng Gia (Imperial Ceremonial Fans) */}
+        {[-2.35, 2.35].map((xFan) => (
+          <group key={`ceremonial-fan-${xFan}`} position={[xFan, 1.82, -2.2]}>
+            <mesh position={[0, 1.8, 0]} material={materials.redPillar} castShadow>
+              <cylinderGeometry args={[0.05, 0.06, 3.6, 10]} />
+            </mesh>
             <mesh
-              key={`throne-arm-${xArm}`}
-              position={[xArm, 1.12, 0.05]}
+              position={[0, 3.5, 0]}
+              scale={[1, 1.25, 0.18]}
               material={materials.warmGold}
               castShadow
             >
-              <boxGeometry args={[0.24, 0.72, 1.65]} />
+              <sphereGeometry args={[0.68, 18, 14]} />
             </mesh>
+            <mesh
+              position={[0, 3.5, 0.04]}
+              scale={[1, 1.25, 0.18]}
+              material={materials.mutedJade}
+            >
+              <sphereGeometry args={[0.48, 16, 12]} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* LONG NGAI CỬU LONG THẾP VÀNG (Imperial Dragon Throne) */}
+        <group position={[0, 1.82, -1.25]}>
+          {/* Đế Tu Di Tọa của Long Ngai */}
+          <mesh position={[0, 0.34, 0]} material={materials.warmGold} castShadow>
+            <boxGeometry args={[2.8, 0.68, 2.0]} />
+          </mesh>
+          <mesh position={[0, 0.34, 0.02]} material={materials.redPillar}>
+            <boxGeometry args={[2.6, 0.42, 1.98]} />
+          </mesh>
+          {/* Đệm gấm hoàng bào */}
+          <mesh position={[0, 0.74, 0.05]} material={materials.cushionBrocade}>
+            <boxGeometry args={[2.2, 0.18, 1.6]} />
+          </mesh>
+          {/* Lưng ngai chạm Cửu Long 3 bậc */}
+          <mesh position={[0, 1.72, -0.8]} material={materials.warmGold} castShadow>
+            <boxGeometry args={[2.45, 2.0, 0.24]} />
+          </mesh>
+          <mesh position={[0, 2.9, -0.8]} material={materials.warmGold} castShadow>
+            <boxGeometry args={[1.65, 0.65, 0.26]} />
+          </mesh>
+          {/* Hai tay vịn chạm đầu rồng */}
+          {[-1.14, 1.14].map((xArm) => (
+            <group key={`throne-arm-${xArm}`} position={[xArm, 1.18, 0.05]}>
+              <mesh material={materials.warmGold} castShadow>
+                <boxGeometry args={[0.26, 0.76, 1.72]} />
+              </mesh>
+              <mesh position={[0, 0.32, 0.85]} material={materials.warmGold}>
+                <sphereGeometry args={[0.18, 12, 12]} />
+              </mesh>
+            </group>
           ))}
-          {/* Bục gác chân Hoàng Đế (Footrest) */}
-          <mesh position={[0, 0.14, 1.25]} material={materials.warmGold}>
-            <boxGeometry args={[1.5, 0.28, 0.65]} />
+          {/* Bục gác chân Hoàng Đế (Bình kỷ) */}
+          <mesh position={[0, 0.15, 1.3]} material={materials.warmGold}>
+            <boxGeometry args={[1.6, 0.3, 0.7]} />
           </mesh>
         </group>
 
-        {/* Bửu Cái / Lọng Vàng treo phía trên Long Ngai */}
-        <group position={[0, 7.6, -1.25]}>
-          <mesh material={materials.warmGold}>
-            <cylinderGeometry args={[1.6, 2.3, 0.65, 8]} />
-          </mesh>
-          <mesh position={[0, -0.4, 0]} material={materials.redPillar}>
-            <cylinderGeometry args={[2.25, 2.25, 0.25, 8]} />
-          </mesh>
-        </group>
+        {/* Đôi Tiên Hạc Đồng Cưỡi Quy Chầu Ngai (Twin Imperial Bronze Cranes) */}
+        {[-2.85, 2.85].map((xCrane) => (
+          <group
+            key={`imperial-crane-${xCrane}`}
+            position={[xCrane, 1.82, -0.35]}
+            rotation={[0, xCrane < 0 ? 0.35 : -0.35, 0]}
+          >
+            {/* Bệ Rùa Vàng */}
+            <mesh position={[0, 0.18, 0]} material={materials.warmGold} castShadow>
+              <cylinderGeometry args={[0.38, 0.45, 0.36, 14]} />
+            </mesh>
+            {/* Đôi chân Hạc mảnh cao */}
+            <mesh position={[0, 0.75, 0]} material={materials.warmGold}>
+              <cylinderGeometry args={[0.045, 0.045, 0.9, 8]} />
+            </mesh>
+            {/* Thân Hạc đồng thếp vàng */}
+            <mesh
+              position={[0, 1.25, -0.05]}
+              rotation={[0.35, 0, 0]}
+              scale={[0.85, 1.35, 0.95]}
+              material={materials.warmGold}
+              castShadow
+            >
+              <sphereGeometry args={[0.32, 14, 12]} />
+            </mesh>
+            {/* Cổ Hạc vươn cao uyển chuyển */}
+            <mesh
+              position={[0, 1.88, 0.14]}
+              rotation={[-0.18, 0, 0]}
+              material={materials.warmGold}
+            >
+              <cylinderGeometry args={[0.055, 0.085, 0.85, 10]} />
+            </mesh>
+            {/* Đầu Hạc đội mũ đỏ ngậm cành sen vàng */}
+            <mesh position={[0, 2.32, 0.22]} material={materials.warmGold}>
+              <sphereGeometry args={[0.11, 10, 10]} />
+            </mesh>
+            <mesh position={[0, 2.41, 0.22]} material={materials.lanternSilk}>
+              <sphereGeometry args={[0.055, 8, 8]} />
+            </mesh>
+            <mesh
+              position={[0, 2.3, 0.42]}
+              rotation={[Math.PI / 2, 0, 0]}
+              material={materials.warmGold}
+            >
+              <coneGeometry args={[0.04, 0.35, 8]} />
+            </mesh>
+          </group>
+        ))}
 
-        {/* Đôi Lư Hương Đồng (Incense Burners) chầu hai bên Bệ Rồng */}
-        {[-4.2, 4.2].map((xBurner) => (
-          <group key={`incense-burner-${xBurner}`} position={[xBurner, 0.62, 2.6]}>
+        {/* Đôi Đỉnh Hương Đồng Tam Túc (Twin Bronze Censers) ở thềm Bệ Rồng */}
+        {[-3.6, 3.6].map((xBurner) => (
+          <group key={`incense-burner-${xBurner}`} position={[xBurner, 0.62, 3.2]}>
             <mesh position={[0, 0.45, 0]} material={materials.warmGold} castShadow>
-              <cylinderGeometry args={[0.45, 0.35, 0.9, 12]} />
+              <cylinderGeometry args={[0.48, 0.38, 0.9, 14]} />
             </mesh>
-            <mesh position={[0, 1.05, 0]} material={materials.warmGold} castShadow>
-              <sphereGeometry args={[0.52, 14, 12]} />
+            <mesh position={[0, 1.1, 0]} material={materials.warmGold} castShadow>
+              <sphereGeometry args={[0.56, 16, 14]} />
             </mesh>
-            <mesh position={[0, 1.68, 0]} material={materials.warmGold}>
-              <coneGeometry args={[0.38, 0.55, 8]} />
+            <mesh position={[0, 1.76, 0]} material={materials.warmGold}>
+              <coneGeometry args={[0.42, 0.6, 8]} />
             </mesh>
           </group>
         ))}
       </group>
 
       {/* ================================================================= */}
-      {/* 7 & 8. WOODEN TABLES & OFFICIAL CHAIRS (12 bộ bàn ghế Instanced)  */}
+      {/* 7 & 8. WOODEN TABLES, SCROLLS & OFFICIAL CHAIRS (InstancedMesh)   */}
       {/* ================================================================= */}
       <instancedMesh
         ref={tableTopRef}
@@ -649,6 +956,14 @@ export const MainHall: React.FC = () => {
           MAIN_HALL_LAYOUT.officialDeskPositions.length,
         ]}
         castShadow
+      />
+      <instancedMesh
+        ref={tableScrollRef}
+        args={[
+          geometries.tableScroll,
+          materials.warmGold,
+          MAIN_HALL_LAYOUT.officialDeskPositions.length,
+        ]}
       />
       <instancedMesh
         ref={chairSeatRef}
@@ -678,7 +993,7 @@ export const MainHall: React.FC = () => {
       />
 
       {/* ================================================================= */}
-      {/* 9. DECORATIVE LANTERNS (12 Đèn lồng lụa đỏ đung đưa nhẹ)          */}
+      {/* 9. DECORATIVE LANTERNS & SILK BANNERS (InstancedMesh)             */}
       {/* ================================================================= */}
       <instancedMesh
         ref={lanternCordRef}
@@ -704,9 +1019,25 @@ export const MainHall: React.FC = () => {
           MAIN_HALL_LAYOUT.lanternPositions.length,
         ]}
       />
+      <instancedMesh
+        ref={lanternTasselRef}
+        args={[
+          geometries.lanternTassel,
+          materials.warmGold,
+          MAIN_HALL_LAYOUT.lanternPositions.length,
+        ]}
+      />
+      <instancedMesh
+        ref={bannerRef}
+        args={[
+          geometries.bannerCloth,
+          materials.silkBanner,
+          MAIN_HALL_LAYOUT.silkBannerPositions.length,
+        ]}
+      />
 
       {/* ================================================================= */}
-      {/* 10. TRADITIONAL ORNAMENTS (8 Bình hoa sứ Thanh Hoa trên đôn gỗ)   */}
+      {/* 10. TRADITIONAL ORNAMENTS (10 Bình hoa sứ Thanh Hoa trên đôn gỗ)  */}
       {/* ================================================================= */}
       <instancedMesh
         ref={vaseStandRef}

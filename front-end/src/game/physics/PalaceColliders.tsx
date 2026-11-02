@@ -8,7 +8,7 @@ import { MAIN_HALL_LAYOUT } from '../world/MainHall';
 
 /**
  * Hệ thống Collider vật lý cho Chính điện bằng @react-three/rapier:
- * - Chặn nhân vật đi xuyên sàn, tường bao, 16 cột gỗ đỏ, 12 bàn ghế quan viên và Long Ngai.
+ * - Đồng bộ tự động với tọa độ 16 Cột Đại Điện Sơn Son + 6 Cột Bàn Long Thếp Vàng mới.
  * - Tạo mặt dốc (Ramp Collider) mượt mà tại bậc tam cấp Bệ Rồng để Hoàng Đế có thể bước lên Bệ Rồng.
  */
 export const PalaceColliders: React.FC = () => {
@@ -18,20 +18,25 @@ export const PalaceColliders: React.FC = () => {
       <CuboidCollider args={[16, 0.5, 22]} position={[0, -0.5, 0]} />
 
       {/* 4 Bức tường bao quanh Chính điện */}
-      {/* Tường Bắc */}
       <CuboidCollider args={[16, 6, 0.5]} position={[0, 6, -22]} />
-      {/* Tường Nam */}
       <CuboidCollider args={[16, 6, 0.5]} position={[0, 6, 22]} />
-      {/* Tường Tây */}
       <CuboidCollider args={[0.5, 6, 22]} position={[-16, 6, 0]} />
-      {/* Tường Đông */}
       <CuboidCollider args={[0.5, 6, 22]} position={[16, 6, 0]} />
 
       {/* 16 Cột gỗ đỏ đại điện */}
       {MAIN_HALL_LAYOUT.pillarPositions.map(([x, , z], idx) => (
         <CylinderCollider
           key={`pillar-col-${idx}`}
-          args={[5.5, 0.65]}
+          args={[5.5, 0.68]}
+          position={[x, 5.5, z]}
+        />
+      ))}
+
+      {/* 6 Cột Bàn Long Thếp Vàng trên Bệ Rồng */}
+      {MAIN_HALL_LAYOUT.goldenDragonPillarPositions.map(([x, , z], idx) => (
+        <CylinderCollider
+          key={`gold-pillar-col-${idx}`}
+          args={[5.5, 0.7]}
           position={[x, 5.5, z]}
         />
       ))}
@@ -50,22 +55,22 @@ export const PalaceColliders: React.FC = () => {
       })}
 
       {/* Bệ Rồng (Hai cánh trái/phải của bệ cao chặn đi xuyên ngang) */}
-      <CuboidCollider args={[3.0, 0.9, 4.5]} position={[-5.2, 0.9, -16.2]} />
-      <CuboidCollider args={[3.0, 0.9, 4.5]} position={[5.2, 0.9, -16.2]} />
+      <CuboidCollider args={[2.8, 0.9, 4.8]} position={[-5.4, 0.9, -16.4]} />
+      <CuboidCollider args={[2.8, 0.9, 4.8]} position={[5.4, 0.9, -16.4]} />
 
       {/* Mặt sàn đỉnh Bệ Rồng (Nơi đặt Long Ngai, cao Y = 1.82m) */}
-      <CuboidCollider args={[5.4, 0.91, 3.0]} position={[0, 0.91, -17.2]} />
+      <CuboidCollider args={[5.2, 0.91, 3.2]} position={[0, 0.91, -17.25]} />
 
       {/* Mặt dốc Ngự Đạo giữa Bệ Rồng (Cho phép nhân vật bước mượt từ sàn lên Bệ Rồng) */}
       <CuboidCollider
-        args={[2.2, 0.15, 2.2]}
-        position={[0, 0.85, -12.8]}
+        args={[2.4, 0.15, 2.3]}
+        position={[0, 0.85, -12.9]}
         rotation={[0.46, 0, 0]}
       />
 
       {/* Collider chặn xuyên qua Long Ngai & Bình Phong Cửu Long */}
-      <CuboidCollider args={[1.4, 2.0, 1.1]} position={[0, 2.8, -17.45]} />
-      <CuboidCollider args={[3.6, 2.5, 0.3]} position={[0, 3.2, -19.3]} />
+      <CuboidCollider args={[1.45, 2.0, 1.1]} position={[0, 2.8, -17.65]} />
+      <CuboidCollider args={[4.2, 2.5, 0.35]} position={[0, 3.2, -19.55]} />
     </RigidBody>
   );
 };
