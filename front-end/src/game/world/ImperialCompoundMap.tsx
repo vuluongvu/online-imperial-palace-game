@@ -10,6 +10,13 @@ import {
 } from './compoundLayout';
 import { TieredPalaceRoof } from './ImperialPalaceRoof';
 import { createImperialRoofGeometry } from './roofGeometry';
+import {
+  LaiBoInterior,
+  HinhBoInterior,
+  HanLamVienInterior,
+  NguThuPhongInterior,
+} from './MinistryInteriors';
+import { PALACE_QUEST_CHAIN } from '../../data/palaceGameplayData';
 import { Player } from '../characters/Player';
 import { useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
@@ -28,10 +35,27 @@ const PalaceBuildingMesh: React.FC<{
   const isGate = zone.id === 'cong_chinh';
   const isMainHall = zone.id === 'chinh_dien';
 
+  const playerPos = useGameStore((s) => s.playerPosition);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
   const activeWindow = useUiStore((s) => s.activeWindow);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
   const isAnyModalOpen = Boolean(activeInteractableId || activeWindow || showAssetModal);
+
+  const activeQuest = useMemo(
+    () => PALACE_QUEST_CHAIN.find((q) => q.stepNumber === currentQuestStep),
+    [currentQuestStep]
+  );
+  const isQuestTargetBuilding = activeQuest?.targetBuildingId === zone.id;
+
+  // Khoảng cách từ người chơi đến công trình
+  const distToPlayer = Math.hypot(
+    playerPos[0] - zone.position[0],
+    playerPos[2] - zone.position[2]
+  );
+  // Hiển thị nhãn công trình khi người chơi ở cự ly hợp lý (<= 36m) hoặc là Chính Điện / Công trình mục tiêu
+  const showBuildingLabel =
+    !isAnyModalOpen && (distToPlayer <= 36 || isMainHall || isQuestTargetBuilding);
 
   return (
     <group position={zone.position}>
@@ -77,53 +101,66 @@ const PalaceBuildingMesh: React.FC<{
         </group>
       )}
 
-      {/* Thân tòa điện (Tường gỗ đỏ + Cửa bức bàn + Hàng cột hiên) */}
-      <group position={[0, isGate ? 4.8 : isMainHall ? 1.4 : 0.9, 0]}>
-        <mesh
-          position={[0, h * 0.28, 0]}
-          material={materials.wallRed}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[w * 0.82, h * 0.56, d * 0.78]} />
-        </mesh>
-
-        {/* Khung cửa chính thếp vàng */}
-        <mesh
-          position={[0, h * 0.24, (d * 0.78) / 2 + 0.06]}
-          material={materials.goldTrim}
-        >
-          <boxGeometry args={[w * 0.28, h * 0.44, 0.12]} />
-        </mesh>
-        <mesh
-          position={[0, h * 0.24, (d * 0.78) / 2 + 0.14]}
-          material={materials.darkWood}
-        >
-          <boxGeometry args={[w * 0.24, h * 0.4, 0.08]} />
-        </mesh>
-
-        {/* Hàng cột đỏ mặt tiền tòa điện */}
-        {[-0.38, -0.19, 0.19, 0.38].map((ratio, idx) => (
+      {/* =================================================================== */}
+      {/* THÂN TÒA ĐIỆN: CÓ KHÔNG GIAN NỘI THẤT 3D CHO 4 NHA MÔN              */}
+      {/* =================================================================== */}
+      {zone.id === 'lai_bo' ? (
+        <LaiBoInterior materials={materials} />
+      ) : zone.id === 'hinh_bo' ? (
+        <HinhBoInterior materials={materials} />
+      ) : zone.id === 'han_lam_vien' ? (
+        <HanLamVienInterior materials={materials} />
+      ) : zone.id === 'ngu_thu_phong' ? (
+        <NguThuPhongInterior materials={materials} />
+      ) : (
+        /* Thân tòa điện ngoài cho Chính Điện & Cổng */
+        <group position={[0, isGate ? 4.8 : isMainHall ? 1.4 : 0.9, 0]}>
           <mesh
-            key={`col-${idx}`}
-            position={[w * ratio, h * 0.28, d * 0.44]}
-            material={materials.pillarRed}
+            position={[0, h * 0.28, 0]}
+            material={materials.wallRed}
             castShadow
+            receiveShadow
           >
-            <cylinderGeometry args={[0.24, 0.26, h * 0.56, 12]} />
+            <boxGeometry args={[w * 0.82, h * 0.56, d * 0.78]} />
           </mesh>
-        ))}
 
-        {/* Hệ Thống Mái Cung Đình Cổ Trang (Mái Đao Trùng Diêm / Đơn Diêm Chuẩn Cung Đình) */}
-        <TieredPalaceRoof zone={zone} materials={materials} />
-      </group>
+          {/* Khung cửa chính thếp vàng */}
+          <mesh
+            position={[0, h * 0.24, (d * 0.78) / 2 + 0.06]}
+            material={materials.goldTrim}
+          >
+            <boxGeometry args={[w * 0.28, h * 0.44, 0.12]} />
+          </mesh>
+          <mesh
+            position={[0, h * 0.24, (d * 0.78) / 2 + 0.14]}
+            material={materials.darkWood}
+          >
+            <boxGeometry args={[w * 0.24, h * 0.4, 0.08]} />
+          </mesh>
 
-      {/* Biển Tên Tòa Điện Nổi 3D (Tự ẩn khi mở bảng menu) */}
-      {!isAnyModalOpen && (
+          {/* Hàng cột đỏ mặt tiền tòa điện */}
+          {[-0.38, -0.19, 0.19, 0.38].map((ratio, idx) => (
+            <mesh
+              key={`col-${idx}`}
+              position={[w * ratio, h * 0.28, d * 0.44]}
+              material={materials.pillarRed}
+              castShadow
+            >
+              <cylinderGeometry args={[0.24, 0.26, h * 0.56, 12]} />
+            </mesh>
+          ))}
+        </group>
+      )}
+
+      {/* Hệ Thống Mái Cung Đình Cổ Trang (Mái Đao Trùng Diêm / Đơn Diêm Chuẩn Cung Đình) */}
+      <TieredPalaceRoof zone={zone} materials={materials} />
+
+      {/* Biển Tên Tòa Điện Nổi 3D (Tự ẩn khi mở bảng menu hoặc ở quá xa) */}
+      {showBuildingLabel && (
         <Html
           position={[0, zone.labelHeight + (isGate ? 3.8 : 1.2), 0]}
           center
-          distanceFactor={48}
+          distanceFactor={32}
           zIndexRange={[10, 0]}
         >
           <div

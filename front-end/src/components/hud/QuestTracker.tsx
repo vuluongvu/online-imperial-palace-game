@@ -87,7 +87,7 @@ export const QuestTracker: React.FC = () => {
               </div>
 
               <div className="quest-active-req">
-                • {currentQuest.requirementText} (0/1)
+                {currentQuest.requirementText}
               </div>
 
               <div className="quest-active-footer">

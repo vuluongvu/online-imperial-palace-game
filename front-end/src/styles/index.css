@@ -132,11 +132,23 @@ body,
   white-space: nowrap;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
+  transition: opacity 0.16s ease, transform 0.16s ease, background 0.16s ease;
+}
+
+.interactable-3d-tag.minimal {
+  opacity: 0.88;
+  background: rgba(22, 14, 10, 0.84);
+  border: 1px solid rgba(229, 169, 50, 0.45);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .interactable-3d-tag.nearby {
   border-color: var(--imperial-gold);
-  background: var(--primary-red);
+  background: rgba(36, 18, 12, 0.96);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  transform: scale(1.04);
 }
 
 .quest-excl-badge {

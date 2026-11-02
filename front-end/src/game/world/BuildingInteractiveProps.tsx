@@ -159,6 +159,7 @@ const InteractivePropMesh: React.FC<{
 
 export const BuildingInteractiveProps: React.FC = () => {
   const sceneMode = useGameStore((s) => s.sceneMode);
+  const playerPos = useGameStore((s) => s.playerPosition);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
   const nearbyInteractableId = useGameplayStore((s) => s.nearbyInteractableId);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
@@ -219,20 +220,35 @@ export const BuildingInteractiveProps: React.FC = () => {
               ? 1.55
               : 2.35;
 
+        // Tính cự ly từ nhân vật đến đối tượng
+        const dx = playerPos[0] - entity.position[0];
+        const dz = playerPos[2] - entity.position[2];
+        const dist = Math.hypot(dx, dz);
+
+        // Hiển thị theo khoảng cách chuẩn RPG:
+        // 1. Ở xa (> 8.0m): KHÔNG hiển thị nhãn chữ HTML (tránh rối màn hình)
+        // 2. Lại gần (4.5m < dist <= 8.0m): Chỉ hiển thị nhãn tên nhỏ gọn, mờ nhẹ nhận biết
+        // 3. Ở đủ gần tương tác (dist <= 4.5m hoặc isNearby): Hiển thị phím [E] Tương tác
+        // 4. Nếu đang mở bảng menu/đối thoại: Tự ẩn toàn bộ 100%
+        const shouldRenderTag = !isAnyModalOpen && dist <= 8.0;
+        const showFullPrompt = dist <= 4.5 || isNearby;
+
         return (
           <group
             key={entity.id}
             position={entity.position}
             rotation={[0, entity.rotationY ?? 0, 0]}
           >
-            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất */}
-            <mesh
-              position={[0, 0.05, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              material={isNearby || isQuestTarget ? materials.ringActive : materials.ringIdle}
-            >
-              <ringGeometry args={[0.72, 0.92, 24]} />
-            </mesh>
+            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất (chỉ hiện khi trong tầm nhận biết <= 8m) */}
+            {dist <= 8.0 && (
+              <mesh
+                position={[0, 0.05, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+                material={isNearby || isQuestTarget ? materials.ringActive : materials.ringIdle}
+              >
+                <ringGeometry args={[0.72, 0.92, 24]} />
+              </mesh>
+            )}
 
             {/* Cột Sáng Vàng Dẫn Đường 3D (Waypoint Light Beacon) cho mục tiêu nhiệm vụ */}
             {isQuestTarget && (
@@ -274,16 +290,16 @@ export const BuildingInteractiveProps: React.FC = () => {
               <InteractivePropMesh entity={entity} materials={materials} />
             )}
 
-            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên (Tự ẩn khi mở bảng menu) */}
-            {!isAnyModalOpen && (
+            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên */}
+            {shouldRenderTag && (
               <Html
                 position={[0, labelY, 0]}
                 center
-                distanceFactor={sceneMode === 'compound_map' ? 32 : 16}
+                distanceFactor={sceneMode === 'compound_map' ? 24 : 16}
                 zIndexRange={[10, 0]}
               >
                 <div
-                  className={`interactable-3d-tag ${isNearby ? 'nearby' : ''} ${
+                  className={`interactable-3d-tag ${showFullPrompt ? 'nearby' : 'minimal'} ${
                     isQuestTarget ? 'quest-target' : ''
                   }`}
                   onClick={(e) => {
@@ -293,13 +309,15 @@ export const BuildingInteractiveProps: React.FC = () => {
                   title="Nhấn chuột hoặc lại gần bấm phím E để tương tác"
                 >
                   {isQuestTarget && (
-                    <span className="quest-excl-badge">❗ Nhiệm Vụ</span>
+                    <span className="quest-excl-badge">
+                      {showFullPrompt ? '❗ Nhiệm Vụ' : '◆'}
+                    </span>
                   )}
                   <span className="interactable-tag-name">
                     {entity.type === 'npc' ? '👤 ' : '✨ '}
                     {entity.name}
                   </span>
-                  {isNearby && (
+                  {showFullPrompt && (
                     <span className="interactable-key-pill">[E] Tương tác</span>
                   )}
                 </div>

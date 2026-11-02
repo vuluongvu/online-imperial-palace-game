@@ -102,9 +102,20 @@ const STATIC_BOX_OBSTACLES: BoxObstacle[] = [
   { minX: -2.6, maxX: 2.6, minZ: -26.8, maxZ: -24.4 }, // Ngự Án Hậu Sảnh & Bình phong
 ];
 
-// Các khối kiến trúc trên Bản đồ Quần thể Hoàng Cung (trừ Cổng Chính có vòm đi qua ở giữa)
+// Danh sách các công trình có nội thất 3D đi bộ vào trực tiếp (không bị chặn kín nguyên khối)
+const OPEN_INTERIOR_BUILDING_IDS = new Set([
+  'cong_chinh',
+  'lai_bo',
+  'hinh_bo',
+  'han_lam_vien',
+  'ngu_thu_phong',
+  'ngu_hoa_vien',
+]);
+
+// Các khối kiến trúc trên Bản đồ Quần thể Hoàng Cung
 const COMPOUND_BUILDING_BOXES: BoxObstacle[] = [
-  ...PALACE_LANDMARKS.filter((l) => l.id !== 'cong_chinh').map((l) => {
+  // Chính Điện Thái Hòa vẫn giữ khối bao ngoài (để tương tác chuyển cảnh vào Nội Điện)
+  ...PALACE_LANDMARKS.filter((l) => !OPEN_INTERIOR_BUILDING_IDS.has(l.id)).map((l) => {
     const [x, , z] = l.position;
     const [w, , d] = l.size;
     return {
@@ -117,6 +128,56 @@ const COMPOUND_BUILDING_BOXES: BoxObstacle[] = [
   // Hai mố tường hai bên vòm Cổng Chính (Để hở cổng vòm X từ -2.2 đến +2.2)
   { minX: -42, maxX: -2.3, minZ: 34.8, maxZ: 41.2 },
   { minX: 2.3, maxX: 42, minZ: 34.8, maxZ: 41.2 },
+
+  // =========================================================================
+  // 1. TƯỜNG BAO & NỘI THẤT LẠI BỘ (Tâm: [-26, 0, -6], Cửa mở Đông tại X = -19.6, Z ∈ [-7.4, -4.6])
+  // =========================================================================
+  { minX: -32.6, maxX: -31.4, minZ: -10.4, maxZ: -1.6 }, // Vách Hậu Tây
+  { minX: -32.6, maxX: -19.4, minZ: -10.4, maxZ: -9.4 }, // Vách Bắc
+  { minX: -32.6, maxX: -19.4, minZ: -2.6, maxZ: -1.6 },  // Vách Nam
+  { minX: -20.6, maxX: -19.4, minZ: -10.4, maxZ: -7.4 }, // Vách Mặt Tiền Bắc
+  { minX: -20.6, maxX: -19.4, minZ: -4.6, maxZ: -1.6 },  // Vách Mặt Tiền Nam (Cửa hở -7.4 -> -4.6)
+  { minX: -31.2, maxX: -28.4, minZ: -7.5, maxZ: -4.5 }, // Án thư & Bình phong Thượng Thư
+  { minX: -28.0, maxX: -25.5, minZ: -9.6, maxZ: -7.8 }, // Bàn bổ nhiệm
+  { minX: -28.0, maxX: -25.5, minZ: -4.2, maxZ: -2.4 }, // Tủ hồ sơ công trạng
+
+  // =========================================================================
+  // 2. TƯỜNG BAO & NỘI THẤT HÌNH BỘ (Tâm: [26, 0, -6], Cửa mở Tây tại X = 19.6, Z ∈ [-7.4, -4.6])
+  // =========================================================================
+  { minX: 31.4, maxX: 32.6, minZ: -10.4, maxZ: -1.6 }, // Vách Hậu Đông
+  { minX: 19.4, maxX: 32.6, minZ: -10.4, maxZ: -9.4 }, // Vách Bắc
+  { minX: 19.4, maxX: 32.6, minZ: -2.6, maxZ: -1.6 },  // Vách Nam
+  { minX: 19.4, maxX: 20.6, minZ: -10.4, maxZ: -7.4 }, // Vách Mặt Tiền Bắc
+  { minX: 19.4, maxX: 20.6, minZ: -4.6, maxZ: -1.6 },  // Vách Mặt Tiền Nam (Cửa hở -7.4 -> -4.6)
+  { minX: 28.4, maxX: 31.2, minZ: -7.5, maxZ: -4.5 }, // Bàn Công Đường & Bình phong
+  { minX: 25.5, maxX: 28.0, minZ: -9.6, maxZ: -7.8 }, // Bàn mật án
+  { minX: 25.5, maxX: 28.0, minZ: -4.2, maxZ: -2.4 }, // Rương vật chứng
+
+  // =========================================================================
+  // 3. TƯỜNG BAO & NỘI THẤT HÀN LÂM VIỆN (Tâm: [-27, 0, 18], Cửa mở Đông tại X = -20.0, Z ∈ [16.5, 19.5])
+  // =========================================================================
+  { minX: -33.8, maxX: -32.6, minZ: 13.2, maxZ: 22.8 }, // Vách Hậu Tây
+  { minX: -33.8, maxX: -20.0, minZ: 13.2, maxZ: 14.2 }, // Vách Bắc
+  { minX: -33.8, maxX: -20.0, minZ: 21.8, maxZ: 22.8 }, // Vách Nam
+  { minX: -21.0, maxX: -19.8, minZ: 13.2, maxZ: 16.5 }, // Vách Mặt Tiền Bắc
+  { minX: -21.0, maxX: -19.8, minZ: 19.5, maxZ: 22.8 }, // Vách Mặt Tiền Nam (Cửa hở 16.5 -> 19.5)
+  { minX: -32.5, maxX: -29.8, minZ: 16.6, maxZ: 19.4 }, // Bàn Chủ Khảo Chu Văn
+  { minX: -29.5, maxX: -27.5, minZ: 14.6, maxZ: 16.6 }, // Bàn khảo thí Bắc
+  { minX: -29.5, maxX: -27.5, minZ: 19.4, maxZ: 21.4 }, // Bàn khảo thí Nam
+  { minX: -31.5, maxX: -24.5, minZ: 13.8, maxZ: 15.0 }, // Giá sách Bắc
+  { minX: -31.5, maxX: -24.5, minZ: 21.0, maxZ: 22.2 }, // Giá sách Nam
+
+  // =========================================================================
+  // 4. TƯỜNG BAO & NỘI THẤT NGỰ THƯ PHÒNG (Tâm: [0, 0, -31], Cửa mở Nam tại Z = -26.8, X ∈ [-1.6, 1.6])
+  // =========================================================================
+  { minX: -7.8, maxX: 7.8, minZ: -35.6, maxZ: -34.6 }, // Vách Hậu Bắc
+  { minX: -7.8, maxX: -6.8, minZ: -35.6, maxZ: -26.6 }, // Vách Tây
+  { minX: 6.8, maxX: 7.8, minZ: -35.6, maxZ: -26.6 },  // Vách Đông
+  { minX: -7.8, maxX: -1.6, minZ: -27.6, maxZ: -26.6 }, // Vách Mặt Tiền Tây
+  { minX: 1.6, maxX: 7.8, minZ: -27.6, maxZ: -26.6 },  // Vách Mặt Tiền Đông (Cửa hở -1.6 -> +1.6)
+  { minX: -2.0, maxX: 2.0, minZ: -34.8, maxZ: -31.8 }, // Ngự Án Hoàng Đế & Bình phong
+  { minX: 2.8, maxX: 5.0, minZ: -32.6, maxZ: -30.4 },  // Sa bàn Bản đồ
+  { minX: -5.0, maxX: -2.8, minZ: -32.6, maxZ: -30.4 }, // Giá sách thực lục
 ];
 
 function resolveCircleAABB(
