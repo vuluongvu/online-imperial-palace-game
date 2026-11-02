@@ -22,6 +22,20 @@ import {
 } from '../data/palaceGameplayData';
 import { useGameStore } from './useGameStore';
 
+export type InteractionView = 'dialogue' | 'panel';
+
+// Thời gian hiển thị theo loại sự kiện (sự kiện quan trọng hiển thị lâu hơn)
+const TOAST_DURATION_MS: Record<GameplayToast['type'], number> = {
+  quest_accept: 4200,
+  quest_complete: 4600,
+  reward: 3200,
+  promotion: 6500,
+  edict: 5200,
+  player: 4000,
+  info: 3200,
+  error: 4200,
+};
+
 export interface MeritLogEntry {
   id: string;
   reason: string;
@@ -72,14 +86,19 @@ interface GameplayState {
   overheadBubbleText: string | null;
   banquetHostedCount: number;
 
-  // Hệ thống Thông báo nổi (Toasts)
+  // Hệ thống Thông báo nổi (Toasts) & Nhật ký thông báo (kênh Hệ thống)
   toasts: GameplayToast[];
+  notificationLog: GameplayToast[];
+
+  // Chế độ hiển thị khi tương tác: hội thoại NPC hoặc bảng chức năng công trình
+  interactionView: InteractionView;
 
   // Actions
   setNearbyInteractableId: (id: string | null) => void;
   openInteraction: (interactableId: string, tabOverride?: string) => void;
   openBuildingModal: (buildingId: string, tabOverride?: string) => void;
   setActiveTab: (tab: string) => void;
+  showInteractionPanel: (tab?: string) => void;
   closeInteraction: () => void;
 
   // Quest Actions
@@ -166,6 +185,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   banquetHostedCount: 0,
 
   toasts: [],
+  notificationLog: [],
+  interactionView: 'panel',
 
   setNearbyInteractableId: (nearbyInteractableId) => set({ nearbyInteractableId }),
 
@@ -173,8 +194,12 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     const entity = INTERACTABLE_ENTITIES.find((e) => e.id === interactableId);
     if (!entity) return;
     useGameStore.getState().exitMouseLock();
+    // NPC mở hội thoại trước; vật thể (hoặc khi chỉ định tab) mở thẳng bảng chức năng
+    const view: InteractionView =
+      entity.type === 'npc' && !tabOverride ? 'dialogue' : 'panel';
     set({
       activeInteractableId: interactableId,
+      interactionView: view,
       activeTab: tabOverride ?? entity.defaultTab,
       lastVerdictFeedback: null,
     });
@@ -197,18 +222,27 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     get().openInteraction(entity.id, tabOverride);
   },
 
-  setActiveTab: (activeTab) => set({ activeTab }),
+  setActiveTab: (activeTab) => set({ activeTab, interactionView: 'panel' }),
 
-  closeInteraction: () => set({ activeInteractableId: null }),
+  showInteractionPanel: (tab) =>
+    set((state) => ({
+      interactionView: 'panel',
+      activeTab: tab ?? state.activeTab,
+    })),
+
+  closeInteraction: () =>
+    set({ activeInteractableId: null, interactionView: 'panel' }),
 
   pushToast: (type, title, message) => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const toast: GameplayToast = { id, type, title, message, createdAt: Date.now() };
     set((state) => ({
-      toasts: [...state.toasts.slice(-3), { id, type, title, message }],
+      toasts: [...state.toasts.slice(-5), toast],
+      notificationLog: [...state.notificationLog.slice(-39), toast],
     }));
     setTimeout(() => {
       get().dismissToast(id);
-    }, 5200);
+    }, TOAST_DURATION_MS[type]);
   },
 
   dismissToast: (id) =>
@@ -257,21 +291,21 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     }
 
     get().pushToast(
-      'quest',
-      `Hoàn Thành ${quest.title}!`,
-      `Thưởng: +${quest.reward.merit} Công Trạng, +${quest.reward.coins} Ngân Lượng${
-        quest.reward.itemTitle ? ` • Vật phẩm: ${quest.reward.itemTitle}` : ''
+      'quest_complete',
+      quest.title,
+      `+${quest.reward.merit} công trạng · +${quest.reward.coins} ngân lượng${
+        quest.reward.itemTitle ? ` · ${quest.reward.itemTitle}` : ''
       }`
     );
 
     if (nextQuest) {
       setTimeout(() => {
         get().pushToast(
-          'info',
-          `Nhiệm Vụ Mới: ${nextQuest.title}`,
-          `Điểm đến tiếp theo: ${nextQuest.targetBuildingName} — ${nextQuest.requirementText}`
+          'quest_accept',
+          nextQuest.title,
+          `${nextQuest.targetBuildingName} — ${nextQuest.requirementText}`
         );
-      }, 900);
+      }, 1400);
     }
   },
 
@@ -312,11 +346,8 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       ],
     }));
 
-    get().pushToast(
-      'reward',
-      'Đã Ban Bố Thánh Chỉ Mới!',
-      `Chiếu chỉ "${cleanTitle}" đã được niêm yết trên Hoàng Bảng (+35 Công Trạng).`
-    );
+    get().pushToast('edict', cleanTitle, cleanContent);
+    get().pushToast('reward', 'Ban bố chiếu chỉ', '+35 công trạng');
   },
 
   holdCourtSession: () => {
@@ -465,7 +496,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
           message: chosenOption.explanation,
         },
       });
-      get().pushToast('info', 'Suy Luận Chưa Chính Xác!', chosenOption.explanation);
+      get().pushToast('error', 'Suy Luận Chưa Chính Xác!', chosenOption.explanation);
       return;
     }
 

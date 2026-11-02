@@ -177,9 +177,20 @@ export interface EmoteAction {
   bubbleText: string;
 }
 
+export type GameplayToastType =
+  | 'quest_accept'
+  | 'quest_complete'
+  | 'reward'
+  | 'promotion'
+  | 'edict'
+  | 'player'
+  | 'info'
+  | 'error';
+
 export interface GameplayToast {
   id: string;
-  type: 'quest' | 'reward' | 'promotion' | 'info';
+  type: GameplayToastType;
   title: string;
   message: string;
+  createdAt: number;
 }

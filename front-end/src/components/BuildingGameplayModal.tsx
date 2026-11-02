@@ -18,6 +18,7 @@ import { useGameStore } from '../stores/useGameStore';
 
 export const BuildingGameplayModal: React.FC = () => {
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const interactionView = useGameplayStore((s) => s.interactionView);
   const activeTab = useGameplayStore((s) => s.activeTab);
   const setActiveTab = useGameplayStore((s) => s.setActiveTab);
   const closeInteraction = useGameplayStore((s) => s.closeInteraction);
@@ -115,6 +116,9 @@ export const BuildingGameplayModal: React.FC = () => {
 
   const entity = INTERACTABLE_ENTITIES.find((e) => e.id === activeInteractableId);
   if (!entity) return null;
+
+  // Nếu là NPC và đang ở chế độ đối thoại, để NpcDialogue hiển thị
+  if (entity.type === 'npc' && interactionView === 'dialogue') return null;
 
   const currentGrade = OFFICIAL_PROMOTION_LADDER[officialGradeIndex];
   const nextGrade = OFFICIAL_PROMOTION_LADDER[officialGradeIndex + 1] ?? null;
