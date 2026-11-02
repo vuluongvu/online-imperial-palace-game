@@ -37,6 +37,7 @@ export interface CameraPresetConfig {
 export interface SeatSpot {
   id: string;
   label: string;
+  zoneMode?: SceneZoneMode;
   seatPosition: [number, number, number];
   dismountPosition: [number, number, number];
   rotationY: number;
@@ -47,6 +48,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'imperial_throne',
     label: 'Long Ngai Hoàng Đế (Cửu Long Bảo Tọa)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [0, 2.36, -17.55],
     dismountPosition: [0, 1.85, -15.6],
     rotationY: 0,
@@ -60,6 +62,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
     return {
       id: `official_chair_${idx}`,
       label: sideLabel,
+      zoneMode: 'main_hall_interior' as SceneZoneMode,
       seatPosition: [chairX, 0.36, z] as [number, number, number],
       dismountPosition: [dismountX, 0.05, z] as [number, number, number],
       rotationY: desk.rotY,
@@ -70,6 +73,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'ta_vu_bench_north',
     label: 'Trường Kỷ Tả Vu (Gian Chờ Quan Viên - Bắc)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [-26.75, 0.42, -5.6],
     dismountPosition: [-24.2, 0.05, -5.6],
     rotationY: Math.PI / 2,
@@ -78,6 +82,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'ta_vu_bench_south',
     label: 'Trường Kỷ Tả Vu (Gian Chờ Quan Viên - Nam)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [-26.75, 0.42, 5.6],
     dismountPosition: [-24.2, 0.05, 5.6],
     rotationY: Math.PI / 2,
@@ -87,6 +92,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'huu_vu_sap_gu',
     label: 'Sập Gụ Khảm Trai (Hữu Vu – Phòng Tiếp Khách)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [28.0, 0.56, 0],
     dismountPosition: [26.2, 0.05, 0],
     rotationY: -Math.PI / 2,
@@ -95,6 +101,7 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'huu_vu_chair_north',
     label: 'Ghế Thái Sư Tiếp Khách (Hữu Vu - Bắc)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [24.0, 0.44, -5.2],
     dismountPosition: [22.6, 0.05, -5.2],
     rotationY: Math.PI / 2,
@@ -104,10 +111,21 @@ export const SEATING_SPOTS: SeatSpot[] = [
   {
     id: 'hau_sanh_throne_chair',
     label: 'Bảo Tọa Ngự Án Hậu Sảnh (Cần Chánh)',
+    zoneMode: 'main_hall_interior',
     seatPosition: [0, 0.48, -26.35],
     dismountPosition: [0, 0.05, -24.1],
     rotationY: 0,
     interactRadius: 3.0,
+  },
+  // Ghế đá bên Hồ Sen tại Ngự Hoa Viên (Ngoài trời)
+  {
+    id: 'ngu_hoa_vien_stone_bench',
+    label: 'Ghế Đá Bàn Trà Ngự Hoa Viên (Bên Hồ Sen)',
+    zoneMode: 'compound_map',
+    seatPosition: [19.55, 0.36, 20.2],
+    dismountPosition: [17.4, 0, 20.2],
+    rotationY: -Math.PI / 2,
+    interactRadius: 3.8,
   },
 ];
 
@@ -260,16 +278,16 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set) => ({
   currentPhase: 4,
-  sceneMode: 'main_hall_interior',
-  activeLandmarkId: 'chinh_dien',
+  sceneMode: 'compound_map',
+  activeLandmarkId: 'cong_chinh',
   activeInteriorRoom: 'main_hall',
   cameraMode: 'preset',
-  cameraPreset: 'overview',
-  characterRank: 'emperor',
+  cameraPreset: 'compound_panorama',
+  characterRank: 'low_official',
   animationState: 'idle',
   previewAnimOverride: null,
   holdingJadeTablet: true,
-  playerPosition: [0, 0, -9.5],
+  playerPosition: [0, 0, 31],
   teleportTarget: null,
   virtualInput: { x: 0, z: 0 },
   seatedSpotId: null,
@@ -302,8 +320,8 @@ export const useGameStore = create<GameState>((set) => ({
       return {
         sceneMode,
         seatedSpotId: null,
-        teleportTarget: [0, 0, 20],
-        playerPosition: [0, 0, 20],
+        teleportTarget: [0, 0, 31],
+        playerPosition: [0, 0, 31],
         cameraMode: 'preset',
         cameraPreset: 'compound_panorama',
       };
@@ -357,13 +375,18 @@ export const useGameStore = create<GameState>((set) => ({
   clearTeleportTarget: () => set({ teleportTarget: null }),
   setVirtualInput: (virtualInput) => set({ virtualInput }),
   sitAtSpot: (spotId) =>
-    set({
-      sceneMode: 'main_hall_interior',
-      seatedSpotId: spotId,
-      animationState: 'sit',
-      previewAnimOverride: null,
-      cameraMode: spotId === 'imperial_throne' ? 'preset' : 'follow',
-      cameraPreset: spotId === 'imperial_throne' ? 'throne_seated' : 'emperor_closeup',
+    set(() => {
+      const spot = SEATING_SPOTS.find((s) => s.id === spotId);
+      const targetMode = spot?.zoneMode ?? 'main_hall_interior';
+      return {
+        sceneMode: targetMode,
+        seatedSpotId: spotId,
+        animationState: 'sit',
+        previewAnimOverride: null,
+        cameraMode: spotId === 'imperial_throne' ? 'preset' : 'follow',
+        cameraPreset:
+          spotId === 'imperial_throne' ? 'throne_seated' : 'emperor_closeup',
+      };
     }),
   standUp: () =>
     set({
