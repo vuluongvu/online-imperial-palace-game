@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 
 /**
- * Bảng màu chuẩn Art Direction (Mục 3 - Environment Style):
- * - Imperial Red: #8E1B1B / #A92222
- * - Warm Gold: #D9A738 / #F2C96B
- * - Dark Wood Brown: #3C2415 / #51321E
+ * Bảng màu chuẩn Art Direction & Kiến trúc Cung đình Triều Nguyễn (Điện Thái Hòa – Huế):
+ * - Imperial Red (Sơn son): #8E1B1B / #A92222
+ * - Warm Gold (Thếp vàng): #D9A738 / #F2C96B
+ * - Dark Wood Brown (Gỗ lim / Gỗ gụ): #3C2415 / #51321E
  * - Cream: #F4EAD5
- * - Muted Jade Green: #4E7C67
+ * - Muted Jade Green / Pháp Lam Huế: #4E7C67
  */
 export const IMPERIAL_PALETTE = {
   imperialRed: '#941C1C',
@@ -35,6 +35,9 @@ export interface PalaceMaterialSet {
   creamWall: THREE.MeshStandardMaterial;
   mutedJade: THREE.MeshStandardMaterial;
   paintedBeam: THREE.MeshStandardMaterial;
+  nhatThiNhatHoa: THREE.MeshStandardMaterial;
+  carvedWallPanel: THREE.MeshStandardMaterial;
+  buuTanCanopy: THREE.MeshStandardMaterial;
   redCarpet: THREE.MeshStandardMaterial;
   stoneBase: THREE.MeshStandardMaterial;
   danBeStone: THREE.MeshStandardMaterial;
@@ -55,7 +58,7 @@ function createWoodFloorTexture(): THREE.CanvasTexture {
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Nền gạch Kim Chuyên / Gỗ lim tối bóng của Thái Hòa Điện
+  // Nền gạch Bát Tràng / Gỗ lim bóng có hoa văn kỷ hà cổ điển
   ctx.fillStyle = '#382012';
   ctx.fillRect(0, 0, 512, 512);
 
@@ -89,6 +92,11 @@ function createWoodFloorTexture(): THREE.CanvasTexture {
     ctx.moveTo(jointX, y);
     ctx.lineTo(jointX, y + plankHeight);
     ctx.stroke();
+
+    // Hoa văn đồng tiền / chữ Thọ dập chìm trên nền gạch cung đình
+    ctx.strokeStyle = 'rgba(220, 168, 58, 0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(jointX - 24, y + 14, 36, 36);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -105,42 +113,51 @@ function createRedPillarTexture(): THREE.CanvasTexture {
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Thân cột sơn son đỏ thẫm
+  // Thân cột gỗ lim sơn son thếp vàng hình rồng mây ẩn hiện (Phong cách Điện Thái Hòa Huế)
   const grad = ctx.createLinearGradient(0, 0, 512, 0);
-  grad.addColorStop(0, '#781414');
-  grad.addColorStop(0.5, '#A31F1F');
-  grad.addColorStop(1, '#781414');
+  grad.addColorStop(0, '#741212');
+  grad.addColorStop(0.5, '#A61E1E');
+  grad.addColorStop(1, '#741212');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
-  // Phần đầu cột vẽ hoa văn Hòa Tỷ (Xanh ngọc - Lam - Vàng kim)
+  // Phần đầu cột vẽ hoa văn cung đình (Xanh Pháp Lam - Đỏ - Vàng Kim)
   ctx.fillStyle = '#2F5C4B';
-  ctx.fillRect(0, 0, 512, 68);
+  ctx.fillRect(0, 0, 512, 64);
   ctx.fillStyle = '#1E3F66';
-  ctx.fillRect(0, 68, 512, 28);
+  ctx.fillRect(0, 64, 512, 26);
 
   ctx.strokeStyle = '#F2C55C';
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(0, 68);
-  ctx.lineTo(512, 68);
-  ctx.moveTo(0, 96);
-  ctx.lineTo(512, 96);
+  ctx.moveTo(0, 64);
+  ctx.lineTo(512, 64);
+  ctx.moveTo(0, 90);
+  ctx.lineTo(512, 90);
   ctx.stroke();
 
-  // Hoa văn đầu rồng / vân mây vàng trên cổ cột
-  for (let x = 24; x < 512; x += 64) {
+  // Họa tiết rồng cuốn thủy & vân mây thếp vàng dọc thân cột đỏ
+  ctx.strokeStyle = 'rgba(245, 203, 105, 0.48)';
+  ctx.lineWidth = 4;
+  for (let y = 120; y < 440; y += 90) {
     ctx.beginPath();
-    ctx.arc(x, 34, 18, 0, Math.PI * 2);
+    ctx.moveTo(0, y);
+    ctx.bezierCurveTo(170, y - 45, 340, y + 45, 512, y - 15);
     ctx.stroke();
+
+    for (let x = 48; x < 480; x += 96) {
+      ctx.beginPath();
+      ctx.arc(x, y + 12, 16, 0, Math.PI * 1.5);
+      ctx.stroke();
+    }
   }
 
-  // Chân cột hoa văn liên hoa vàng
+  // Chân cột hoa văn cánh sen vàng
   ctx.strokeStyle = '#E6B445';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(0, 475);
-  ctx.lineTo(512, 475);
+  ctx.moveTo(0, 472);
+  ctx.lineTo(512, 472);
   ctx.stroke();
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -154,7 +171,6 @@ function createGoldenDragonPillarTexture(): THREE.CanvasTexture {
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Cột Bàn Long Thếp Vàng của Thái Hòa Điện
   const grad = ctx.createLinearGradient(0, 0, 512, 0);
   grad.addColorStop(0, '#B5811E');
   grad.addColorStop(0.5, '#F5CB69');
@@ -162,7 +178,6 @@ function createGoldenDragonPillarTexture(): THREE.CanvasTexture {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 512);
 
-  // Họa tiết thân rồng uốn lượn & mây ngũ sắc chạm nổi
   ctx.strokeStyle = '#7A1616';
   ctx.lineWidth = 8;
   for (let y = -64; y < 560; y += 96) {
@@ -180,7 +195,6 @@ function createGoldenDragonPillarTexture(): THREE.CanvasTexture {
     ctx.bezierCurveTo(170, y - 55, 340, y + 55, 512, y - 20);
     ctx.stroke();
 
-    // Vân mây xoắn dọc cột rồng
     for (let x = 40; x < 480; x += 96) {
       ctx.beginPath();
       ctx.arc(x, y + 20, 16, 0, Math.PI * 1.5);
@@ -193,13 +207,148 @@ function createGoldenDragonPillarTexture(): THREE.CanvasTexture {
   return texture;
 }
 
+/**
+ * Hệ thống ô hộc "Nhất Thi Nhất Họa" (Một bài thơ - Một bức tranh) trên liên ba Điện Thái Hòa Huế
+ */
+function createNhatThiNhatHoaTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+
+  // Nền gỗ sơn son thẫm
+  ctx.fillStyle = '#6E1212';
+  ctx.fillRect(0, 0, 512, 128);
+
+  // Viền khung vàng trên dưới
+  ctx.strokeStyle = '#F2C65E';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, 504, 120);
+
+  // Ô 1: Ô Thơ Ngự Chế (Khung chữ nhật bo góc thếp vàng)
+  ctx.fillStyle = '#4A0C0C';
+  ctx.fillRect(22, 18, 212, 92);
+  ctx.strokeStyle = '#F5CB69';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(22, 18, 212, 92);
+
+  ctx.fillStyle = '#FFE48F';
+  ctx.font = 'bold 20px "Segoe UI", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('VẠN CỔ AN BÌNH', 128, 54);
+  ctx.fillText('THÁI HÒA CHÍNH KHÍ', 128, 86);
+
+  // Ô 2: Ô Họa Bát Bửu / Lưỡng Long Chầu Nhật
+  ctx.fillStyle = '#264B3E';
+  ctx.fillRect(274, 18, 216, 92);
+  ctx.strokeRect(274, 18, 216, 92);
+
+  // Họa tiết mặt trời lửa & đôi rồng chầu
+  ctx.fillStyle = '#FFE48F';
+  ctx.beginPath();
+  ctx.arc(382, 64, 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#F5CB69';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(325, 64, 24, 0, Math.PI * 1.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(439, 64, 24, 0, Math.PI * 1.6);
+  ctx.stroke();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(4, 1);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+/**
+ * Vách gỗ chạm nổi Lưỡng Long & Tứ Linh trên tường Đại Điện
+ */
+function createCarvedWallPanelTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#521A12';
+  ctx.fillRect(0, 0, 512, 256);
+
+  ctx.strokeStyle = '#DCA83A';
+  ctx.lineWidth = 6;
+  for (let i = 0; i < 4; i++) {
+    const x = i * 128;
+    ctx.strokeRect(x + 10, 12, 108, 232);
+    ctx.strokeStyle = '#9E221B';
+    ctx.strokeRect(x + 18, 20, 92, 216);
+
+    ctx.strokeStyle = '#F2C65E';
+    ctx.beginPath();
+    ctx.arc(x + 64, 128, 32, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + 64, 128, 16, 0, Math.PI * 1.5);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(4, 1);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+/**
+ * Hoa văn Bửu Tán (Lọng Hoàng Kim thêu Cửu Long đặc trưng trên Long Ngai Điện Thái Hòa Huế)
+ */
+function createBuuTanCanopyTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#F5CB69');
+  grad.addColorStop(0.65, '#C88D22');
+  grad.addColorStop(1, '#8C1818');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 256);
+
+  // Diềm tua rua & vân mây rồng chạm lộng
+  ctx.strokeStyle = '#7A1212';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(8, 8, 496, 240);
+
+  ctx.strokeStyle = '#FFF0B5';
+  ctx.lineWidth = 4;
+  for (let x = 42; x < 480; x += 64) {
+    ctx.beginPath();
+    ctx.arc(x, 110, 24, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x, 220, 28, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 function createPaintedBeamTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 128;
   const ctx = canvas.getContext('2d')!;
 
-  // Hòa Tỷ Thái Bình彩画 (Xanh lục bảo + Xanh lam + Viền vàng kim)
   ctx.fillStyle = '#2B5947';
   ctx.fillRect(0, 0, 512, 128);
 
@@ -211,7 +360,6 @@ function createPaintedBeamTexture(): THREE.CanvasTexture {
   ctx.strokeRect(4, 4, 504, 120);
   ctx.strokeRect(80, 14, 352, 100);
 
-  // Rồng vàng chầu ngọc ở tâm xà ngang
   ctx.fillStyle = '#F5CB69';
   ctx.beginPath();
   ctx.arc(256, 64, 28, 0, Math.PI * 2);
@@ -240,7 +388,6 @@ function createCarpetTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#8B1818';
   ctx.fillRect(0, 0, 512, 512);
 
-  // Hoa văn Đoàn Long & Liên Hoa dệt vàng ở tâm Thảm Ngự Đạo
   ctx.strokeStyle = 'rgba(242, 198, 94, 0.42)';
   ctx.lineWidth = 4;
   for (let y = 64; y < 512; y += 128) {
@@ -252,7 +399,6 @@ function createCarpetTexture(): THREE.CanvasTexture {
     ctx.arc(256, y, 22, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Bốn góc vân mây quanh đoàn long
     [-70, 70].forEach((dx) => {
       ctx.beginPath();
       ctx.arc(256 + dx, y, 14, 0, Math.PI * 1.5);
@@ -260,7 +406,6 @@ function createCarpetTexture(): THREE.CanvasTexture {
     });
   }
 
-  // Đường diềm vàng hai bên mép thảm (Hồi văn cổ trang)
   ctx.fillStyle = '#DCA83A';
   ctx.fillRect(16, 0, 16, 512);
   ctx.fillRect(480, 0, 16, 512);
@@ -289,7 +434,6 @@ function createDanBeStoneTexture(): THREE.CanvasTexture {
   canvas.height = 512;
   const ctx = canvas.getContext('2d')!;
 
-  // Nền đá bạch ngọc chạm nổi Cửu Long Vờn Mây
   ctx.fillStyle = '#DFD6C3';
   ctx.fillRect(0, 0, 512, 512);
 
@@ -324,7 +468,6 @@ function createImperialPlaqueTexture(): THREE.CanvasTexture {
   canvas.height = 192;
   const ctx = canvas.getContext('2d')!;
 
-  // Nền biển ngạch sơn đỏ thẫm viền rồng vàng
   ctx.fillStyle = '#5E0E0E';
   ctx.fillRect(0, 0, 512, 192);
 
@@ -336,12 +479,11 @@ function createImperialPlaqueTexture(): THREE.CanvasTexture {
   ctx.lineWidth = 4;
   ctx.strokeRect(26, 26, 460, 140);
 
-  // 4 Đại tự Hán/Việt Hoàng Gia thếp vàng: "KIẾN CỰC TUY DU" / "CHÍNH ĐẠI QUANG MINH"
   ctx.fillStyle = '#FCE08B';
   ctx.font = 'bold 46px "Segoe UI", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('CHÍNH ĐẠI QUANG MINH', 256, 98);
+  ctx.fillText('THÁI HÒA ĐIỆN', 256, 98);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -365,7 +507,6 @@ function createSilkBannerTexture(): THREE.CanvasTexture {
   ctx.lineWidth = 6;
   ctx.strokeRect(8, 8, 112, 496);
 
-  // Họa tiết rồng phượng vàng dọc phướn lụa
   for (let y = 64; y < 448; y += 72) {
     ctx.beginPath();
     ctx.arc(64, y, 22, 0, Math.PI * 2);
@@ -426,14 +567,12 @@ function createDragonScreenTexture(): THREE.CanvasTexture {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 512, 256);
 
-  // Khung chia 7 bức bình phong Cửu Long thếp vàng
   ctx.strokeStyle = '#F2C65E';
   ctx.lineWidth = 6;
   const panelWidth = 512 / 7;
   for (let i = 0; i < 7; i++) {
     ctx.strokeRect(i * panelWidth + 3, 6, panelWidth - 6, 244);
 
-    // Mỗi ô bình phong có một kim long chầu ngọc
     const cx = (i + 0.5) * panelWidth;
     ctx.fillStyle = i === 3 ? '#FFE48F' : '#E5B548';
     ctx.beginPath();
@@ -441,7 +580,6 @@ function createDragonScreenTexture(): THREE.CanvasTexture {
     ctx.fill();
   }
 
-  // Sóng Thủy Ba dưới chân bình phong
   ctx.strokeStyle = '#F5CB69';
   ctx.lineWidth = 4;
   for (let x = 20; x < 495; x += 36) {
@@ -497,6 +635,9 @@ export function createPalaceMaterialSet(wireframe = false): PalaceMaterialSet {
   const redPillarTex = createRedPillarTexture();
   const goldenDragonPillarTex = createGoldenDragonPillarTexture();
   const paintedBeamTex = createPaintedBeamTexture();
+  const nhatThiNhatHoaTex = createNhatThiNhatHoaTexture();
+  const carvedWallTex = createCarvedWallPanelTexture();
+  const buuTanTex = createBuuTanCanopyTexture();
   const carpetTex = createCarpetTexture();
   const danBeTex = createDanBeStoneTexture();
   const plaqueTex = createImperialPlaqueTexture();
@@ -510,6 +651,9 @@ export function createPalaceMaterialSet(wireframe = false): PalaceMaterialSet {
     redPillarTex,
     goldenDragonPillarTex,
     paintedBeamTex,
+    nhatThiNhatHoaTex,
+    carvedWallTex,
+    buuTanTex,
     carpetTex,
     danBeTex,
     plaqueTex,
@@ -579,6 +723,28 @@ export function createPalaceMaterialSet(wireframe = false): PalaceMaterialSet {
     map: paintedBeamTex,
     roughness: 0.42,
     metalness: 0.18,
+    wireframe,
+  });
+
+  const nhatThiNhatHoa = new THREE.MeshStandardMaterial({
+    map: nhatThiNhatHoaTex,
+    roughness: 0.35,
+    metalness: 0.35,
+    wireframe,
+  });
+
+  const carvedWallPanel = new THREE.MeshStandardMaterial({
+    map: carvedWallTex,
+    roughness: 0.45,
+    metalness: 0.22,
+    wireframe,
+  });
+
+  const buuTanCanopy = new THREE.MeshStandardMaterial({
+    map: buuTanTex,
+    roughness: 0.3,
+    metalness: 0.55,
+    side: THREE.DoubleSide,
     wireframe,
   });
 
@@ -673,6 +839,9 @@ export function createPalaceMaterialSet(wireframe = false): PalaceMaterialSet {
     creamWall,
     mutedJade,
     paintedBeam,
+    nhatThiNhatHoa,
+    carvedWallPanel,
+    buuTanCanopy,
     redCarpet,
     stoneBase,
     danBeStone,
@@ -696,6 +865,9 @@ export function createPalaceMaterialSet(wireframe = false): PalaceMaterialSet {
     creamWall,
     mutedJade,
     paintedBeam,
+    nhatThiNhatHoa,
+    carvedWallPanel,
+    buuTanCanopy,
     redCarpet,
     stoneBase,
     danBeStone,
