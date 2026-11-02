@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { Physics } from '@react-three/rapier';
 import { Palace } from './game/world/Palace';
 import { PalaceColliders } from './game/physics/PalaceColliders';
 import { CharacterController } from './game/characters/CharacterController';
@@ -31,10 +30,8 @@ export const App: React.FC = () => {
       >
         <Suspense fallback={null}>
           <Palace />
-          <Physics gravity={[0, -24, 0]}>
-            <PalaceColliders />
-            <CharacterController />
-          </Physics>
+          <PalaceColliders />
+          <CharacterController />
           <ThirdPersonCamera />
           <PerformanceMonitor />
         </Suspense>

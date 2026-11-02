@@ -1,27 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import {
-  CapsuleCollider,
-  RapierRigidBody,
-  RigidBody,
-} from '@react-three/rapier';
 import { Player } from './Player';
 import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
 import { CharacterAnimationState } from './CharacterAnimations';
+import { resolvePalaceMovement } from '../physics/PalaceColliders';
 
-const WALK_SPEED = 4.2;
-const RUN_SPEED = 7.6;
+const WALK_SPEED = 4.5;
+const RUN_SPEED = 8.0;
 
 /**
  * Bộ điều khiển nhân vật Chibi:
  * - WASD / Phím mũi tên để di chuyển, giữ Shift để chạy nhanh.
  * - Phím [F] hoặc [E] để Ngự Long Ngai / Ngồi vào Ghế Quan Viên gần nhất (hoặc đứng dậy khi đang ngồi).
- * - Tích hợp Rapier Physics chống xuyên cột/tường/bàn ghế và bước lên bậc tam cấp Bệ Rồng.
+ * - Tích hợp va chạm vật lý mượt mà với 22 cột đại điện, 12 bàn ghế quan viên, tường bao và bậc tam cấp Bệ Rồng.
  */
 export const CharacterController: React.FC = () => {
-  const rigidBodyRef = useRef<RapierRigidBody>(null);
   const characterGroupRef = useRef<THREE.Group>(null);
+  const currentPos = useRef<[number, number, number]>([0, 0, -11.0]);
   const currentRotationY = useRef<number>(0);
 
   const setAnimationState = useGameStore((s) => s.setAnimationState);
@@ -45,15 +41,14 @@ export const CharacterController: React.FC = () => {
 
   // Khi chuyển từ trạng thái Ngồi -> Đứng dậy, đặt nhân vật ra vị trí đứng trước ghế/ngai
   useEffect(() => {
-    const body = rigidBodyRef.current;
-    if (!body) return;
-
     if (prevSeatedSpotId.current && !seatedSpotId) {
       const prevSpot = SEATING_SPOTS.find((s) => s.id === prevSeatedSpotId.current);
       if (prevSpot) {
         const [dx, dy, dz] = prevSpot.dismountPosition;
-        body.setTranslation({ x: dx, y: dy + 0.85, z: dz }, true);
-        body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        currentPos.current = [dx, dy, dz];
+        if (characterGroupRef.current) {
+          characterGroupRef.current.position.set(dx, dy, dz);
+        }
         setPlayerPosition([dx, dy, dz]);
       }
     }
@@ -62,7 +57,6 @@ export const CharacterController: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Phím F hoặc E: Ngồi xuống ghế gần nhất / Ngự Long Ngai hoặc Đứng dậy
       if (e.code === 'KeyF' || e.code === 'KeyE') {
         const state = useGameStore.getState();
         if (state.seatedSpotId) {
@@ -70,7 +64,6 @@ export const CharacterController: React.FC = () => {
         } else if (state.nearbySeatId) {
           state.sitAtSpot(state.nearbySeatId);
         } else {
-          // Nếu đang đứng xa, mặc định phím F/E cho phép Ngự thẳng lên Long Ngai
           state.sitAtSpot('imperial_throne');
         }
         return;
@@ -109,7 +102,6 @@ export const CharacterController: React.FC = () => {
           return;
       }
 
-      // Nếu đang ngồi trên ghế/ngai mà bấm WASD thì tự động đứng dậy để di chuyển
       const currentSeated = useGameStore.getState().seatedSpotId;
       if (currentSeated) {
         standUp();
@@ -158,9 +150,10 @@ export const CharacterController: React.FC = () => {
   const lastNearbySeat = useRef<string | null>(null);
 
   useFrame((_, delta) => {
-    const body = rigidBodyRef.current;
-    if (!body) return;
+    const group = characterGroupRef.current;
+    if (!group) return;
 
+    const clampedDelta = Math.min(delta, 0.1);
     const activeSeatedId = useGameStore.getState().seatedSpotId;
 
     // 1. Nếu nhân vật đang ngồi trên Long Ngai hoặc Ghế Quan Viên
@@ -168,17 +161,14 @@ export const CharacterController: React.FC = () => {
       const seat = SEATING_SPOTS.find((s) => s.id === activeSeatedId);
       if (seat) {
         const [sx, sy, sz] = seat.seatPosition;
-        body.setTranslation({ x: sx, y: sy + 0.85, z: sz }, true);
-        body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        currentPos.current = [sx, sy, sz];
+        group.position.set(sx, sy, sz);
 
         let angleDiff = seat.rotationY - currentRotationY.current;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        currentRotationY.current += angleDiff * (1 - Math.exp(-14 * delta));
-
-        if (characterGroupRef.current) {
-          characterGroupRef.current.rotation.y = currentRotationY.current;
-        }
+        currentRotationY.current += angleDiff * (1 - Math.exp(-14 * clampedDelta));
+        group.rotation.y = currentRotationY.current;
 
         if (lastAnimState.current !== 'sit') {
           lastAnimState.current = 'sit';
@@ -211,19 +201,24 @@ export const CharacterController: React.FC = () => {
     if (right) moveDir.current.add(rightVec.current);
     if (left) moveDir.current.sub(rightVec.current);
 
-    const currentLinVel = body.linvel();
-    const speed = shift ? RUN_SPEED : WALK_SPEED;
+    const [px, py, pz] = currentPos.current;
+    let nextX = px;
+    let nextY = py;
+    let nextZ = pz;
 
     if (isMoving && moveDir.current.lengthSq() > 0.001) {
       moveDir.current.normalize();
+      const speed = shift ? RUN_SPEED : WALK_SPEED;
 
-      body.setLinvel(
-        {
-          x: moveDir.current.x * speed,
-          y: currentLinVel.y,
-          z: moveDir.current.z * speed,
-        },
-        true
+      const rawTargetX = px + moveDir.current.x * speed * clampedDelta;
+      const rawTargetZ = pz + moveDir.current.z * speed * clampedDelta;
+
+      [nextX, nextY, nextZ] = resolvePalaceMovement(
+        px,
+        py,
+        pz,
+        rawTargetX,
+        rawTargetZ
       );
 
       const targetAngle = Math.atan2(moveDir.current.x, moveDir.current.z);
@@ -231,20 +226,13 @@ export const CharacterController: React.FC = () => {
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-      currentRotationY.current += angleDiff * (1 - Math.exp(-14 * delta));
-      if (characterGroupRef.current) {
-        characterGroupRef.current.rotation.y = currentRotationY.current;
-      }
-    } else {
-      body.setLinvel(
-        {
-          x: currentLinVel.x * Math.exp(-18 * delta),
-          y: currentLinVel.y,
-          z: currentLinVel.z * Math.exp(-18 * delta),
-        },
-        true
-      );
+      currentRotationY.current += angleDiff * (1 - Math.exp(-14 * clampedDelta));
+      group.rotation.y = currentRotationY.current;
     }
+
+    currentPos.current = [nextX, nextY, nextZ];
+    group.position.set(nextX, nextY, nextZ);
+    setPlayerPosition([nextX, nextY, nextZ]);
 
     const nextAnim: CharacterAnimationState = !isMoving
       ? 'idle'
@@ -257,19 +245,13 @@ export const CharacterController: React.FC = () => {
       setAnimationState(nextAnim);
     }
 
-    const pos = body.translation();
-    const px = pos.x;
-    const py = pos.y - 0.85;
-    const pz = pos.z;
-    setPlayerPosition([px, py, pz]);
-
     // Kiểm tra khoảng cách tới Long Ngai & 12 Ghế Quan Viên để hiện gợi ý ngồi
     let closestSpotId: string | null = null;
     let minDistance = Infinity;
 
     for (const spot of SEATING_SPOTS) {
-      const dx = px - spot.seatPosition[0];
-      const dz = pz - spot.seatPosition[2];
+      const dx = nextX - spot.seatPosition[0];
+      const dz = nextZ - spot.seatPosition[2];
       const dist = Math.hypot(dx, dz);
       if (dist <= spot.interactRadius && dist < minDistance) {
         minDistance = dist;
@@ -284,18 +266,8 @@ export const CharacterController: React.FC = () => {
   });
 
   return (
-    <RigidBody
-      ref={rigidBodyRef}
-      colliders={false}
-      position={[0, 0.9, -11.0]}
-      enabledRotations={[false, false, false]}
-      mass={1}
-      linearDamping={0.5}
-    >
-      <CapsuleCollider args={[0.45, 0.4]} position={[0, 0, 0]} />
-      <group ref={characterGroupRef} position={[0, -0.85, 0]}>
-        <Player />
-      </group>
-    </RigidBody>
+    <group ref={characterGroupRef} position={[0, 0, -11.0]}>
+      <Player />
+    </group>
   );
 };

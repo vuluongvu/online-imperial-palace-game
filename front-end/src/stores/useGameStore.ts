@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { OfficialRank } from '../game/characters/CharacterMaterials';
 import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
-import { MAIN_HALL_LAYOUT } from '../game/world/MainHall';
+import { MAIN_HALL_LAYOUT } from '../game/world/hallLayout';
 
 export type CameraViewPreset =
   | 'emperor_closeup'
