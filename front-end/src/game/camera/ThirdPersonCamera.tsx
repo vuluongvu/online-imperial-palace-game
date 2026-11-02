@@ -6,22 +6,20 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { CAMERA_PRESETS, useGameStore } from '../../stores/useGameStore';
 
 /**
- * Hệ thống Camera MMORPG Third-Person & Preset Inspection:
- * - Chế độ 'follow': Camera luôn bám theo nhân vật Hoàng Đế / Quan Viên, xoay bằng chuột, zoom bằng con lăn,
- *   tự động giới hạn tọa độ trong lòng Chính điện để không xuyên qua tường.
- * - Chế độ 'preset': Chuyển mượt tới góc máy cận cảnh Hoàng Đế hoặc toàn cảnh Chính điện.
+ * Hệ thống Camera MMORPG hỗ trợ cả Bản đồ Quần thể Hoàng Cung (compound_map) và Nội Điện Thái Hòa (main_hall_interior).
  */
 export const ThirdPersonCamera: React.FC = () => {
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  const sceneMode = useGameStore((s) => s.sceneMode);
   const cameraMode = useGameStore((s) => s.cameraMode);
   const cameraPreset = useGameStore((s) => s.cameraPreset);
   const { camera } = useThree();
 
   const desiredPosition = useRef(
-    new THREE.Vector3(...CAMERA_PRESETS.emperor_closeup.position)
+    new THREE.Vector3(...CAMERA_PRESETS.compound_panorama.position)
   );
   const desiredTarget = useRef(
-    new THREE.Vector3(...CAMERA_PRESETS.emperor_closeup.target)
+    new THREE.Vector3(...CAMERA_PRESETS.compound_panorama.target)
   );
   const isTransitioning = useRef(true);
   const prevPlayerPos = useRef<THREE.Vector3 | null>(null);
@@ -33,7 +31,7 @@ export const ThirdPersonCamera: React.FC = () => {
       desiredTarget.current.set(...preset.target);
       isTransitioning.current = true;
     }
-  }, [cameraMode, cameraPreset]);
+  }, [cameraMode, cameraPreset, sceneMode]);
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
@@ -42,13 +40,15 @@ export const ThirdPersonCamera: React.FC = () => {
     const [px, py, pz] = useGameStore.getState().playerPosition;
 
     if (cameraMode === 'follow') {
-      const targetFocus = new THREE.Vector3(px, py + 1.35, pz);
+      const targetFocus = new THREE.Vector3(px, py + 1.45, pz);
 
       if (!prevPlayerPos.current) {
         prevPlayerPos.current = new THREE.Vector3(px, py, pz);
+        if (sceneMode === 'compound_map') {
+          camera.position.set(px, py + 10.5, pz + 14.5);
+        }
       }
 
-      // Dịch chuyển camera đồng bộ với quãng đường di chuyển của nhân vật
       const deltaMove = new THREE.Vector3(
         px - prevPlayerPos.current.x,
         py - prevPlayerPos.current.y,
@@ -57,30 +57,31 @@ export const ThirdPersonCamera: React.FC = () => {
       camera.position.add(deltaMove);
       prevPlayerPos.current.set(px, py, pz);
 
-      // Bám mượt tâm nhìn vào vai/đầu nhân vật
       const followLerp = 1 - Math.exp(-14 * delta);
       controls.target.lerp(targetFocus, followLerp);
 
-      // Chống xuyên tường Chính điện (Clamping camera bên trong không gian tường bao)
-      camera.position.x = THREE.MathUtils.clamp(camera.position.x, -14.8, 14.8);
-      camera.position.z = THREE.MathUtils.clamp(camera.position.z, -20.8, 20.8);
-      camera.position.y = THREE.MathUtils.clamp(camera.position.y, 0.65, 10.5);
+      if (sceneMode === 'main_hall_interior') {
+        camera.position.x = THREE.MathUtils.clamp(camera.position.x, -14.8, 14.8);
+        camera.position.z = THREE.MathUtils.clamp(camera.position.z, -20.8, 20.8);
+        camera.position.y = THREE.MathUtils.clamp(camera.position.y, 0.65, 10.5);
+      } else {
+        camera.position.y = THREE.MathUtils.clamp(camera.position.y, 2.0, 58.0);
+      }
 
       controls.update();
       return;
     }
 
-    // Chế độ chuyển góc máy Preset mượt mà
     prevPlayerPos.current = null;
     if (isTransitioning.current) {
-      const lerpFactor = 1 - Math.exp(-6.0 * delta);
+      const lerpFactor = 1 - Math.exp(-5.5 * delta);
       camera.position.lerp(desiredPosition.current, lerpFactor);
       controls.target.lerp(desiredTarget.current, lerpFactor);
       controls.update();
 
       if (
-        camera.position.distanceTo(desiredPosition.current) < 0.05 &&
-        controls.target.distanceTo(desiredTarget.current) < 0.05
+        camera.position.distanceTo(desiredPosition.current) < 0.08 &&
+        controls.target.distanceTo(desiredTarget.current) < 0.08
       ) {
         isTransitioning.current = false;
       }
@@ -93,10 +94,10 @@ export const ThirdPersonCamera: React.FC = () => {
       makeDefault
       enableDamping
       dampingFactor={0.08}
-      enablePan={cameraMode === 'preset'}
+      enablePan={true}
       minDistance={1.6}
-      maxDistance={24}
-      minPolarAngle={0.2}
+      maxDistance={sceneMode === 'compound_map' ? 95 : 24}
+      minPolarAngle={0.18}
       maxPolarAngle={Math.PI / 2 - 0.04}
       onStart={() => {
         isTransitioning.current = false;

@@ -4,21 +4,18 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Player } from './Player';
 import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
 import { CharacterAnimationState } from './CharacterAnimations';
-import { resolvePalaceMovement } from '../physics/PalaceColliders';
+import {
+  resolveCompoundMapMovement,
+  resolvePalaceMovement,
+} from '../physics/PalaceColliders';
 
-const WALK_SPEED = 4.5;
-const RUN_SPEED = 8.0;
+const WALK_SPEED = 5.5;
+const RUN_SPEED = 9.5;
 
-/**
- * Bộ điều khiển nhân vật Chibi:
- * - WASD / Phím mũi tên để di chuyển, giữ Shift để chạy nhanh.
- * - Phím [F] hoặc [E] để Ngự Long Ngai / Ngồi vào Ghế Quan Viên gần nhất (hoặc đứng dậy khi đang ngồi).
- * - Tích hợp va chạm vật lý mượt mà với 22 cột đại điện, 12 bàn ghế quan viên, tường bao và bậc tam cấp Bệ Rồng.
- */
 export const CharacterController: React.FC = () => {
   const characterGroupRef = useRef<THREE.Group>(null);
-  const currentPos = useRef<[number, number, number]>([0, 0, -11.0]);
-  const currentRotationY = useRef<number>(0);
+  const currentPos = useRef<[number, number, number]>([0, 0, 20]);
+  const currentRotationY = useRef<number>(Math.PI);
 
   const setAnimationState = useGameStore((s) => s.setAnimationState);
   const setPlayerPosition = useGameStore((s) => s.setPlayerPosition);
@@ -27,6 +24,8 @@ export const CharacterController: React.FC = () => {
   const seatedSpotId = useGameStore((s) => s.seatedSpotId);
   const standUp = useGameStore((s) => s.standUp);
   const setNearbySeatId = useGameStore((s) => s.setNearbySeatId);
+  const teleportTarget = useGameStore((s) => s.teleportTarget);
+  const clearTeleportTarget = useGameStore((s) => s.clearTeleportTarget);
 
   const { camera } = useThree();
   const prevSeatedSpotId = useRef<string | null>(null);
@@ -39,7 +38,19 @@ export const CharacterController: React.FC = () => {
     shift: false,
   });
 
-  // Khi chuyển từ trạng thái Ngồi -> Đứng dậy, đặt nhân vật ra vị trí đứng trước ghế/ngai
+  // Nhận yêu cầu dịch chuyển nhân vật khi đổi khu vực trên Map hoặc Vào/Ra Chính Điện
+  useEffect(() => {
+    if (teleportTarget) {
+      const [tx, ty, tz] = teleportTarget;
+      currentPos.current = [tx, ty, tz];
+      if (characterGroupRef.current) {
+        characterGroupRef.current.position.set(tx, ty, tz);
+      }
+      clearTeleportTarget();
+    }
+  }, [teleportTarget, clearTeleportTarget]);
+
+  // Khi chuyển từ trạng thái Ngồi -> Đứng dậy
   useEffect(() => {
     if (prevSeatedSpotId.current && !seatedSpotId) {
       const prevSpot = SEATING_SPOTS.find((s) => s.id === prevSeatedSpotId.current);
@@ -59,6 +70,11 @@ export const CharacterController: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyF' || e.code === 'KeyE') {
         const state = useGameStore.getState();
+        if (state.sceneMode === 'compound_map') {
+          // Nếu đang ở trước Chính Điện trên Map, phím F/E sẽ đưa vào Nội Điện Thái Hòa
+          state.setSceneMode('main_hall_interior');
+          return;
+        }
         if (state.seatedSpotId) {
           state.standUp();
         } else if (state.nearbySeatId) {
@@ -154,10 +170,13 @@ export const CharacterController: React.FC = () => {
     if (!group) return;
 
     const clampedDelta = Math.min(delta, 0.1);
-    const activeSeatedId = useGameStore.getState().seatedSpotId;
+    const storeState = useGameStore.getState();
+    const activeSeatedId = storeState.seatedSpotId;
+    const sceneMode = storeState.sceneMode;
+    const vInput = storeState.virtualInput;
 
-    // 1. Nếu nhân vật đang ngồi trên Long Ngai hoặc Ghế Quan Viên
-    if (activeSeatedId) {
+    // 1. Nếu đang ngồi trên Long Ngai hoặc Ghế Quan Viên trong Nội Điện
+    if (sceneMode === 'main_hall_interior' && activeSeatedId) {
       const seat = SEATING_SPOTS.find((s) => s.id === activeSeatedId);
       if (seat) {
         const [sx, sy, sz] = seat.seatPosition;
@@ -179,9 +198,11 @@ export const CharacterController: React.FC = () => {
       }
     }
 
-    // 2. Di chuyển tự do bằng WASD
+    // 2. Di chuyển bằng bàn phím WASD hoặc nút điều hướng ảo góc trái dưới HUD
     const { forward, backward, left, right, shift } = keys.current;
-    const isMoving = forward || backward || left || right;
+    const hasKeyMove = forward || backward || left || right;
+    const hasVirtualMove = Math.abs(vInput.x) > 0.01 || Math.abs(vInput.z) > 0.01;
+    const isMoving = hasKeyMove || hasVirtualMove;
 
     camera.getWorldDirection(forwardVec.current);
     forwardVec.current.y = 0;
@@ -196,10 +217,10 @@ export const CharacterController: React.FC = () => {
       .normalize();
 
     moveDir.current.set(0, 0, 0);
-    if (forward) moveDir.current.add(forwardVec.current);
-    if (backward) moveDir.current.sub(forwardVec.current);
-    if (right) moveDir.current.add(rightVec.current);
-    if (left) moveDir.current.sub(rightVec.current);
+    if (forward || vInput.z < 0) moveDir.current.add(forwardVec.current);
+    if (backward || vInput.z > 0) moveDir.current.sub(forwardVec.current);
+    if (right || vInput.x > 0) moveDir.current.add(rightVec.current);
+    if (left || vInput.x < 0) moveDir.current.sub(rightVec.current);
 
     const [px, py, pz] = currentPos.current;
     let nextX = px;
@@ -213,13 +234,28 @@ export const CharacterController: React.FC = () => {
       const rawTargetX = px + moveDir.current.x * speed * clampedDelta;
       const rawTargetZ = pz + moveDir.current.z * speed * clampedDelta;
 
-      [nextX, nextY, nextZ] = resolvePalaceMovement(
-        px,
-        py,
-        pz,
-        rawTargetX,
-        rawTargetZ
-      );
+      if (sceneMode === 'main_hall_interior') {
+        [nextX, nextY, nextZ] = resolvePalaceMovement(
+          px,
+          py,
+          pz,
+          rawTargetX,
+          rawTargetZ
+        );
+      } else {
+        [nextX, nextY, nextZ] = resolveCompoundMapMovement(
+          rawTargetX,
+          rawTargetZ
+        );
+
+        // Kiểm tra hoàn thành nhiệm vụ nhập môn khi đi đến Lại Bộ (X < -14, Z gần -6)
+        if (
+          !storeState.laiBoQuestCompleted &&
+          Math.hypot(nextX - -17.5, nextZ - -6) < 5.5
+        ) {
+          storeState.completeLaiBoQuest();
+        }
+      }
 
       const targetAngle = Math.atan2(moveDir.current.x, moveDir.current.z);
       let angleDiff = targetAngle - currentRotationY.current;
@@ -245,28 +281,33 @@ export const CharacterController: React.FC = () => {
       setAnimationState(nextAnim);
     }
 
-    // Kiểm tra khoảng cách tới Long Ngai & 12 Ghế Quan Viên để hiện gợi ý ngồi
-    let closestSpotId: string | null = null;
-    let minDistance = Infinity;
+    // Kiểm tra ghế ngồi gần nhất trong Nội Điện
+    if (sceneMode === 'main_hall_interior') {
+      let closestSpotId: string | null = null;
+      let minDistance = Infinity;
 
-    for (const spot of SEATING_SPOTS) {
-      const dx = nextX - spot.seatPosition[0];
-      const dz = nextZ - spot.seatPosition[2];
-      const dist = Math.hypot(dx, dz);
-      if (dist <= spot.interactRadius && dist < minDistance) {
-        minDistance = dist;
-        closestSpotId = spot.id;
+      for (const spot of SEATING_SPOTS) {
+        const dx = nextX - spot.seatPosition[0];
+        const dz = nextZ - spot.seatPosition[2];
+        const dist = Math.hypot(dx, dz);
+        if (dist <= spot.interactRadius && dist < minDistance) {
+          minDistance = dist;
+          closestSpotId = spot.id;
+        }
       }
-    }
 
-    if (closestSpotId !== lastNearbySeat.current) {
-      lastNearbySeat.current = closestSpotId;
-      setNearbySeatId(closestSpotId);
+      if (closestSpotId !== lastNearbySeat.current) {
+        lastNearbySeat.current = closestSpotId;
+        setNearbySeatId(closestSpotId);
+      }
+    } else if (lastNearbySeat.current !== null) {
+      lastNearbySeat.current = null;
+      setNearbySeatId(null);
     }
   });
 
   return (
-    <group ref={characterGroupRef} position={[0, 0, -11.0]}>
+    <group ref={characterGroupRef} position={[0, 0, 20]}>
       <Player />
     </group>
   );
