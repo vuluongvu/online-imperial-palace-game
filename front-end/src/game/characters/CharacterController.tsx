@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import { Player } from './Player';
 import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
+import { useGameplayStore } from '../../stores/useGameplayStore';
+import { INTERACTABLE_ENTITIES } from '../../data/palaceGameplayData';
 import { CharacterAnimationState } from './CharacterAnimations';
 import {
   resolveCompoundMapMovement,
@@ -14,7 +17,7 @@ const RUN_SPEED = 9.5;
 
 export const CharacterController: React.FC = () => {
   const characterGroupRef = useRef<THREE.Group>(null);
-  const currentPos = useRef<[number, number, number]>([0, 0, 20]);
+  const currentPos = useRef<[number, number, number]>([0, 0, 31]);
   const currentRotationY = useRef<number>(Math.PI);
 
   const setAnimationState = useGameStore((s) => s.setAnimationState);
@@ -26,6 +29,8 @@ export const CharacterController: React.FC = () => {
   const setNearbySeatId = useGameStore((s) => s.setNearbySeatId);
   const teleportTarget = useGameStore((s) => s.teleportTarget);
   const clearTeleportTarget = useGameStore((s) => s.clearTeleportTarget);
+
+  const overheadBubbleText = useGameplayStore((s) => s.overheadBubbleText);
 
   const { camera } = useThree();
   const prevSeatedSpotId = useRef<string | null>(null);
@@ -68,19 +73,66 @@ export const CharacterController: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'KeyF' || e.code === 'KeyE') {
-        const state = useGameStore.getState();
-        if (state.sceneMode === 'compound_map') {
-          // Nếu đang ở trước Chính Điện trên Map, phím F/E sẽ đưa vào Nội Điện Thái Hòa
-          state.setSceneMode('main_hall_interior');
+      // Đóng giao diện tương tác bằng phím ESC
+      if (e.code === 'Escape') {
+        const gpState = useGameplayStore.getState();
+        if (gpState.activeInteractableId) {
+          gpState.closeInteraction();
           return;
         }
+        const gameState = useGameStore.getState();
+        if (gameState.showAssetModal) {
+          gameState.setShowAssetModal(false);
+          return;
+        }
+      }
+
+      // Không bắt phím WASD/E/F khi người chơi đang gõ chữ trong ô input/textarea
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea') {
+        return;
+      }
+
+      // Phím E: Tương tác với NPC hoặc Vật thể công trình gần nhất
+      if (e.code === 'KeyE') {
+        const gpState = useGameplayStore.getState();
+        const gameState = useGameStore.getState();
+
+        if (gpState.activeInteractableId) {
+          gpState.closeInteraction();
+          return;
+        }
+
+        if (gpState.nearbyInteractableId) {
+          gpState.openInteraction(gpState.nearbyInteractableId);
+          return;
+        }
+
+        if (gameState.seatedSpotId) {
+          gameState.standUp();
+          return;
+        }
+        if (gameState.nearbySeatId) {
+          gameState.sitAtSpot(gameState.nearbySeatId);
+          return;
+        }
+        return;
+      }
+
+      // Phím F: Ngồi ghế / Đứng dậy (Ngai vàng, Ghế quan viên, Ghế đá Ngự Hoa Viên)
+      if (e.code === 'KeyF') {
+        const state = useGameStore.getState();
         if (state.seatedSpotId) {
           state.standUp();
         } else if (state.nearbySeatId) {
           state.sitAtSpot(state.nearbySeatId);
         } else {
-          state.sitAtSpot('imperial_throne');
+          const gpState = useGameplayStore.getState();
+          if (gpState.nearbyInteractableId) {
+            gpState.openInteraction(gpState.nearbyInteractableId);
+          } else if (state.sceneMode === 'main_hall_interior') {
+            state.sitAtSpot('imperial_throne');
+          }
         }
         return;
       }
@@ -164,6 +216,7 @@ export const CharacterController: React.FC = () => {
   const moveDir = useRef(new THREE.Vector3());
   const lastAnimState = useRef<CharacterAnimationState>('idle');
   const lastNearbySeat = useRef<string | null>(null);
+  const lastNearbyInteractable = useRef<string | null>(null);
 
   useFrame((_, delta) => {
     const group = characterGroupRef.current;
@@ -175,10 +228,10 @@ export const CharacterController: React.FC = () => {
     const sceneMode = storeState.sceneMode;
     const vInput = storeState.virtualInput;
 
-    // 1. Nếu đang ngồi trên Long Ngai hoặc Ghế Quan Viên trong Nội Điện
-    if (sceneMode === 'main_hall_interior' && activeSeatedId) {
+    // 1. Nếu đang ngồi trên Long Ngai, Ghế Quan Viên hoặc Ghế Đá Ngự Hoa Viên
+    if (activeSeatedId) {
       const seat = SEATING_SPOTS.find((s) => s.id === activeSeatedId);
-      if (seat) {
+      if (seat && (seat.zoneMode ?? 'main_hall_interior') === sceneMode) {
         const [sx, sy, sz] = seat.seatPosition;
         currentPos.current = [sx, sy, sz];
         group.position.set(sx, sy, sz);
@@ -247,14 +300,6 @@ export const CharacterController: React.FC = () => {
           rawTargetX,
           rawTargetZ
         );
-
-        // Kiểm tra hoàn thành nhiệm vụ nhập môn khi đi đến Lại Bộ (X < -14, Z gần -6)
-        if (
-          !storeState.laiBoQuestCompleted &&
-          Math.hypot(nextX - -17.5, nextZ - -6) < 5.5
-        ) {
-          storeState.completeLaiBoQuest();
-        }
       }
 
       const targetAngle = Math.atan2(moveDir.current.x, moveDir.current.z);
@@ -281,34 +326,56 @@ export const CharacterController: React.FC = () => {
       setAnimationState(nextAnim);
     }
 
-    // Kiểm tra ghế ngồi gần nhất trong Nội Điện
-    if (sceneMode === 'main_hall_interior') {
-      let closestSpotId: string | null = null;
-      let minDistance = Infinity;
+    // 3. Kiểm tra đối tượng NPC / Vật thể tương tác gần nhất (Hệ thống tương tác Phím E dùng chung)
+    let closestEntityId: string | null = null;
+    let minEntityDist = Infinity;
 
-      for (const spot of SEATING_SPOTS) {
-        const dx = nextX - spot.seatPosition[0];
-        const dz = nextZ - spot.seatPosition[2];
-        const dist = Math.hypot(dx, dz);
-        if (dist <= spot.interactRadius && dist < minDistance) {
-          minDistance = dist;
-          closestSpotId = spot.id;
-        }
+    for (const entity of INTERACTABLE_ENTITIES) {
+      if (entity.zoneMode !== sceneMode) continue;
+      const dx = nextX - entity.position[0];
+      const dz = nextZ - entity.position[2];
+      const dist = Math.hypot(dx, dz);
+      if (dist <= entity.interactRadius && dist < minEntityDist) {
+        minEntityDist = dist;
+        closestEntityId = entity.id;
       }
+    }
 
-      if (closestSpotId !== lastNearbySeat.current) {
-        lastNearbySeat.current = closestSpotId;
-        setNearbySeatId(closestSpotId);
+    if (closestEntityId !== lastNearbyInteractable.current) {
+      lastNearbyInteractable.current = closestEntityId;
+      useGameplayStore.getState().setNearbyInteractableId(closestEntityId);
+    }
+
+    // 4. Kiểm tra ghế ngồi gần nhất (Trong Nội Điện hoặc Ghế Đá Ngự Hoa Viên)
+    let closestSpotId: string | null = null;
+    let minSeatDist = Infinity;
+
+    for (const spot of SEATING_SPOTS) {
+      const spotMode = spot.zoneMode ?? 'main_hall_interior';
+      if (spotMode !== sceneMode) continue;
+      const dx = nextX - spot.seatPosition[0];
+      const dz = nextZ - spot.seatPosition[2];
+      const dist = Math.hypot(dx, dz);
+      if (dist <= spot.interactRadius && dist < minSeatDist) {
+        minSeatDist = dist;
+        closestSpotId = spot.id;
       }
-    } else if (lastNearbySeat.current !== null) {
-      lastNearbySeat.current = null;
-      setNearbySeatId(null);
+    }
+
+    if (closestSpotId !== lastNearbySeat.current) {
+      lastNearbySeat.current = closestSpotId;
+      setNearbySeatId(closestSpotId);
     }
   });
 
   return (
-    <group ref={characterGroupRef} position={[0, 0, 20]}>
+    <group ref={characterGroupRef} position={[0, 0, 31]}>
       <Player />
+      {overheadBubbleText && (
+        <Html position={[0, 2.35, 0]} center zIndexRange={[20, 0]}>
+          <div className="player-overhead-bubble">{overheadBubbleText}</div>
+        </Html>
+      )}
     </group>
   );
 };

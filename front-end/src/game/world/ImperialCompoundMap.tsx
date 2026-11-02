@@ -10,6 +10,7 @@ import {
 } from './compoundLayout';
 import { Player } from '../characters/Player';
 import { useGameStore } from '../../stores/useGameStore';
+import { useGameplayStore } from '../../stores/useGameplayStore';
 
 /**
  * Component dựng một Tòa Cung Điện Cổ Trang (Đế đá Bạch Ngọc + Tường Đỏ + Hàng Cột + Mái Đao Lưu Ly 1 hoặc 2 tầng)
@@ -646,7 +647,13 @@ export const ImperialCompoundMap: React.FC = () => {
           key={zone.id}
           zone={zone}
           materials={materials}
-          onSelect={(id) => navigateToLandmark(id)}
+          onSelect={(id) => {
+            const prevLandmark = useGameStore.getState().activeLandmarkId;
+            navigateToLandmark(id);
+            if (prevLandmark === id) {
+              useGameplayStore.getState().openBuildingModal(id);
+            }
+          }}
           onEnterInterior={
             zone.id === 'chinh_dien'
               ? () => setSceneMode('main_hall_interior')

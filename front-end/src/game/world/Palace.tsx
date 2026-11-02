@@ -4,13 +4,19 @@ import { MainHall } from './MainHall';
 import { ImperialDragons } from './ImperialDragons';
 import { SideWingsAndAnnex } from './SideWingsAndAnnex';
 import { ImperialCompoundMap } from './ImperialCompoundMap';
+import { BuildingInteractiveProps } from './BuildingInteractiveProps';
 import { useGameStore } from '../../stores/useGameStore';
 
 export const Palace: React.FC = () => {
   const sceneMode = useGameStore((s) => s.sceneMode);
 
   if (sceneMode === 'compound_map') {
-    return <ImperialCompoundMap />;
+    return (
+      <group name="ImperialCompoundRoot">
+        <ImperialCompoundMap />
+        <BuildingInteractiveProps />
+      </group>
+    );
   }
 
   return (
@@ -19,6 +25,7 @@ export const Palace: React.FC = () => {
       <MainHall />
       <ImperialDragons />
       <SideWingsAndAnnex />
+      <BuildingInteractiveProps />
     </group>
   );
 };
