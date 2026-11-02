@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { OfficialRank } from '../game/characters/CharacterMaterials';
+import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 
 export type CameraViewPreset =
+  | 'emperor_closeup'
   | 'overview'
   | 'throne'
   | 'aisle'
@@ -16,6 +19,13 @@ export interface CameraPresetConfig {
 }
 
 export const CAMERA_PRESETS: Record<CameraViewPreset, CameraPresetConfig> = {
+  emperor_closeup: {
+    id: 'emperor_closeup',
+    label: 'Cận Cảnh Hoàng Đế (Chibi)',
+    description: 'Quan sát chi tiết thiết kế Vua Chibi Big Head, Mũ Miện Lưu & Long Bào',
+    position: [0, 2.25, -8.3],
+    target: [0, 1.35, -11.0],
+  },
   overview: {
     id: 'overview',
     label: 'Toàn Cảnh Chính Điện',
@@ -63,12 +73,24 @@ interface PerformanceMetrics {
 
 interface GameState {
   currentPhase: 1 | 2 | 3 | 4;
+  cameraMode: 'follow' | 'preset';
   cameraPreset: CameraViewPreset;
+  characterRank: OfficialRank;
+  animationState: CharacterAnimationState;
+  previewAnimOverride: CharacterAnimationState | null;
+  holdingJadeTablet: boolean;
+  playerPosition: [number, number, number];
   showAssetModal: boolean;
   showWireframe: boolean;
   lanternAnimationEnabled: boolean;
   metrics: PerformanceMetrics;
+  setCameraMode: (mode: 'follow' | 'preset') => void;
   setCameraPreset: (preset: CameraViewPreset) => void;
+  setCharacterRank: (rank: OfficialRank) => void;
+  setAnimationState: (state: CharacterAnimationState) => void;
+  setPreviewAnimOverride: (state: CharacterAnimationState | null) => void;
+  toggleJadeTablet: () => void;
+  setPlayerPosition: (pos: [number, number, number]) => void;
   setShowAssetModal: (show: boolean) => void;
   toggleWireframe: () => void;
   toggleLanternAnimation: () => void;
@@ -76,8 +98,14 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set) => ({
-  currentPhase: 1,
-  cameraPreset: 'overview',
+  currentPhase: 2,
+  cameraMode: 'follow',
+  cameraPreset: 'emperor_closeup',
+  characterRank: 'emperor',
+  animationState: 'idle',
+  previewAnimOverride: null,
+  holdingJadeTablet: true,
+  playerPosition: [0, 0, -11.0],
   showAssetModal: false,
   showWireframe: false,
   lanternAnimationEnabled: true,
@@ -88,7 +116,14 @@ export const useGameStore = create<GameState>((set) => ({
     geometries: 0,
     textures: 0,
   },
-  setCameraPreset: (cameraPreset) => set({ cameraPreset }),
+  setCameraMode: (cameraMode) => set({ cameraMode }),
+  setCameraPreset: (cameraPreset) => set({ cameraPreset, cameraMode: 'preset' }),
+  setCharacterRank: (characterRank) => set({ characterRank }),
+  setAnimationState: (animationState) => set({ animationState }),
+  setPreviewAnimOverride: (previewAnimOverride) => set({ previewAnimOverride }),
+  toggleJadeTablet: () =>
+    set((state) => ({ holdingJadeTablet: !state.holdingJadeTablet })),
+  setPlayerPosition: (playerPosition) => set({ playerPosition }),
   setShowAssetModal: (showAssetModal) => set({ showAssetModal }),
   toggleWireframe: () => set((state) => ({ showWireframe: !state.showWireframe })),
   toggleLanternAnimation: () =>

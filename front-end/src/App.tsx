@@ -1,7 +1,10 @@
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { Physics } from '@react-three/rapier';
 import { Palace } from './game/world/Palace';
+import { PalaceColliders } from './game/physics/PalaceColliders';
+import { CharacterController } from './game/characters/CharacterController';
 import { ThirdPersonCamera } from './game/camera/ThirdPersonCamera';
 import { PerformanceMonitor } from './game/systems/PerformanceMonitor';
 import { SceneInspectOverlay } from './components/SceneInspectOverlay';
@@ -14,20 +17,24 @@ export const App: React.FC = () => {
         shadows
         dpr={[1, 1.75]}
         camera={{
-          fov: 48,
-          near: 0.25,
+          fov: 45,
+          near: 0.2,
           far: 90,
-          position: CAMERA_PRESETS.overview.position,
+          position: CAMERA_PRESETS.emperor_closeup.position,
         }}
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.12,
+          toneMappingExposure: 1.15,
         }}
       >
         <Suspense fallback={null}>
           <Palace />
+          <Physics gravity={[0, -24, 0]}>
+            <PalaceColliders />
+            <CharacterController />
+          </Physics>
           <ThirdPersonCamera />
           <PerformanceMonitor />
         </Suspense>

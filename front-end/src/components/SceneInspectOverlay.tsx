@@ -5,10 +5,26 @@ import {
   useGameStore,
 } from '../stores/useGameStore';
 import { ASSET_MANIFEST } from '../game/assets/assetManifest';
+import {
+  OfficialRank,
+  RANK_OUTFITS,
+} from '../game/characters/CharacterMaterials';
+import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 
 export const SceneInspectOverlay: React.FC = () => {
+  const cameraMode = useGameStore((s) => s.cameraMode);
   const cameraPreset = useGameStore((s) => s.cameraPreset);
   const setCameraPreset = useGameStore((s) => s.setCameraPreset);
+  const setCameraMode = useGameStore((s) => s.setCameraMode);
+
+  const characterRank = useGameStore((s) => s.characterRank);
+  const setCharacterRank = useGameStore((s) => s.setCharacterRank);
+  const animationState = useGameStore((s) => s.animationState);
+  const previewAnimOverride = useGameStore((s) => s.previewAnimOverride);
+  const setPreviewAnimOverride = useGameStore((s) => s.setPreviewAnimOverride);
+  const holdingJadeTablet = useGameStore((s) => s.holdingJadeTablet);
+  const toggleJadeTablet = useGameStore((s) => s.toggleJadeTablet);
+
   const showAssetModal = useGameStore((s) => s.showAssetModal);
   const setShowAssetModal = useGameStore((s) => s.setShowAssetModal);
   const showWireframe = useGameStore((s) => s.showWireframe);
@@ -18,16 +34,21 @@ export const SceneInspectOverlay: React.FC = () => {
   const metrics = useGameStore((s) => s.metrics);
 
   const presets = Object.values(CAMERA_PRESETS);
+  const ranks = Object.values(RANK_OUTFITS);
+  const effectiveAnim = previewAnimOverride ?? animationState;
 
   return (
     <div className="overlay-container">
-      {/* Header thương hiệu & Trạng thái Phase 1 */}
+      {/* Header thương hiệu & Trạng thái */}
       <header className="top-bar">
         <div className="brand-badge">
           <span className="imperial-seal">ĐẠI NGHIỆP</span>
           <div className="brand-text">
-            <h1>THÁI HÒA CHÍNH ĐIỆN</h1>
-            <p>Phase 1: 3D Architecture, Instanced Props & Imperial Lighting</p>
+            <h1>THIẾT KẾ HOÀNG ĐẾ CHIBI & THÁI HÒA ĐIỆN</h1>
+            <p>
+              Tỷ lệ Chibi Big Head (43% chiều cao) • Long Bào Hoàng Kim • Mũ Miện Lưu •
+              Điều khiển WASD
+            </p>
           </div>
         </div>
 
@@ -68,39 +89,123 @@ export const SceneInspectOverlay: React.FC = () => {
         </div>
       </header>
 
-      {/* Thanh chọn góc nhìn kiểm tra bố cục Chính điện */}
-      <aside className="camera-panel">
-        <div className="panel-title">GÓC MÁY KIỂM TRA BỐ CỤC</div>
-        <div className="preset-list">
-          {presets.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              className={`preset-btn ${cameraPreset === preset.id ? 'selected' : ''}`}
-              onClick={() => setCameraPreset(preset.id as CameraViewPreset)}
-            >
-              <span className="preset-name">{preset.label}</span>
-              <span className="preset-desc">{preset.description}</span>
-            </button>
-          ))}
-        </div>
-        <div className="controls-hint">
-          <span>Chuột trái: Xoay góc nhìn</span>
-          <span>Chuột phải: Di chuyển tâm</span>
-          <span>Con lăn: Thu phóng (Zoom)</span>
-        </div>
-      </aside>
+      <div className="side-panels-row">
+        {/* Panel Trái: Thiết kế Nhân vật Vua & Phẩm cấp Quan viên */}
+        <aside className="character-panel">
+          <div className="panel-title">NHÂN VẬT CHIBI BIG HEAD & TRANG PHỤC</div>
 
-      {/* Modal báo cáo minh bạch trạng thái 3D Asset & đề xuất nguồn GLB chuẩn */}
+          <div className="rank-list">
+            {ranks.map((item) => (
+              <button
+                key={item.rank}
+                type="button"
+                className={`preset-btn ${characterRank === item.rank ? 'selected' : ''}`}
+                onClick={() => setCharacterRank(item.rank as OfficialRank)}
+              >
+                <div className="rank-header-row">
+                  <span
+                    className="color-dot"
+                    style={{ backgroundColor: item.primaryColor }}
+                  />
+                  <span className="preset-name">{item.titleVi}</span>
+                </div>
+                <span className="preset-desc">{item.subtitleVi}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="sub-section-title">CHUYỂN ĐỘNG (ANIMATION)</div>
+          <div className="anim-btn-group">
+            {(
+              [
+                { id: null, label: 'Theo WASD' },
+                { id: 'idle', label: 'Idle (Thở)' },
+                { id: 'walk', label: 'Walk (Đi)' },
+                { id: 'run', label: 'Run (Chạy)' },
+              ] as { id: CharacterAnimationState | null; label: string }[]
+            ).map((btn) => (
+              <button
+                key={String(btn.id)}
+                type="button"
+                className={`mini-btn ${previewAnimOverride === btn.id ? 'active' : ''}`}
+                onClick={() => setPreviewAnimOverride(btn.id)}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="accessory-row">
+            <button
+              type="button"
+              className={`action-btn full-width ${holdingJadeTablet ? 'active' : ''}`}
+              onClick={toggleJadeTablet}
+            >
+              {holdingJadeTablet
+                ? 'Đang cầm: Ngọc Khuê / Hốt Triều'
+                : 'Bỏ cầm Ngọc Khuê / Hốt Triều'}
+            </button>
+          </div>
+
+          <div className="controls-hint">
+            <span>
+              Trạng thái: <strong>{effectiveAnim.toUpperCase()}</strong>
+            </span>
+            <span>
+              Di chuyển: <strong>W A S D / Phím mũi tên</strong>
+            </span>
+            <span>
+              Chạy nhanh: <strong>Giữ phím Shift + WASD</strong>
+            </span>
+          </div>
+        </aside>
+
+        {/* Panel Phải: Chọn góc máy & Chế độ Camera */}
+        <aside className="camera-panel">
+          <div className="panel-title">CHẾ ĐỘ CAMERA & GÓC NHÌN</div>
+
+          <button
+            type="button"
+            className={`preset-btn follow-mode-btn ${
+              cameraMode === 'follow' ? 'selected' : ''
+            }`}
+            onClick={() => setCameraMode('follow')}
+          >
+            <span className="preset-name">Camera Third-Person (Theo Vua)</span>
+            <span className="preset-desc">
+              Bám theo nhân vật khi bấm WASD, xoay chuột 360° & chống xuyên tường
+            </span>
+          </button>
+
+          <div className="preset-list" style={{ marginTop: 8 }}>
+            {presets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                className={`preset-btn ${
+                  cameraMode === 'preset' && cameraPreset === preset.id ? 'selected' : ''
+                }`}
+                onClick={() => setCameraPreset(preset.id as CameraViewPreset)}
+              >
+                <span className="preset-name">{preset.label}</span>
+                <span className="preset-desc">{preset.description}</span>
+              </button>
+            ))}
+          </div>
+        </aside>
+      </div>
+
+      {/* Modal báo cáo minh bạch trạng thái 3D Asset */}
       {showAssetModal && (
         <div className="modal-backdrop" onClick={() => setShowAssetModal(false)}>
           <div className="asset-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2>Quản Lý Tài Nguyên 3D (Asset Manifest – Phase 1)</h2>
+                <h2>Quản Lý Tài Nguyên 3D (Asset Manifest)</h2>
                 <p>
-                  Tuân thủ mục 9 & 14: Không giả mạo file GLB. Các vật thể lặp lại đang dùng{' '}
-                  <code>InstancedMesh</code> và sẵn sàng thay thế bằng file <code>.glb</code>.
+                  Tuân thủ mục 9 & 14: Không giả mạo file GLB. Nhân vật Hoàng Đế Chibi &
+                  Chính điện được module hóa để thay thế bằng file <code>.glb</code> bất kỳ
+                  lúc nào.
                 </p>
               </div>
               <button
@@ -136,7 +241,7 @@ export const SceneInspectOverlay: React.FC = () => {
                         <span className={`status-tag ${item.status}`}>
                           {item.status === 'placeholder_instanced'
                             ? 'Instanced Placeholder'
-                            : 'Procedural Placeholder'}
+                            : 'Procedural Chibi / Mesh'}
                         </span>
                       </td>
                       <td>
