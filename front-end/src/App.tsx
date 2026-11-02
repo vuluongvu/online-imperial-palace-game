@@ -14,7 +14,7 @@ export const App: React.FC = () => {
     <main className="app-viewport">
       <Canvas
         shadows
-        dpr={[1, 1.75]}
+        dpr={[1, 1.35]}
         camera={{
           fov: 45,
           near: 0.2,

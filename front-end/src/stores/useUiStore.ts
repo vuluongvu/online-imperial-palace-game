@@ -32,6 +32,8 @@ interface UiState {
   toggleChatCollapsed: () => void;
   chatChannel: ChatChannel;
   setChatChannel: (channel: ChatChannel) => void;
+  miniMapOpen: boolean;
+  toggleMiniMap: () => void;
 
   // Điều khiển ảo WASD góc dưới
   virtualPadEnabled: boolean;
@@ -76,12 +78,16 @@ export const useUiStore = create<UiState>((set, get) => ({
   toggleQuestTracker: () =>
     set((s) => ({ questTrackerCollapsed: !s.questTrackerCollapsed })),
 
-  chatCollapsed: false,
+  chatCollapsed: true,
   toggleChatCollapsed: () =>
     set((s) => ({ chatCollapsed: !s.chatCollapsed })),
 
   chatChannel: 'all',
   setChatChannel: (chatChannel) => set({ chatChannel }),
+
+  miniMapOpen: false,
+  toggleMiniMap: () =>
+    set((s) => ({ miniMapOpen: !s.miniMapOpen })),
 
   virtualPadEnabled: true,
   toggleVirtualPad: () =>

@@ -8,6 +8,8 @@ export const MiniMap: React.FC = () => {
   const playerPosition = useGameStore((s) => s.playerPosition);
   const activeLandmarkId = useGameStore((s) => s.activeLandmarkId);
   const openWindow = useUiStore((s) => s.openWindow);
+  const miniMapOpen = useUiStore((s) => s.miniMapOpen);
+  const toggleMiniMap = useUiStore((s) => s.toggleMiniMap);
 
   // Map world bounds to minimap coordinates
   // Compound map world coordinates roughly X: [-40, 40], Z: [-40, 48]
@@ -19,8 +21,49 @@ export const MiniMap: React.FC = () => {
 
   const currentLandmark = PALACE_LANDMARKS.find((l) => l.id === activeLandmarkId);
 
+  if (!miniMapOpen) {
+    return (
+      <div className="hud-minimap-collapsed">
+        <button
+          type="button"
+          className="hud-minimap-toggle-pill"
+          onClick={() => openWindow('map')}
+          title="Mở Bản Đồ Toàn Cảnh Hoàng Cung (Phím M)"
+        >
+          <span className="minimap-pill-icon">🗺️</span>
+          <span className="minimap-pill-text">
+            {sceneMode === 'main_hall_interior'
+              ? 'Thái Hòa Điện'
+              : currentLandmark?.name ?? 'Bản Đồ [M]'}
+          </span>
+          <span
+            className="minimap-radar-peek-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMiniMap();
+            }}
+            title="Bật/Tắt Radar thu nhỏ"
+          >
+            🧭
+          </span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="hud-minimap-container">
+      <div className="hud-minimap-header">
+        <span className="minimap-header-title">🧭 Radar</span>
+        <button
+          type="button"
+          className="minimap-close-btn"
+          onClick={toggleMiniMap}
+          title="Thu gọn Radar"
+        >
+          ✕
+        </button>
+      </div>
       <div
         className="hud-minimap-radar"
         onClick={() => openWindow('map')}

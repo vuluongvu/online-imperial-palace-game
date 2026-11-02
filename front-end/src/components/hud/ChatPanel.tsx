@@ -26,8 +26,22 @@ export const ChatPanel: React.FC = () => {
     }, 50);
   };
 
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        className="hud-chat-collapsed-pill"
+        onClick={toggleCollapse}
+        title="Mở khung trò chuyện"
+      >
+        <span className="chat-pill-icon">💬</span>
+        <span className="chat-pill-text">Trò Chuyện</span>
+      </button>
+    );
+  }
+
   return (
-    <div className={`hud-chat-panel ${collapsed ? 'collapsed' : ''}`}>
+    <div className="hud-chat-panel">
       <div className="chat-panel-header">
         <div className="chat-tabs-row">
           {(
