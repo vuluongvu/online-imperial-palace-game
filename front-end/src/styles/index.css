@@ -133,10 +133,53 @@ body,
   background: linear-gradient(135deg, #b88422, #dca83a);
   color: #241008;
   border-color: #fae094;
+  font-weight: 700;
 }
 
 .action-btn.full-width {
   width: 100%;
+}
+
+.center-interact-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.interact-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(64, 18, 12, 0.95), rgba(38, 12, 8, 0.95));
+  border: 1.5px solid #f6d379;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  font-size: 0.85rem;
+  color: #f4ead5;
+}
+
+.toast-btn {
+  background: linear-gradient(135deg, #c79126, #f0c35e);
+  color: #241008;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.throne-actions-box {
+  margin-bottom: 8px;
+}
+
+.seat-btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 .side-panels-row {
@@ -150,7 +193,7 @@ body,
 .character-panel,
 .camera-panel {
   pointer-events: auto;
-  width: 315px;
+  width: 320px;
   max-height: calc(100vh - 110px);
   overflow-y: auto;
   background: linear-gradient(180deg, rgba(36, 16, 11, 0.92), rgba(22, 10, 7, 0.94));
@@ -237,7 +280,7 @@ body,
 
 .anim-btn-group {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
 
@@ -247,7 +290,7 @@ body,
   border: 1px solid rgba(220, 168, 58, 0.3);
   border-radius: 6px;
   padding: 6px 8px;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
 }

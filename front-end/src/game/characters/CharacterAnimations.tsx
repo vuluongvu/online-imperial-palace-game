@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type CharacterAnimationState = 'idle' | 'walk' | 'run';
+export type CharacterAnimationState = 'idle' | 'walk' | 'run' | 'sit';
 
 export interface ChibiRigRefs {
   root: THREE.Group | null;
@@ -23,6 +23,7 @@ export interface ChibiRigRefs {
  * - Idle: Thở nhẹ, đầu nghiêng uy nghiêm, tua rua miện lưu đung đưa nhẹ, mắt chớp tự nhiên.
  * - Walk: Bước chân khoan thai của bậc Đế Vương / Quan Viên, tay áo thụng vung nhẹ.
  * - Run: Chạy nhanh chibi năng động, độ nảy cơ thể rõ ràng, tay chân vung biên độ lớn.
+ * - Sit: Tư thế Ngự Triều trên Long Ngai hoặc ngồi ghế quan viên (gập chân, đặt tay lên tay vịn uy phong).
  */
 export function updateChibiAnimation(
   rig: ChibiRigRefs,
@@ -50,7 +51,25 @@ export function updateChibiAnimation(
 
   let tasselSway = 0;
 
-  if (state === 'idle') {
+  if (state === 'sit') {
+    const breathPhase = elapsedTime * 1.8;
+    targetBodyY = -0.15 + Math.sin(breathPhase) * 0.012;
+    targetBodyPitch = -0.03;
+    targetHeadPitch = 0.04 + Math.sin(breathPhase) * 0.018;
+    targetHeadYaw = Math.sin(elapsedTime * 0.55) * 0.06;
+
+    // Hai tay đặt uy nghiêm lên tay vịn Long Ngai / Ghế Thái Sư
+    targetLeftArmX = -0.58 + Math.sin(breathPhase) * 0.02;
+    targetRightArmX = -0.58 + Math.sin(breathPhase) * 0.02;
+    targetLeftArmZ = 0.26;
+    targetRightArmZ = -0.26;
+
+    // Hai chân gập vuông góc tư thế ngồi ngai vàng
+    targetLeftLegX = -1.42;
+    targetRightLegX = -1.42;
+
+    tasselSway = Math.sin(elapsedTime * 2.0) * 0.028;
+  } else if (state === 'idle') {
     const breathPhase = elapsedTime * 2.1;
     targetBodyY = Math.sin(breathPhase) * 0.018;
     targetHeadPitch = Math.sin(breathPhase - 0.5) * 0.025;
@@ -187,7 +206,8 @@ export function updateChibiAnimation(
 
   // Cánh chuồn mũ Ô Sa rung nhẹ khi di chuyển
   if (rig.leftWingMesh && rig.rightWingMesh) {
-    const wingBounce = Math.sin(elapsedTime * 9) * (state === 'idle' ? 0.01 : 0.06);
+    const wingBounce =
+      Math.sin(elapsedTime * 9) * (state === 'idle' || state === 'sit' ? 0.01 : 0.06);
     rig.leftWingMesh.rotation.z = 0.12 + wingBounce;
     rig.rightWingMesh.rotation.z = -0.12 - wingBounce;
   }

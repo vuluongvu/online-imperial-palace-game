@@ -2,6 +2,7 @@ import React from 'react';
 import {
   CAMERA_PRESETS,
   CameraViewPreset,
+  SEATING_SPOTS,
   useGameStore,
 } from '../stores/useGameStore';
 import { ASSET_MANIFEST } from '../game/assets/assetManifest';
@@ -25,6 +26,11 @@ export const SceneInspectOverlay: React.FC = () => {
   const holdingJadeTablet = useGameStore((s) => s.holdingJadeTablet);
   const toggleJadeTablet = useGameStore((s) => s.toggleJadeTablet);
 
+  const seatedSpotId = useGameStore((s) => s.seatedSpotId);
+  const nearbySeatId = useGameStore((s) => s.nearbySeatId);
+  const sitAtSpot = useGameStore((s) => s.sitAtSpot);
+  const standUp = useGameStore((s) => s.standUp);
+
   const showAssetModal = useGameStore((s) => s.showAssetModal);
   const setShowAssetModal = useGameStore((s) => s.setShowAssetModal);
   const showWireframe = useGameStore((s) => s.showWireframe);
@@ -37,6 +43,9 @@ export const SceneInspectOverlay: React.FC = () => {
   const ranks = Object.values(RANK_OUTFITS);
   const effectiveAnim = previewAnimOverride ?? animationState;
 
+  const currentSeatedSpot = SEATING_SPOTS.find((s) => s.id === seatedSpotId);
+  const currentNearbySpot = SEATING_SPOTS.find((s) => s.id === nearbySeatId);
+
   return (
     <div className="overlay-container">
       {/* Header thương hiệu & Trạng thái */}
@@ -44,10 +53,10 @@ export const SceneInspectOverlay: React.FC = () => {
         <div className="brand-badge">
           <span className="imperial-seal">ĐẠI NGHIỆP</span>
           <div className="brand-text">
-            <h1>THIẾT KẾ HOÀNG ĐẾ CHIBI & THÁI HÒA ĐIỆN</h1>
+            <h1>THÁI HÒA ĐIỆN – CỬU LONG HỘ NGAI & HOÀNG ĐẾ CHIBI</h1>
             <p>
-              Tỷ lệ Chibi Big Head (43% chiều cao) • Long Bào Hoàng Kim • Mũ Miện Lưu •
-              Điều khiển WASD
+              Cự Long Quấn Cột Bàn Long • Ngự Long Ngai & Ngồi Ghế Quan Viên (Phím F / E) •
+              WASD Movement
             </p>
           </div>
         </div>
@@ -89,11 +98,71 @@ export const SceneInspectOverlay: React.FC = () => {
         </div>
       </header>
 
-      <div className="side-panels-row">
-        {/* Panel Trái: Thiết kế Nhân vật Vua & Phẩm cấp Quan viên */}
-        <aside className="character-panel">
-          <div className="panel-title">NHÂN VẬT CHIBI BIG HEAD & TRANG PHỤC</div>
+      {/* Thông báo tương tác Ngự Long Ngai / Ngồi Ghế nổi ở giữa màn hình */}
+      <div className="center-interact-banner">
+        {currentSeatedSpot ? (
+          <div className="interact-toast seated">
+            <span>
+              Đang ngồi tại: <strong>{currentSeatedSpot.label}</strong>
+            </span>
+            <button type="button" className="toast-btn" onClick={standUp}>
+              Đứng Dậy [Phím F / Space / WASD]
+            </button>
+          </div>
+        ) : currentNearbySpot ? (
+          <div className="interact-toast nearby">
+            <span>
+              Gần vị trí: <strong>{currentNearbySpot.label}</strong>
+            </span>
+            <button
+              type="button"
+              className="toast-btn"
+              onClick={() => sitAtSpot(currentNearbySpot.id)}
+            >
+              Ngồi Xuống [Phím F / E]
+            </button>
+          </div>
+        ) : null}
+      </div>
 
+      <div className="side-panels-row">
+        {/* Panel Trái: Thiết kế Nhân vật Vua, Ngự Ngai & Phẩm cấp Quan viên */}
+        <aside className="character-panel">
+          <div className="panel-title">NHÂN VẬT CHIBI & TƯƠNG TÁC NGỰ TRIỀU</div>
+
+          {/* Nút Ngự Lên Long Ngai / Ngồi Ghế Quan Viên nhanh */}
+          <div className="throne-actions-box">
+            {seatedSpotId ? (
+              <button
+                type="button"
+                className="action-btn gold full-width"
+                onClick={standUp}
+              >
+                Đứng Dậy Khỏi {currentSeatedSpot?.label ?? 'Ghế'} (Phím F)
+              </button>
+            ) : (
+              <div className="seat-btn-grid">
+                <button
+                  type="button"
+                  className="action-btn gold"
+                  onClick={() => sitAtSpot('imperial_throne')}
+                >
+                  Ngự Lên Long Ngai (F)
+                </button>
+                <button
+                  type="button"
+                  className="action-btn active"
+                  onClick={() =>
+                    sitAtSpot(nearbySeatId ?? 'official_chair_0')
+                  }
+                >
+                  Ngồi Ghế Quan Viên
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="sub-section-title">PHẨM CẤP TRANG PHỤC</div>
           <div className="rank-list">
             {ranks.map((item) => (
               <button
@@ -122,6 +191,7 @@ export const SceneInspectOverlay: React.FC = () => {
                 { id: 'idle', label: 'Idle (Thở)' },
                 { id: 'walk', label: 'Walk (Đi)' },
                 { id: 'run', label: 'Run (Chạy)' },
+                { id: 'sit', label: 'Sit (Ngồi)' },
               ] as { id: CharacterAnimationState | null; label: string }[]
             ).map((btn) => (
               <button
@@ -152,10 +222,10 @@ export const SceneInspectOverlay: React.FC = () => {
               Trạng thái: <strong>{effectiveAnim.toUpperCase()}</strong>
             </span>
             <span>
-              Di chuyển: <strong>W A S D / Phím mũi tên</strong>
+              Di chuyển: <strong>W A S D / Phím mũi tên (Shift: Chạy)</strong>
             </span>
             <span>
-              Chạy nhanh: <strong>Giữ phím Shift + WASD</strong>
+              Ngự Ngai / Ngồi ghế: <strong>Phím [F] hoặc [E]</strong>
             </span>
           </div>
         </aside>

@@ -7,15 +7,17 @@ import {
   RigidBody,
 } from '@react-three/rapier';
 import { Player } from './Player';
-import { useGameStore } from '../../stores/useGameStore';
+import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
 import { CharacterAnimationState } from './CharacterAnimations';
 
 const WALK_SPEED = 4.2;
 const RUN_SPEED = 7.6;
 
 /**
- * Bộ điều khiển nhân vật Chibi (WASD + Shift để chạy + Xoay mặt mượt theo hướng di chuyển).
- * Sử dụng Rapier Physics để xử lý va chạm với cột, tường, bàn ghế và bước lên bậc Bệ Rồng.
+ * Bộ điều khiển nhân vật Chibi:
+ * - WASD / Phím mũi tên để di chuyển, giữ Shift để chạy nhanh.
+ * - Phím [F] hoặc [E] để Ngự Long Ngai / Ngồi vào Ghế Quan Viên gần nhất (hoặc đứng dậy khi đang ngồi).
+ * - Tích hợp Rapier Physics chống xuyên cột/tường/bàn ghế và bước lên bậc tam cấp Bệ Rồng.
  */
 export const CharacterController: React.FC = () => {
   const rigidBodyRef = useRef<RapierRigidBody>(null);
@@ -26,10 +28,13 @@ export const CharacterController: React.FC = () => {
   const setPlayerPosition = useGameStore((s) => s.setPlayerPosition);
   const setCameraMode = useGameStore((s) => s.setCameraMode);
   const setPreviewAnimOverride = useGameStore((s) => s.setPreviewAnimOverride);
+  const seatedSpotId = useGameStore((s) => s.seatedSpotId);
+  const standUp = useGameStore((s) => s.standUp);
+  const setNearbySeatId = useGameStore((s) => s.setNearbySeatId);
 
   const { camera } = useThree();
+  const prevSeatedSpotId = useRef<string | null>(null);
 
-  // Trạng thái phím bấm
   const keys = useRef({
     forward: false,
     backward: false,
@@ -38,8 +43,47 @@ export const CharacterController: React.FC = () => {
     shift: false,
   });
 
+  // Khi chuyển từ trạng thái Ngồi -> Đứng dậy, đặt nhân vật ra vị trí đứng trước ghế/ngai
+  useEffect(() => {
+    const body = rigidBodyRef.current;
+    if (!body) return;
+
+    if (prevSeatedSpotId.current && !seatedSpotId) {
+      const prevSpot = SEATING_SPOTS.find((s) => s.id === prevSeatedSpotId.current);
+      if (prevSpot) {
+        const [dx, dy, dz] = prevSpot.dismountPosition;
+        body.setTranslation({ x: dx, y: dy + 0.85, z: dz }, true);
+        body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        setPlayerPosition([dx, dy, dz]);
+      }
+    }
+    prevSeatedSpotId.current = seatedSpotId;
+  }, [seatedSpotId, setPlayerPosition]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Phím F hoặc E: Ngồi xuống ghế gần nhất / Ngự Long Ngai hoặc Đứng dậy
+      if (e.code === 'KeyF' || e.code === 'KeyE') {
+        const state = useGameStore.getState();
+        if (state.seatedSpotId) {
+          state.standUp();
+        } else if (state.nearbySeatId) {
+          state.sitAtSpot(state.nearbySeatId);
+        } else {
+          // Nếu đang đứng xa, mặc định phím F/E cho phép Ngự thẳng lên Long Ngai
+          state.sitAtSpot('imperial_throne');
+        }
+        return;
+      }
+
+      if (e.code === 'Space') {
+        const state = useGameStore.getState();
+        if (state.seatedSpotId) {
+          state.standUp();
+          return;
+        }
+      }
+
       switch (e.code) {
         case 'KeyW':
         case 'ArrowUp':
@@ -64,7 +108,12 @@ export const CharacterController: React.FC = () => {
         default:
           return;
       }
-      // Khi người chơi bấm WASD, tự động chuyển sang camera theo sau nhân vật và tắt override preview
+
+      // Nếu đang ngồi trên ghế/ngai mà bấm WASD thì tự động đứng dậy để di chuyển
+      const currentSeated = useGameStore.getState().seatedSpotId;
+      if (currentSeated) {
+        standUp();
+      }
       setCameraMode('follow');
       setPreviewAnimOverride(null);
     };
@@ -100,21 +149,50 @@ export const CharacterController: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [setCameraMode, setPreviewAnimOverride]);
+  }, [setCameraMode, setPreviewAnimOverride, standUp]);
 
   const forwardVec = useRef(new THREE.Vector3());
   const rightVec = useRef(new THREE.Vector3());
   const moveDir = useRef(new THREE.Vector3());
   const lastAnimState = useRef<CharacterAnimationState>('idle');
+  const lastNearbySeat = useRef<string | null>(null);
 
   useFrame((_, delta) => {
     const body = rigidBodyRef.current;
     if (!body) return;
 
+    const activeSeatedId = useGameStore.getState().seatedSpotId;
+
+    // 1. Nếu nhân vật đang ngồi trên Long Ngai hoặc Ghế Quan Viên
+    if (activeSeatedId) {
+      const seat = SEATING_SPOTS.find((s) => s.id === activeSeatedId);
+      if (seat) {
+        const [sx, sy, sz] = seat.seatPosition;
+        body.setTranslation({ x: sx, y: sy + 0.85, z: sz }, true);
+        body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+
+        let angleDiff = seat.rotationY - currentRotationY.current;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        currentRotationY.current += angleDiff * (1 - Math.exp(-14 * delta));
+
+        if (characterGroupRef.current) {
+          characterGroupRef.current.rotation.y = currentRotationY.current;
+        }
+
+        if (lastAnimState.current !== 'sit') {
+          lastAnimState.current = 'sit';
+          setAnimationState('sit');
+        }
+        setPlayerPosition([sx, sy, sz]);
+        return;
+      }
+    }
+
+    // 2. Di chuyển tự do bằng WASD
     const { forward, backward, left, right, shift } = keys.current;
     const isMoving = forward || backward || left || right;
 
-    // Tính hướng di chuyển dựa trên hướng nhìn ngang của Camera
     camera.getWorldDirection(forwardVec.current);
     forwardVec.current.y = 0;
     if (forwardVec.current.lengthSq() > 0.0001) {
@@ -123,7 +201,9 @@ export const CharacterController: React.FC = () => {
       forwardVec.current.set(0, 0, -1);
     }
 
-    rightVec.current.crossVectors(forwardVec.current, THREE.Object3D.DEFAULT_UP).normalize();
+    rightVec.current
+      .crossVectors(forwardVec.current, THREE.Object3D.DEFAULT_UP)
+      .normalize();
 
     moveDir.current.set(0, 0, 0);
     if (forward) moveDir.current.add(forwardVec.current);
@@ -146,7 +226,6 @@ export const CharacterController: React.FC = () => {
         true
       );
 
-      // Xoay mặt nhân vật mượt mà theo hướng di chuyển (Frame-rate independent)
       const targetAngle = Math.atan2(moveDir.current.x, moveDir.current.z);
       let angleDiff = targetAngle - currentRotationY.current;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
@@ -157,7 +236,6 @@ export const CharacterController: React.FC = () => {
         characterGroupRef.current.rotation.y = currentRotationY.current;
       }
     } else {
-      // Giảm tốc nhanh khi thả phím để không bị trượt băng
       body.setLinvel(
         {
           x: currentLinVel.x * Math.exp(-18 * delta),
@@ -168,7 +246,6 @@ export const CharacterController: React.FC = () => {
       );
     }
 
-    // Cập nhật trạng thái Animation khi có thay đổi
     const nextAnim: CharacterAnimationState = !isMoving
       ? 'idle'
       : shift
@@ -180,9 +257,30 @@ export const CharacterController: React.FC = () => {
       setAnimationState(nextAnim);
     }
 
-    // Đồng bộ tọa độ nhân vật cho Camera theo dõi
     const pos = body.translation();
-    setPlayerPosition([pos.x, pos.y - 0.85, pos.z]);
+    const px = pos.x;
+    const py = pos.y - 0.85;
+    const pz = pos.z;
+    setPlayerPosition([px, py, pz]);
+
+    // Kiểm tra khoảng cách tới Long Ngai & 12 Ghế Quan Viên để hiện gợi ý ngồi
+    let closestSpotId: string | null = null;
+    let minDistance = Infinity;
+
+    for (const spot of SEATING_SPOTS) {
+      const dx = px - spot.seatPosition[0];
+      const dz = pz - spot.seatPosition[2];
+      const dist = Math.hypot(dx, dz);
+      if (dist <= spot.interactRadius && dist < minDistance) {
+        minDistance = dist;
+        closestSpotId = spot.id;
+      }
+    }
+
+    if (closestSpotId !== lastNearbySeat.current) {
+      lastNearbySeat.current = closestSpotId;
+      setNearbySeatId(closestSpotId);
+    }
   });
 
   return (
