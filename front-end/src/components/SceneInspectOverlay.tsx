@@ -6,6 +6,12 @@ import {
   SEATING_SPOTS,
   useGameStore,
 } from '../stores/useGameStore';
+import { useGameplayStore } from '../stores/useGameplayStore';
+import {
+  INTERACTABLE_ENTITIES,
+  OFFICIAL_PROMOTION_LADDER,
+  PALACE_QUEST_CHAIN,
+} from '../data/palaceGameplayData';
 import { ASSET_MANIFEST } from '../game/assets/assetManifest';
 import {
   OfficialRank,
@@ -13,6 +19,7 @@ import {
 } from '../game/characters/CharacterMaterials';
 import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 import { PALACE_LANDMARKS } from '../game/world/compoundLayout';
+import { BuildingGameplayModal } from './BuildingGameplayModal';
 
 const INTERIOR_ROOM_TABS: {
   key: InteriorRoomKey;
@@ -72,7 +79,6 @@ export const SceneInspectOverlay: React.FC = () => {
   const nearbySeatId = useGameStore((s) => s.nearbySeatId);
   const sitAtSpot = useGameStore((s) => s.sitAtSpot);
   const standUp = useGameStore((s) => s.standUp);
-  const laiBoQuestCompleted = useGameStore((s) => s.laiBoQuestCompleted);
 
   const showInspectorDrawer = useGameStore((s) => s.showInspectorDrawer);
   const toggleInspectorDrawer = useGameStore((s) => s.toggleInspectorDrawer);
@@ -82,6 +88,18 @@ export const SceneInspectOverlay: React.FC = () => {
   const toggleWireframe = useGameStore((s) => s.toggleWireframe);
   const metrics = useGameStore((s) => s.metrics);
 
+  // Gameplay Store
+  const meritPoints = useGameplayStore((s) => s.meritPoints);
+  const silverCoins = useGameplayStore((s) => s.silverCoins);
+  const officialGradeIndex = useGameplayStore((s) => s.officialGradeIndex);
+  const nearbyInteractableId = useGameplayStore((s) => s.nearbyInteractableId);
+  const openInteraction = useGameplayStore((s) => s.openInteraction);
+  const openBuildingModal = useGameplayStore((s) => s.openBuildingModal);
+  const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
+  const questStatuses = useGameplayStore((s) => s.questStatuses);
+  const toasts = useGameplayStore((s) => s.toasts);
+  const dismissToast = useGameplayStore((s) => s.dismissToast);
+
   const [activeBottomDrawer, setActiveBottomDrawer] = useState<
     'character' | 'landmarks' | null
   >(null);
@@ -90,17 +108,20 @@ export const SceneInspectOverlay: React.FC = () => {
   const ranks = Object.values(RANK_OUTFITS);
   const currentOutfit = RANK_OUTFITS[characterRank];
   const effectiveAnim = previewAnimOverride ?? animationState;
+  const currentGrade = OFFICIAL_PROMOTION_LADDER[officialGradeIndex];
 
   const currentSeatedSpot = SEATING_SPOTS.find((s) => s.id === seatedSpotId);
   const currentNearbySpot = SEATING_SPOTS.find((s) => s.id === nearbySeatId);
+  const currentNearbyEntity = INTERACTABLE_ENTITIES.find(
+    (e) => e.id === nearbyInteractableId
+  );
 
   return (
     <div className="mmorpg-hud-root">
       {/* ================================================================= */}
-      {/* 1. TOP BAR: AVATAR NHÂN VẬT (TRÁI) & TIỀN TỆ / CÀI ĐẶT (PHẢI)     */}
+      {/* 1. TOP BAR: AVATAR NHÂN VẬT (TRÁI) & CÔNG TRẠNG / TIỀN TỆ (PHẢI)  */}
       {/* ================================================================= */}
       <header className="hud-top-row">
-        {/* Khung Avatar Nhân Vật góc trên bên trái (Giống ảnh mẫu) */}
         <div
           className="hud-avatar-card"
           onClick={() =>
@@ -108,7 +129,7 @@ export const SceneInspectOverlay: React.FC = () => {
               activeBottomDrawer === 'character' ? null : 'character'
             )
           }
-          title="Nhấn để đổi Phẩm cấp Vua / Đại Thần / Quan Viên"
+          title="Nhấn để xem Phẩm cấp, Trang phục & Hồ sơ Thăng chức"
         >
           <div className="avatar-portrait-ring">
             <div
@@ -125,27 +146,17 @@ export const SceneInspectOverlay: React.FC = () => {
                 {characterRank === 'emperor' ? '👑' : '🎓'}
               </span>
             </div>
-            <span className="avatar-lv-badge">
-              {characterRank === 'emperor' ? 'Thiên Tử' : 'Lv.1'}
-            </span>
+            <span className="avatar-lv-badge">{currentGrade.gradeCode}</span>
           </div>
 
           <div className="avatar-info-col">
             <div className="avatar-name">
               {characterRank === 'emperor' ? 'Minh Vương Đế' : 'Minh Vương'}
             </div>
-            <div className="avatar-rank-title">
-              {characterRank === 'emperor'
-                ? 'Cửu Ngũ Chí Tôn • Hoàng Đế'
-                : characterRank === 'minister'
-                  ? 'Thượng Thư • Nhất phẩm'
-                  : characterRank === 'mid_official'
-                    ? 'Lang Trung • Ngũ phẩm'
-                    : 'Chủ sự • Cửu phẩm'}
-            </div>
+            <div className="avatar-rank-title">{currentGrade.titleVi}</div>
             <div className="avatar-wealth-row">
-              <span className="coin-dot">🪙</span>
-              <span>{characterRank === 'emperor' ? '99,999' : '0'}</span>
+              <span className="coin-dot">🎖️</span>
+              <span>Công Trạng: {meritPoints}</span>
             </div>
           </div>
         </div>
@@ -157,7 +168,7 @@ export const SceneInspectOverlay: React.FC = () => {
             className={`zone-tab-btn ${sceneMode === 'compound_map' ? 'active' : ''}`}
             onClick={() => setSceneMode('compound_map')}
           >
-            🗺️ Toàn Cảnh Hoàng Cung (Map)
+            🗺️ Bản Đồ 7 Công Trình Hoàng Cung
           </button>
           <button
             type="button"
@@ -166,19 +177,27 @@ export const SceneInspectOverlay: React.FC = () => {
             }`}
             onClick={() => setSceneMode('main_hall_interior')}
           >
-            🏛️ Nội Điện Thái Hòa & Long Ngai
+            🏛️ Nội Điện Thái Hòa & Các Gian Phụ
           </button>
         </div>
 
-        {/* Thanh Tiền Tệ & Hệ thống góc trên bên phải */}
+        {/* Thanh Tiền Tệ & Công Trạng góc trên bên phải */}
         <div className="hud-top-right">
-          <div className="currency-pill">
-            <span className="currency-icon">🪙</span>
-            <span className="currency-val">1000</span>
+          <div
+            className="currency-pill"
+            onClick={() => openBuildingModal('lai_bo', 'promotion')}
+            style={{ cursor: 'pointer' }}
+            title="Điểm Công Trạng (Nhấn để mở Bàn Bổ Nhiệm & Thăng Chức)"
+          >
+            <span className="currency-icon">🎖️</span>
+            <span className="currency-val">{meritPoints} Công Trạng</span>
           </div>
-          <div className="currency-pill">
-            <span className="currency-icon">🏵️</span>
-            <span className="currency-val">0</span>
+          <div
+            className="currency-pill"
+            title="Ngân Lượng bổng lộc tích lũy"
+          >
+            <span className="currency-icon">🪙</span>
+            <span className="currency-val">{silverCoins}</span>
           </div>
 
           <button
@@ -201,21 +220,44 @@ export const SceneInspectOverlay: React.FC = () => {
       </header>
 
       {/* ================================================================= */}
-      {/* 2. BẢNG NHIỆM VỤ & ĐIỀU HƯỚNG CÁC GIAN THÁI HÒA ĐIỆN              */}
+      {/* 2. BẢNG NHIỆM VỤ XUYÊN SUỐT 5 BƯỚC & ĐIỀU HƯỚNG CÔNG TRÌNH         */}
       {/* ================================================================= */}
       <aside className="hud-quest-card">
         <div className="quest-header">
           <span className="quest-diamond">✦</span>
           <span className="quest-header-title">
-            {sceneMode === 'main_hall_interior'
-              ? 'Khu Vực Thái Hòa Điện'
-              : 'Nhiệm Vụ'}
+            Nhiệm Vụ Quan Trường ({Math.min(currentQuestStep, 5)}/5)
           </span>
         </div>
         <div className="quest-body">
-          {sceneMode === 'main_hall_interior' ? (
-            <>
-              <div className="quest-main-name">Các Gian & Hành Lang Liên Thông</div>
+          {PALACE_QUEST_CHAIN.map((q) => {
+            const status = questStatuses[q.id];
+            const isCurrent = q.stepNumber === currentQuestStep;
+            return (
+              <div
+                key={q.id}
+                className={`quest-step-item ${
+                  status === 'completed' ? 'done' : ''
+                } ${isCurrent ? 'current-active-quest' : ''}`}
+                onClick={() => {
+                  navigateToLandmark(q.targetBuildingId);
+                  openInteraction(q.targetInteractableId);
+                }}
+                title={`${q.description} (Nhấn để đi tới ${q.targetBuildingName})`}
+              >
+                {status === 'completed'
+                  ? '✓ '
+                  : isCurrent
+                    ? '▶ '
+                    : '• '}
+                <strong>B{q.stepNumber}:</strong> {q.requirementText}
+              </div>
+            );
+          })}
+
+          {sceneMode === 'main_hall_interior' && (
+            <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(226,180,79,0.28)' }}>
+              <div className="quest-main-name">Các Gian Nội Điện Thái Hòa</div>
               {INTERIOR_ROOM_TABS.map((room) => (
                 <div
                   key={room.key}
@@ -228,47 +270,16 @@ export const SceneInspectOverlay: React.FC = () => {
                   • {room.label}
                 </div>
               ))}
-              <div
-                className={`quest-step-item ${
-                  seatedSpotId === 'imperial_throne' ? 'done' : ''
-                }`}
-                onClick={() => sitAtSpot('imperial_throne')}
-                title="Nhấn để Ngự lên Long Ngai"
-              >
-                • 👑 Ngự lên Long Ngai ({seatedSpotId === 'imperial_throne' ? '1/1' : '0/1'})
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="quest-main-name">Nhiệm vụ nhập môn</div>
-              <div
-                className={`quest-step-item ${laiBoQuestCompleted ? 'done' : ''}`}
-                onClick={() => navigateToLandmark('lai_bo')}
-                title="Nhấn để di chuyển đến Lại Bộ"
-              >
-                • Đến Lại Bộ nhận nhiệm vụ kiểm tra hồ sơ (
-                {laiBoQuestCompleted ? '1/1' : '0/1'})
-              </div>
-              <div
-                className={`quest-step-item ${
-                  seatedSpotId === 'imperial_throne' ? 'done' : ''
-                }`}
-                onClick={() => sitAtSpot('imperial_throne')}
-                title="Nhấn để vào Chính Điện và Ngự lên Long Ngai"
-              >
-                • Vào Chính Điện ngự lên Long Ngai (
-                {seatedSpotId === 'imperial_throne' ? '1/1' : '0/1'})
-              </div>
-            </>
+            </div>
           )}
         </div>
       </aside>
 
       {/* ================================================================= */}
-      {/* 3. THÔNG BÁO TƯƠNG TÁC NGỰ LONG NGAI / VÀO ĐIỆN NỔI GIỮA MÀN HÌNH */}
+      {/* 3. HỆ THỐNG THÔNG BÁO TƯƠNG TÁC PHÍM E / PHÍM F & TOAST NỔI       */}
       {/* ================================================================= */}
       <div className="center-interact-banner">
-        {sceneMode === 'main_hall_interior' && currentSeatedSpot ? (
+        {currentSeatedSpot ? (
           <div className="interact-toast seated">
             <span>
               Đang ngự tại: <strong>{currentSeatedSpot.label}</strong>
@@ -277,7 +288,21 @@ export const SceneInspectOverlay: React.FC = () => {
               Đứng Dậy [Phím F / Space / WASD]
             </button>
           </div>
-        ) : sceneMode === 'main_hall_interior' && currentNearbySpot ? (
+        ) : currentNearbyEntity ? (
+          <div className="interact-toast nearby">
+            <span>
+              Gần <strong>{currentNearbyEntity.name}</strong>:{' '}
+              {currentNearbyEntity.promptText}
+            </span>
+            <button
+              type="button"
+              className="toast-btn"
+              onClick={() => openInteraction(currentNearbyEntity.id)}
+            >
+              Tương Tác [Phím E]
+            </button>
+          </div>
+        ) : currentNearbySpot ? (
           <div className="interact-toast nearby">
             <span>
               Gần vị trí: <strong>{currentNearbySpot.label}</strong>
@@ -287,14 +312,39 @@ export const SceneInspectOverlay: React.FC = () => {
               className="toast-btn"
               onClick={() => sitAtSpot(currentNearbySpot.id)}
             >
-              Ngồi Xuống [Phím F / E]
+              Ngồi Xuống [Phím F]
             </button>
           </div>
         ) : null}
       </div>
 
+      {/* Khay Thông Báo Nhiệm Vụ / Phần Thưởng / Thăng Chức */}
+      {toasts.length > 0 && (
+        <div className="gameplay-toast-stack">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className={`gp-toast-card ${t.type}`}
+              onClick={() => dismissToast(t.id)}
+            >
+              <div className="gp-toast-title">
+                {t.type === 'quest'
+                  ? '📜 '
+                  : t.type === 'promotion'
+                    ? '👑 '
+                    : t.type === 'reward'
+                      ? '🎖️ '
+                      : '🔔 '}
+                {t.title}
+              </div>
+              <div className="gp-toast-msg">{t.message}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ================================================================= */}
-      {/* 4. DRAWER TÙY CHỈNH NHÂN VẬT / KHU VỰC / CAMERA (KHI MỞ)          */}
+      {/* 4. DRAWER TÙY CHỈNH NHÂN VẬT / 7 CÔNG TRÌNH / CAMERA              */}
       {/* ================================================================= */}
       {activeBottomDrawer === 'character' && (
         <div className="floating-drawer left-drawer">
@@ -310,10 +360,21 @@ export const SceneInspectOverlay: React.FC = () => {
           </div>
 
           <div className="throne-actions-box">
+            <button
+              type="button"
+              className="action-btn gold full-width"
+              style={{ marginBottom: 6 }}
+              onClick={() => {
+                setActiveBottomDrawer(null);
+                openBuildingModal('lai_bo', 'promotion');
+              }}
+            >
+              🎖️ Mở Bàn Bổ Nhiệm & Thăng Chức ({meritPoints} Công Trạng)
+            </button>
             {seatedSpotId ? (
               <button
                 type="button"
-                className="action-btn gold full-width"
+                className="action-btn active full-width"
                 onClick={standUp}
               >
                 Đứng Dậy Khỏi {currentSeatedSpot?.label ?? 'Ghế'} (Phím F)
@@ -338,6 +399,7 @@ export const SceneInspectOverlay: React.FC = () => {
             )}
           </div>
 
+          <div className="sub-section-title">THỬ TRANG PHỤC 3D THEO PHẨM CẤP</div>
           <div className="rank-list">
             {ranks.map((item) => (
               <button
@@ -397,7 +459,7 @@ export const SceneInspectOverlay: React.FC = () => {
       {activeBottomDrawer === 'landmarks' && (
         <div className="floating-drawer right-drawer">
           <div className="panel-title">
-            <span>CÁC GIAN THÁI HÒA ĐIỆN & BẢN ĐỒ HOÀNG CUNG</span>
+            <span>7 CÔNG TRÌNH GAMEPLAY & NỘI ĐIỆN</span>
             <button
               type="button"
               className="drawer-close"
@@ -406,8 +468,58 @@ export const SceneInspectOverlay: React.FC = () => {
               ✕
             </button>
           </div>
-          <div className="sub-section-title">NỘI ĐIỆN THÁI HÒA & CÁC GIAN PHỤ</div>
+          <div className="sub-section-title">
+            7 CÔNG TRÌNH HOÀNG CUNG (DI CHUYỂN & MỞ GIAO DIỆN)
+          </div>
           <div className="preset-list" style={{ marginBottom: 10 }}>
+            {PALACE_LANDMARKS.map((lm) => (
+              <div
+                key={lm.id}
+                className={`preset-btn ${
+                  sceneMode === 'compound_map' && activeLandmarkId === lm.id
+                    ? 'selected'
+                    : ''
+                }`}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span className="preset-name">
+                    {lm.icon} {lm.name}
+                  </span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      type="button"
+                      className="mini-btn"
+                      onClick={() => {
+                        navigateToLandmark(lm.id);
+                      }}
+                    >
+                      Đi Tới
+                    </button>
+                    <button
+                      type="button"
+                      className="mini-btn active"
+                      onClick={() => {
+                        navigateToLandmark(lm.id);
+                        openBuildingModal(lm.id);
+                      }}
+                    >
+                      Mở UI [E]
+                    </button>
+                  </div>
+                </div>
+                <span className="preset-desc">{lm.subtitle}</span>
+              </div>
+            ))}
+          </div>
+          <div className="sub-section-title">NỘI ĐIỆN THÁI HÒA & CÁC GIAN PHỤ</div>
+          <div className="preset-list">
             {INTERIOR_ROOM_TABS.map((room) => (
               <button
                 key={room.key}
@@ -421,28 +533,6 @@ export const SceneInspectOverlay: React.FC = () => {
               >
                 <span className="preset-name">{room.label}</span>
                 <span className="preset-desc">{room.subtitle}</span>
-              </button>
-            ))}
-          </div>
-          <div className="sub-section-title">QUẦN THỂ CUNG ĐIỆN & LỤC BỘ (OUTDOOR MAP)</div>
-          <div className="preset-list">
-            {PALACE_LANDMARKS.map((lm) => (
-              <button
-                key={lm.id}
-                type="button"
-                className={`preset-btn ${
-                  sceneMode === 'compound_map' && activeLandmarkId === lm.id
-                    ? 'selected'
-                    : ''
-                }`}
-                onClick={() => {
-                  navigateToLandmark(lm.id);
-                }}
-              >
-                <span className="preset-name">
-                  {lm.icon} {lm.name}
-                </span>
-                <span className="preset-desc">{lm.subtitle}</span>
               </button>
             ))}
           </div>
@@ -507,7 +597,6 @@ export const SceneInspectOverlay: React.FC = () => {
       {/* 5. BOTTOM ROW: VÒNG ĐIỀU HƯỚNG WASD (TRÁI) & 6 NÚT MENU (PHẢI)    */}
       {/* ================================================================= */}
       <footer className="hud-bottom-row">
-        {/* Vòng điều hướng W - A - S - D góc dưới bên trái giống hệt ảnh mẫu */}
         <div className="wasd-compass-wheel">
           <button
             type="button"
@@ -560,7 +649,7 @@ export const SceneInspectOverlay: React.FC = () => {
           </button>
         </div>
 
-        {/* 6 Nút Menu Chức Năng MMORPG góc dưới bên phải giống hệt ảnh mẫu */}
+        {/* 6 Nút Menu Chức Năng MMORPG góc dưới bên phải */}
         <nav className="hud-bottom-menu">
           <button
             type="button"
@@ -579,11 +668,11 @@ export const SceneInspectOverlay: React.FC = () => {
 
           <button
             type="button"
-            className={`hud-menu-medallion ${holdingJadeTablet ? 'active' : ''}`}
-            onClick={toggleJadeTablet}
+            className="hud-menu-medallion"
+            onClick={() => openBuildingModal('lai_bo', 'merit')}
           >
             <div className="medallion-icon">💰</div>
-            <span className="medallion-label">Túi Đồ</span>
+            <span className="medallion-label">Công Trạng</span>
           </button>
 
           <button
@@ -605,21 +694,24 @@ export const SceneInspectOverlay: React.FC = () => {
             type="button"
             className="hud-menu-medallion"
             onClick={() => {
-              setSceneMode('compound_map');
-              setCameraPreset('compound_panorama');
+              navigateToLandmark('ngu_hoa_vien');
+              openBuildingModal('ngu_hoa_vien', 'chat');
             }}
           >
             <div className="medallion-icon">👥</div>
-            <span className="medallion-label">Quan Hệ</span>
+            <span className="medallion-label">Giao Lưu</span>
           </button>
 
           <button
             type="button"
             className="hud-menu-medallion"
-            onClick={() => sitAtSpot('imperial_throne')}
+            onClick={() => {
+              navigateToLandmark('han_lam_vien');
+              openBuildingModal('han_lam_vien', 'leaderboard');
+            }}
           >
             <div className="medallion-icon">🏆</div>
-            <span className="medallion-label">Xếp Hạng</span>
+            <span className="medallion-label">Bảng Vàng</span>
           </button>
 
           <button
@@ -632,6 +724,9 @@ export const SceneInspectOverlay: React.FC = () => {
           </button>
         </nav>
       </footer>
+
+      {/* Modal tương tác Gameplay cho cả 7 Công trình (Phím E / ESC) */}
+      <BuildingGameplayModal />
 
       {/* Modal báo cáo minh bạch trạng thái 3D Asset */}
       {showAssetModal && (

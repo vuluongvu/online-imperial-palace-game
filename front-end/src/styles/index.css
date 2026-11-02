@@ -756,3 +756,531 @@ body,
   margin-bottom: 4px;
   line-height: 1.35;
 }
+
+
+/* ===================================================================== */
+/* HỆ THỐNG TƯƠNG TÁC 3D & GIAO DIỆN GAMEPLAY 7 CÔNG TRÌNH               */
+/* ===================================================================== */
+.interactable-3d-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(34, 18, 12, 0.92);
+  border: 1.5px solid rgba(226, 180, 79, 0.72);
+  color: #fff3d6;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.interactable-3d-tag:hover,
+.interactable-3d-tag.nearby {
+  transform: scale(1.08);
+  border-color: #ffe28a;
+  background: linear-gradient(90deg, rgba(132, 24, 20, 0.95), rgba(68, 16, 12, 0.95));
+}
+
+.interactable-3d-tag.quest-target {
+  border-color: #ffd86b;
+  box-shadow: 0 0 14px rgba(255, 208, 75, 0.65);
+}
+
+.quest-excl-badge {
+  background: #e2a836;
+  color: #241008;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.interactable-key-pill {
+  background: #ffd86b;
+  color: #241008;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.player-overhead-bubble {
+  background: rgba(32, 16, 10, 0.94);
+  border: 1.5px solid #ffd86b;
+  color: #fff5db;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.quest-step-item.current-active-quest {
+  background: rgba(226, 180, 79, 0.22);
+  border-left: 3px solid #ffd86b;
+  color: #ffe48f;
+}
+
+/* Khay Toast Thông Báo Nhiệm Vụ & Phần Thưởng */
+.gameplay-toast-stack {
+  position: absolute;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 45;
+  pointer-events: auto;
+  width: min(520px, 92vw);
+}
+
+.gp-toast-card {
+  background: linear-gradient(90deg, rgba(58, 22, 14, 0.96), rgba(34, 14, 9, 0.96));
+  border: 1.5px solid #f0c35e;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+}
+
+.gp-toast-card.promotion {
+  background: linear-gradient(90deg, rgba(138, 26, 20, 0.97), rgba(76, 16, 12, 0.97));
+  border-color: #ffe48f;
+}
+
+.gp-toast-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffd875;
+  margin-bottom: 2px;
+}
+
+.gp-toast-msg {
+  font-size: 0.78rem;
+  color: #f4ead5;
+  line-height: 1.35;
+}
+
+/* Cửa sổ Modal Gameplay Cung Đình */
+.gameplay-modal-card {
+  width: min(940px, 96vw);
+  max-height: 86vh;
+  background: linear-gradient(180deg, #28140d 0%, #1b0c08 100%);
+  border: 2px solid #e2b44f;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.82);
+}
+
+.gp-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 22px;
+  background: linear-gradient(90deg, #421912, #2b110b);
+  border-bottom: 1.5px solid rgba(226, 180, 79, 0.42);
+}
+
+.gp-modal-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.gp-building-pill {
+  background: #9e221b;
+  color: #ffe28a;
+  border: 1px solid #f0c35e;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.gp-stat-pill {
+  background: rgba(24, 11, 7, 0.75);
+  color: #f4ead5;
+  border: 1px solid rgba(226, 180, 79, 0.45);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+}
+
+.gp-modal-title {
+  font-size: 1.18rem;
+  color: #ffd875;
+  font-weight: 800;
+}
+
+.gp-modal-subtitle {
+  font-size: 0.8rem;
+  color: #d8c6a8;
+  margin-top: 2px;
+}
+
+.gp-entity-switcher {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 9px 22px;
+  background: rgba(48, 22, 14, 0.75);
+  border-bottom: 1px solid rgba(226, 180, 79, 0.25);
+}
+
+.gp-switcher-label {
+  font-size: 0.75rem;
+  color: #dca83a;
+  font-weight: 700;
+}
+
+.gp-entity-chip {
+  background: rgba(32, 14, 9, 0.85);
+  color: #e8d7bc;
+  border: 1px solid rgba(226, 180, 79, 0.38);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gp-entity-chip.active {
+  background: #9e221b;
+  color: #ffe28a;
+  border-color: #ffd875;
+}
+
+.gp-modal-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.gp-tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(226, 180, 79, 0.25);
+}
+
+.gp-tab-btn {
+  background: rgba(52, 24, 16, 0.78);
+  color: #e6d4b7;
+  border: 1px solid rgba(226, 180, 79, 0.35);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gp-tab-btn.active {
+  background: linear-gradient(135deg, #b82820, #821611);
+  color: #ffe28a;
+  border-color: #ffd875;
+}
+
+.gp-section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.gp-card {
+  background: rgba(46, 22, 15, 0.76);
+  border: 1px solid rgba(226, 180, 79, 0.34);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.gp-card.highlight-card {
+  background: linear-gradient(135deg, rgba(92, 24, 18, 0.82), rgba(46, 20, 14, 0.88));
+  border-color: #f0c35e;
+}
+
+.gp-card h3 {
+  font-size: 0.98rem;
+  color: #ffd875;
+  margin-bottom: 8px;
+}
+
+.gp-card h4 {
+  font-size: 0.88rem;
+  color: #f6d379;
+  margin-bottom: 6px;
+}
+
+.gp-text {
+  font-size: 0.83rem;
+  color: #f0e3cc;
+  line-height: 1.48;
+  margin-bottom: 10px;
+}
+
+.gp-info-box {
+  background: rgba(24, 11, 7, 0.65);
+  border-left: 3px solid #e2b44f;
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 0.8rem;
+  color: #e8d7bc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.gp-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gp-form-stack,
+.gp-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gp-input,
+.gp-textarea {
+  width: 100%;
+  background: rgba(20, 9, 6, 0.85);
+  border: 1px solid rgba(226, 180, 79, 0.45);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff5db;
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+
+.gp-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: rgba(46, 22, 15, 0.72);
+  border: 1px solid rgba(226, 180, 79, 0.28);
+  border-radius: 9px;
+  padding: 11px 14px;
+}
+
+.gp-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.gp-item-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff2d1;
+}
+
+.gp-item-sub {
+  font-size: 0.77rem;
+  color: #cbb694;
+  margin-top: 3px;
+}
+
+.gp-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.gold-text {
+  color: #ffd875;
+}
+
+.gp-loyalty-text {
+  font-size: 0.72rem;
+  color: #9ae6b4;
+  margin-top: 4px;
+}
+
+.gp-banner-note {
+  background: rgba(92, 34, 18, 0.65);
+  border: 1px solid rgba(226, 180, 79, 0.38);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.8rem;
+  color: #ffe8b3;
+}
+
+.gp-edict-card {
+  background: linear-gradient(180deg, rgba(72, 22, 16, 0.85), rgba(42, 14, 10, 0.9));
+  border: 1.5px solid #e5b754;
+  border-radius: 10px;
+  padding: 13px 16px;
+}
+
+.gp-edict-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #f6d379;
+  margin-bottom: 4px;
+}
+
+.gp-edict-badge {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.gp-edict-title {
+  font-size: 0.95rem;
+  color: #ffe28a;
+  margin-bottom: 6px;
+}
+
+.gp-edict-body {
+  font-size: 0.84rem;
+  color: #fff5db;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.gp-edict-footer {
+  margin-top: 8px;
+  font-size: 0.74rem;
+  color: #d6c29f;
+  text-align: right;
+}
+
+.gp-hint-pill {
+  margin-top: 6px;
+  display: inline-block;
+  background: rgba(226, 180, 79, 0.15);
+  border: 1px solid rgba(226, 180, 79, 0.35);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 0.75rem;
+  color: #ffe28a;
+}
+
+.gp-mini-row,
+.gp-mini-card {
+  padding: 7px 10px;
+  background: rgba(26, 12, 8, 0.6);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
+.gp-case-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.gp-feedback-banner {
+  background: rgba(68, 32, 16, 0.88);
+  border: 1.5px solid #f0c35e;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 0.82rem;
+  color: #fff3d6;
+  line-height: 1.42;
+}
+
+.gp-feedback-banner.success {
+  background: rgba(24, 68, 44, 0.88);
+  border-color: #68d391;
+}
+
+.gp-feedback-banner.error {
+  background: rgba(98, 22, 22, 0.88);
+  border-color: #fc8181;
+}
+
+.gp-timer-pill {
+  background: #9e221b;
+  color: #ffe28a;
+  border: 1px solid #ffd875;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.8rem;
+}
+
+.gp-quiz-option {
+  text-align: left;
+  background: rgba(34, 16, 11, 0.85);
+  color: #f4ead5;
+  border: 1px solid rgba(226, 180, 79, 0.38);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.gp-quiz-option:hover {
+  background: rgba(92, 28, 20, 0.85);
+  border-color: #ffd875;
+}
+
+.gp-quiz-option.correct {
+  background: rgba(28, 84, 52, 0.92);
+  border-color: #68d391;
+  color: #c6f6d5;
+}
+
+.gp-quiz-option.wrong {
+  background: rgba(112, 24, 24, 0.92);
+  border-color: #fc8181;
+  color: #fed7d7;
+}
+
+.gp-chat-box {
+  background: rgba(20, 9, 6, 0.78);
+  border: 1px solid rgba(226, 180, 79, 0.32);
+  border-radius: 8px;
+  padding: 10px 12px;
+  height: 185px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.gp-chat-line {
+  font-size: 0.8rem;
+  color: #f0e3cc;
+  line-height: 1.38;
+}
+
+.gp-chat-line.self {
+  color: #ffe48f;
+}
+
+.gp-chat-sender {
+  font-weight: 700;
+  color: #f6ad55;
+}
+
+.gp-chat-input-row {
+  display: flex;
+  gap: 8px;
+}
