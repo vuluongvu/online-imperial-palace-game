@@ -18,14 +18,14 @@ export const App: React.FC = () => {
         camera={{
           fov: 45,
           near: 0.2,
-          far: 90,
-          position: CAMERA_PRESETS.emperor_closeup.position,
+          far: 240,
+          position: CAMERA_PRESETS.compound_panorama.position,
         }}
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.15,
+          toneMappingExposure: 1.12,
         }}
       >
         <Suspense fallback={null}>

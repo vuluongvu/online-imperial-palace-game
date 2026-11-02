@@ -2,8 +2,10 @@ import { create } from 'zustand';
 import { OfficialRank } from '../game/characters/CharacterMaterials';
 import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 import { MAIN_HALL_LAYOUT } from '../game/world/hallLayout';
+import { PALACE_LANDMARKS, SceneZoneMode } from '../game/world/compoundLayout';
 
 export type CameraViewPreset =
+  | 'compound_panorama'
   | 'emperor_closeup'
   | 'throne_seated'
   | 'overview'
@@ -55,6 +57,13 @@ export const SEATING_SPOTS: SeatSpot[] = [
 ];
 
 export const CAMERA_PRESETS: Record<CameraViewPreset, CameraPresetConfig> = {
+  compound_panorama: {
+    id: 'compound_panorama',
+    label: 'Toàn Cảnh Bản Đồ Hoàng Cung',
+    description: 'Góc nhìn tổng quát Quần thể Hoàng Cung từ Cổng Chính tới Ngự Thư Phòng',
+    position: [0, 42, 68],
+    target: [0, 2, -2],
+  },
   emperor_closeup: {
     id: 'emperor_closeup',
     label: 'Cận Cảnh Hoàng Đế (Chibi)',
@@ -71,7 +80,7 @@ export const CAMERA_PRESETS: Record<CameraViewPreset, CameraPresetConfig> = {
   },
   overview: {
     id: 'overview',
-    label: 'Toàn Cảnh Chính Điện',
+    label: 'Toàn Cảnh Nội Điện Thái Hòa',
     description: 'Góc nhìn tổng quát Thái Hòa Điện từ lối vào chính hướng về Long Ngai',
     position: [0, 8.5, 16.5],
     target: [0, 2.2, -8],
@@ -116,6 +125,8 @@ interface PerformanceMetrics {
 
 interface GameState {
   currentPhase: 1 | 2 | 3 | 4;
+  sceneMode: SceneZoneMode;
+  activeLandmarkId: string;
   cameraMode: 'follow' | 'preset';
   cameraPreset: CameraViewPreset;
   characterRank: OfficialRank;
@@ -123,12 +134,18 @@ interface GameState {
   previewAnimOverride: CharacterAnimationState | null;
   holdingJadeTablet: boolean;
   playerPosition: [number, number, number];
+  teleportTarget: [number, number, number] | null;
+  virtualInput: { x: number; z: number };
   seatedSpotId: string | null;
   nearbySeatId: string | null;
+  laiBoQuestCompleted: boolean;
+  showInspectorDrawer: boolean;
   showAssetModal: boolean;
   showWireframe: boolean;
   lanternAnimationEnabled: boolean;
   metrics: PerformanceMetrics;
+  setSceneMode: (mode: SceneZoneMode) => void;
+  navigateToLandmark: (landmarkId: string) => void;
   setCameraMode: (mode: 'follow' | 'preset') => void;
   setCameraPreset: (preset: CameraViewPreset) => void;
   setCharacterRank: (rank: OfficialRank) => void;
@@ -136,9 +153,13 @@ interface GameState {
   setPreviewAnimOverride: (state: CharacterAnimationState | null) => void;
   toggleJadeTablet: () => void;
   setPlayerPosition: (pos: [number, number, number]) => void;
+  clearTeleportTarget: () => void;
+  setVirtualInput: (input: { x: number; z: number }) => void;
   sitAtSpot: (spotId: string) => void;
   standUp: () => void;
   setNearbySeatId: (spotId: string | null) => void;
+  completeLaiBoQuest: () => void;
+  toggleInspectorDrawer: () => void;
   setShowAssetModal: (show: boolean) => void;
   toggleWireframe: () => void;
   toggleLanternAnimation: () => void;
@@ -146,16 +167,22 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set) => ({
-  currentPhase: 3,
-  cameraMode: 'follow',
-  cameraPreset: 'emperor_closeup',
+  currentPhase: 4,
+  sceneMode: 'compound_map',
+  activeLandmarkId: 'cong_chinh',
+  cameraMode: 'preset',
+  cameraPreset: 'compound_panorama',
   characterRank: 'emperor',
   animationState: 'idle',
   previewAnimOverride: null,
   holdingJadeTablet: true,
-  playerPosition: [0, 0, -11.0],
+  playerPosition: [0, 0, 20],
+  teleportTarget: null,
+  virtualInput: { x: 0, z: 0 },
   seatedSpotId: null,
   nearbySeatId: null,
+  laiBoQuestCompleted: false,
+  showInspectorDrawer: false,
   showAssetModal: false,
   showWireframe: false,
   lanternAnimationEnabled: true,
@@ -166,6 +193,42 @@ export const useGameStore = create<GameState>((set) => ({
     geometries: 0,
     textures: 0,
   },
+  setSceneMode: (sceneMode) =>
+    set(() => {
+      if (sceneMode === 'main_hall_interior') {
+        return {
+          sceneMode,
+          seatedSpotId: null,
+          teleportTarget: [0, 0, -11.0],
+          playerPosition: [0, 0, -11.0],
+          cameraMode: 'preset',
+          cameraPreset: 'emperor_closeup',
+        };
+      }
+      return {
+        sceneMode,
+        seatedSpotId: null,
+        teleportTarget: [0, 0, 20],
+        playerPosition: [0, 0, 20],
+        cameraMode: 'preset',
+        cameraPreset: 'compound_panorama',
+      };
+    }),
+  navigateToLandmark: (landmarkId) =>
+    set((state) => {
+      const lm = PALACE_LANDMARKS.find((l) => l.id === landmarkId);
+      if (!lm) return {};
+      return {
+        sceneMode: 'compound_map',
+        activeLandmarkId: landmarkId,
+        seatedSpotId: null,
+        teleportTarget: lm.spawnPoint,
+        playerPosition: lm.spawnPoint,
+        cameraMode: 'follow',
+        laiBoQuestCompleted:
+          landmarkId === 'lai_bo' ? true : state.laiBoQuestCompleted,
+      };
+    }),
   setCameraMode: (cameraMode) => set({ cameraMode }),
   setCameraPreset: (cameraPreset) => set({ cameraPreset, cameraMode: 'preset' }),
   setCharacterRank: (characterRank) => set({ characterRank }),
@@ -174,8 +237,11 @@ export const useGameStore = create<GameState>((set) => ({
   toggleJadeTablet: () =>
     set((state) => ({ holdingJadeTablet: !state.holdingJadeTablet })),
   setPlayerPosition: (playerPosition) => set({ playerPosition }),
+  clearTeleportTarget: () => set({ teleportTarget: null }),
+  setVirtualInput: (virtualInput) => set({ virtualInput }),
   sitAtSpot: (spotId) =>
     set({
+      sceneMode: 'main_hall_interior',
       seatedSpotId: spotId,
       animationState: 'sit',
       previewAnimOverride: null,
@@ -190,6 +256,9 @@ export const useGameStore = create<GameState>((set) => ({
       cameraMode: 'follow',
     }),
   setNearbySeatId: (nearbySeatId) => set({ nearbySeatId }),
+  completeLaiBoQuest: () => set({ laiBoQuestCompleted: true }),
+  toggleInspectorDrawer: () =>
+    set((state) => ({ showInspectorDrawer: !state.showInspectorDrawer })),
   setShowAssetModal: (showAssetModal) => set({ showAssetModal }),
   toggleWireframe: () => set((state) => ({ showWireframe: !state.showWireframe })),
   toggleLanternAnimation: () =>

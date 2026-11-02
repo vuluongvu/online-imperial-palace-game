@@ -22,88 +22,458 @@ body,
   height: 100vh;
 }
 
-.overlay-container {
+/* ===================================================================== */
+/* NHÃN TÊN CUNG ĐIỆN NỔI 3D TRÊN NÓC TÒA NHÀ (GIỐNG ẢNH MẪU)           */
+/* ===================================================================== */
+.map-building-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(44, 28, 18, 0.94), rgba(26, 16, 10, 0.96));
+  border: 2px solid #e5b754;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  color: #fff3d1;
+  font-weight: 700;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+
+.map-building-label:hover {
+  transform: scale(1.08);
+  border-color: #ffe48f;
+}
+
+.map-building-label.main-hall-badge {
+  background: linear-gradient(180deg, rgba(132, 24, 20, 0.96), rgba(74, 14, 11, 0.96));
+  border-color: #ffd875;
+  padding: 7px 18px;
+  font-size: 1rem;
+}
+
+.map-label-icon {
+  font-size: 1rem;
+}
+
+.map-label-sub {
+  font-size: 0.72rem;
+  color: #ffd875;
+  margin-left: 2px;
+}
+
+/* ===================================================================== */
+/* MMORPG HUD OVERLAY (CHUẨN THEO ẢNH THIẾT KẾ MẪU)                      */
+/* ===================================================================== */
+.mmorpg-hud-root {
   position: absolute;
   inset: 0;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 18px;
 }
 
-.top-bar {
+.hud-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.brand-badge {
+/* 1. Khung Avatar Nhân Vật góc trên bên trái */
+.hud-avatar-card {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: linear-gradient(135deg, rgba(48, 18, 12, 0.92), rgba(28, 11, 8, 0.94));
-  border: 1px solid rgba(220, 168, 58, 0.65);
-  border-radius: 10px;
-  padding: 10px 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  gap: 12px;
+  background: linear-gradient(90deg, rgba(44, 31, 22, 0.92), rgba(58, 42, 30, 0.78));
+  border: 1.5px solid rgba(226, 180, 79, 0.78);
+  border-radius: 42px 16px 16px 42px;
+  padding: 6px 18px 6px 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
 }
 
-.imperial-seal {
-  background: #941c1c;
+.avatar-portrait-ring {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+}
+
+.avatar-chibi-head {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid #f0c259;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.avatar-crown-emoji {
+  font-size: 1.9rem;
+}
+
+.avatar-lv-badge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2b1a10;
   color: #f6d379;
+  border: 1px solid #e2b44f;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.66rem;
   font-weight: 800;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #dca83a;
+  white-space: nowrap;
 }
 
-.brand-text h1 {
+.avatar-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.avatar-name {
   font-size: 1rem;
-  color: #f6d379;
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  color: #fff5db;
 }
 
-.brand-text p {
+.avatar-rank-title {
   font-size: 0.76rem;
-  color: #d6c5a5;
+  color: #DFC9A6;
+}
+
+.avatar-wealth-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffd875;
   margin-top: 2px;
 }
 
-.stats-bar {
+/* Nút chuyển Bản Đồ Hoàng Cung <-> Nội Điện Thái Hòa */
+.hud-zone-switcher {
+  pointer-events: auto;
+  display: flex;
+  gap: 8px;
+  background: rgba(34, 21, 14, 0.88);
+  border: 1.5px solid rgba(226, 180, 79, 0.65);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.zone-tab-btn {
+  background: transparent;
+  color: #e4d2b4;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.zone-tab-btn.active {
+  background: linear-gradient(135deg, #b82820, #8a1612);
+  color: #ffe28a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Thanh Tiền Tệ & Cài đặt góc trên bên phải */
+.hud-top-right {
   pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
-  background: rgba(27, 13, 9, 0.88);
-  border: 1px solid rgba(220, 168, 58, 0.45);
-  border-radius: 10px;
-  padding: 8px 12px;
 }
 
-.stat-pill {
+.currency-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(42, 29, 20, 0.88);
+  border: 1.5px solid rgba(226, 180, 79, 0.6);
+  border-radius: 999px;
+  padding: 5px 14px 5px 8px;
+  min-width: 92px;
+}
+
+.currency-icon {
+  font-size: 1rem;
+}
+
+.currency-val {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff3d6;
+}
+
+.hud-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(42, 29, 20, 0.9);
+  border: 1.5px solid rgba(226, 180, 79, 0.65);
+  color: #ffe28a;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-icon-circle.active {
+  background: #941c1c;
+  border-color: #ffe28a;
+}
+
+/* 2. Bảng Nhiệm Vụ Bên Phải */
+.hud-quest-card {
+  pointer-events: auto;
+  position: absolute;
+  top: 86px;
+  right: 18px;
+  width: 255px;
+  background: linear-gradient(180deg, rgba(44, 31, 21, 0.9), rgba(32, 21, 14, 0.92));
+  border: 1.5px solid rgba(226, 180, 79, 0.68);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.quest-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(226, 180, 79, 0.3);
+}
+
+.quest-diamond {
+  background: #e2a836;
+  color: #261409;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.quest-header-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f6d379;
+}
+
+.quest-main-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #e8cfa6;
+  margin-bottom: 6px;
+}
+
+.quest-step-item {
+  font-size: 0.8rem;
+  color: #fff3d6;
+  line-height: 1.38;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.quest-step-item:hover {
+  background: rgba(226, 180, 79, 0.18);
+}
+
+.quest-step-item.done {
+  color: #9ae6b4;
+  text-decoration: line-through;
+}
+
+/* 3. Bottom Row: WASD Compass & 6 Medallion Buttons */
+.hud-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.wasd-compass-wheel {
+  pointer-events: auto;
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(52, 38, 28, 0.55), rgba(32, 22, 15, 0.78));
+  border: 2px solid rgba(226, 180, 79, 0.55);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.wasd-center-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d6c3a5, #7d684d);
+  border: 2px solid #e5b754;
+}
+
+.wasd-dir-btn {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(38, 26, 18, 0.82);
+  border: 1px solid rgba(226, 180, 79, 0.5);
+  color: #fff5db;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wasd-dir-btn:active {
+  background: #b82820;
+  border-color: #ffd875;
+}
+
+.wasd-dir-btn.up {
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.wasd-dir-btn.down {
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.wasd-dir-btn.left {
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.wasd-dir-btn.right {
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 6 Nút Menu Chức Năng góc dưới bên phải */
+.hud-bottom-menu {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hud-menu-medallion {
+  background: transparent;
+  border: none;
   display: flex;
   flex-direction: column;
-  padding: 2px 10px;
-  border-right: 1px solid rgba(220, 168, 58, 0.25);
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.16s ease;
 }
 
-.stat-label {
-  font-size: 0.66rem;
-  color: #bba582;
-  text-transform: uppercase;
+.hud-menu-medallion:hover {
+  transform: translateY(-4px);
 }
 
-.stat-value {
-  font-size: 0.92rem;
+.medallion-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #5c3d24, #2e1d11);
+  border: 2.5px solid #e2b44f;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+}
+
+.hud-menu-medallion.active .medallion-icon {
+  background: radial-gradient(circle at 50% 35%, #b82820, #5e110d);
+  border-color: #ffe48f;
+}
+
+.medallion-label {
+  font-size: 0.78rem;
   font-weight: 700;
+  color: #fff3d6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+}
+
+/* Drawers tùy chỉnh nổi */
+.floating-drawer {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 96px;
+  width: 315px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(38, 20, 14, 0.95), rgba(24, 12, 8, 0.96));
+  border: 1.5px solid #e2b44f;
+  border-radius: 12px;
+  padding: 13px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+  z-index: 30;
+}
+
+.left-drawer {
+  left: 165px;
+}
+
+.right-drawer {
+  right: 18px;
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
   color: #f6d379;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.perf-mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: #ffd875;
+  margin-bottom: 8px;
 }
 
 .action-btn {
@@ -182,28 +552,10 @@ body,
   gap: 6px;
 }
 
-.side-panels-row {
+.panel-title {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  width: 100%;
-}
-
-.character-panel,
-.camera-panel {
-  pointer-events: auto;
-  width: 320px;
-  max-height: calc(100vh - 110px);
-  overflow-y: auto;
-  background: linear-gradient(180deg, rgba(36, 16, 11, 0.92), rgba(22, 10, 7, 0.94));
-  border: 1px solid rgba(220, 168, 58, 0.55);
-  border-radius: 12px;
-  padding: 13px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
-}
-
-.panel-title {
+  align-items: center;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -303,17 +655,6 @@ body,
 
 .accessory-row {
   margin-top: 8px;
-}
-
-.controls-hint {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(220, 168, 58, 0.22);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 0.72rem;
-  color: #bfa986;
 }
 
 .modal-backdrop {
