@@ -8,6 +8,8 @@ import {
   LandmarkZone,
   PALACE_LANDMARKS,
 } from './compoundLayout';
+import { TieredPalaceRoof } from './ImperialPalaceRoof';
+import { createImperialRoofGeometry } from './roofGeometry';
 import { Player } from '../characters/Player';
 import { useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
@@ -22,13 +24,6 @@ const PalaceBuildingMesh: React.FC<{
   onEnterInterior?: () => void;
 }> = ({ zone, materials, onSelect, onEnterInterior }) => {
   const [w, h, d] = zone.size;
-  const roofMat =
-    zone.roofStyle === 'gold'
-      ? materials.roofGold
-      : zone.roofStyle === 'slate'
-        ? materials.roofSlate
-        : materials.roofJade;
-
   const isGate = zone.id === 'cong_chinh';
   const isMainHall = zone.id === 'chinh_dien';
 
@@ -113,61 +108,8 @@ const PalaceBuildingMesh: React.FC<{
           </mesh>
         ))}
 
-        {/* Mái Đao Tầng 1 (Eave Tier 1) */}
-        <group position={[0, h * 0.58, 0]}>
-          {/* Diềm mái cong */}
-          <mesh material={roofMat} castShadow receiveShadow>
-            <boxGeometry args={[w + 1.8, 0.42, d + 1.8]} />
-          </mesh>
-          {/* Khối mái dốc 4 chiều (Hip Roof) */}
-          <mesh
-            position={[0, 1.15, 0]}
-            rotation={[0, Math.PI / 4, 0]}
-            scale={[w * 0.78, 1.9, d * 0.78]}
-            material={roofMat}
-            castShadow
-          >
-            <coneGeometry args={[1, 1, 4]} />
-          </mesh>
-          {/* Sống nóc thếp vàng */}
-          <mesh position={[0, 1.95, 0]} material={materials.goldTrim}>
-            <boxGeometry args={[w * 0.58, 0.28, 0.32]} />
-          </mesh>
-        </group>
-
-        {/* Mái Đao Tầng 2 (Trùng Diêm cho Chính Điện, Ngự Thư Phòng & Cổng Chính) */}
-        {zone.tiers === 2 && (
-          <group position={[0, h * 0.82, 0]}>
-            <mesh position={[0, -0.3, 0]} material={materials.wallRed} castShadow>
-              <boxGeometry args={[w * 0.62, 1.2, d * 0.58]} />
-            </mesh>
-            <mesh material={roofMat} castShadow>
-              <boxGeometry args={[w * 0.82, 0.38, d * 0.82]} />
-            </mesh>
-            <mesh
-              position={[0, 1.05, 0]}
-              rotation={[0, Math.PI / 4, 0]}
-              scale={[w * 0.6, 1.75, d * 0.6]}
-              material={roofMat}
-              castShadow
-            >
-              <coneGeometry args={[1, 1, 4]} />
-            </mesh>
-            {/* Đỉnh bờ nóc & Kìm nóc Rồng Vàng (Chiwen) */}
-            <mesh position={[0, 1.85, 0]} material={materials.goldTrim}>
-              <boxGeometry args={[w * 0.44, 0.32, 0.32]} />
-            </mesh>
-            {[-w * 0.22, w * 0.22].map((xFin, fIdx) => (
-              <mesh
-                key={`finial-${fIdx}`}
-                position={[xFin, 2.08, 0]}
-                material={materials.goldTrim}
-              >
-                <boxGeometry args={[0.35, 0.45, 0.35]} />
-              </mesh>
-            ))}
-          </group>
-        )}
+        {/* Hệ Thống Mái Cung Đình Cổ Trang (Mái Đao Trùng Diêm / Đơn Diêm Chuẩn Cung Đình) */}
+        <TieredPalaceRoof zone={zone} materials={materials} />
       </group>
 
       {/* Biển Tên Tòa Điện Nổi 3D (Giống hệt phong cách thẻ bài trong ảnh mẫu) */}
@@ -278,6 +220,10 @@ const WatchtowerMesh: React.FC<{
   position: [number, number, number];
   materials: Record<string, THREE.Material>;
 }> = ({ position, materials }) => {
+  const watchtowerRoofGeom = useMemo(() => {
+    return createImperialRoofGeometry(5.2, 5.2, 0.45, 0.45, 1.7, 0.32, -0.08);
+  }, []);
+
   return (
     <group position={position}>
       <mesh position={[0, 2.6, 0]} material={materials.wallRed} castShadow receiveShadow>
@@ -286,18 +232,20 @@ const WatchtowerMesh: React.FC<{
       <mesh position={[0, 6.2, 0]} material={materials.wallRed} castShadow>
         <boxGeometry args={[3.8, 2.4, 3.8]} />
       </mesh>
-      <mesh
-        position={[0, 8.1, 0]}
-        rotation={[0, Math.PI / 4, 0]}
-        scale={[3.8, 1.8, 3.8]}
-        material={materials.roofSlate}
-        castShadow
-      >
-        <coneGeometry args={[1, 1, 4]} />
-      </mesh>
-      <mesh position={[0, 9.1, 0]} material={materials.goldTrim}>
-        <sphereGeometry args={[0.24, 10, 10]} />
-      </mesh>
+      <group position={[0, 7.4, 0]}>
+        <mesh
+          geometry={watchtowerRoofGeom}
+          material={materials.roofSlate}
+          castShadow
+          receiveShadow
+        />
+        <mesh position={[0, 1.82, 0]} material={materials.goldTrim}>
+          <sphereGeometry args={[0.26, 12, 12]} />
+        </mesh>
+        <mesh position={[0, 2.05, 0]} material={materials.goldTrim}>
+          <coneGeometry args={[0.1, 0.32, 6]} />
+        </mesh>
+      </group>
     </group>
   );
 };
