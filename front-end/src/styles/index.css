@@ -1200,34 +1200,44 @@ body,
 }
 
 /* ===================================================================== */
-/* H. CENTER PROMPT / RETICLE                                            */
+/* H. CENTER PROMPT / RETICLE (GỢI Ý TƯƠNG TÁC NHỎ GỌN TRÊN THANH DOCK)  */
 /* ===================================================================== */
-.hud-center-prompt-anchor {
+.hud-center-prompt-anchor,
+.hud-center-prompt-zone {
   position: fixed;
   bottom: 84px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: auto;
-  z-index: 15;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 90vw;
 }
 
 .hud-interact-toast {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: var(--radius-pill);
-  background: var(--bg-panel-solid);
-  border: 1px solid var(--imperial-gold);
-  box-shadow: var(--shadow-md);
+  background: rgba(22, 14, 10, 0.94);
+  border: 1.5px solid var(--imperial-gold);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
   font-size: 0.8rem;
   color: var(--text-main);
   cursor: pointer;
-  transition: transform 0.14s ease;
+  width: auto;
+  white-space: nowrap;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
 }
 
 .hud-interact-toast:hover {
   transform: translateY(-2px);
+  border-color: #ffd875;
+  background: rgba(38, 24, 16, 0.98);
 }
 
 .clean-toast-btn {

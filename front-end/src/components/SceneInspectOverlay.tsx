@@ -78,7 +78,7 @@ export const SceneInspectOverlay: React.FC = () => {
         {/* GỢI Ý TƯƠNG TÁC DƯỚI CHÂN (KHI Ở GẦN)                           */}
         {/* ================================================================= */}
         {!isPointerLocked && !isAnyModalOpen && (
-          <div className="hud-center-prompt-zone">
+          <div className="hud-center-prompt-anchor">
             {currentNearbyEntity ? (
               <div
                 className="hud-interact-toast nearby"
