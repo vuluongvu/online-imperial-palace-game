@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import { createPalaceMaterialSet } from '../assets/PalaceMaterials';
 import { useGameStore } from '../../stores/useGameStore';
+import { useGameplayStore } from '../../stores/useGameplayStore';
+import { useUiStore } from '../../stores/useUiStore';
 import { Player } from '../characters/Player';
 
 /**
@@ -16,6 +18,11 @@ import { Player } from '../characters/Player';
  */
 export const SideWingsAndAnnex: React.FC = () => {
   const showWireframe = useGameStore((s) => s.showWireframe);
+  const showAssetModal = useGameStore((s) => s.showAssetModal);
+  const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const activeWindow = useUiStore((s) => s.activeWindow);
+
+  const isAnyModalOpen = Boolean(activeInteractableId || activeWindow || showAssetModal);
   const materials = useMemo(() => createPalaceMaterialSet(showWireframe), [showWireframe]);
 
   // LatheGeometry cho Bình sứ Pháp Lam Huế & Ấm trà cung đình
@@ -394,13 +401,15 @@ export const SideWingsAndAnnex: React.FC = () => {
           <Player rank="minister" animationState="idle" />
         </group>
 
-        {/* Nhãn tên nổi 3D trong Gian Chờ Quan Viên */}
-        <Html position={[-25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
-          <div className="map-building-label">
-            <span className="map-label-icon">👥</span>
-            <span className="map-label-text">Tả Vu – Gian Chờ Quan Viên</span>
-          </div>
-        </Html>
+        {/* Nhãn tên nổi 3D trong Gian Chờ Quan Viên (Tự ẩn khi mở bảng menu) */}
+        {!isAnyModalOpen && (
+          <Html position={[-25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
+            <div className="map-building-label">
+              <span className="map-label-icon">👥</span>
+              <span className="map-label-text">Tả Vu – Gian Chờ Quan Viên</span>
+            </div>
+          </Html>
+        )}
       </group>
 
       {/* ================================================================= */}
@@ -562,13 +571,15 @@ export const SideWingsAndAnnex: React.FC = () => {
           </mesh>
         </group>
 
-        {/* Nhãn tên nổi 3D trong Phòng Tiếp Khách */}
-        <Html position={[25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
-          <div className="map-building-label">
-            <span className="map-label-icon">🍵</span>
-            <span className="map-label-text">Hữu Vu – Phòng Phụ Tiếp Khách</span>
-          </div>
-        </Html>
+        {/* Nhãn tên nổi 3D trong Phòng Tiếp Khách (Tự ẩn khi mở bảng menu) */}
+        {!isAnyModalOpen && (
+          <Html position={[25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
+            <div className="map-building-label">
+              <span className="map-label-icon">🍵</span>
+              <span className="map-label-text">Hữu Vu – Phòng Phụ Tiếp Khách</span>
+            </div>
+          </Html>
+        )}
       </group>
 
       {/* ================================================================= */}
@@ -720,13 +731,15 @@ export const SideWingsAndAnnex: React.FC = () => {
           </group>
         ))}
 
-        {/* Nhãn tên nổi 3D tại Hậu Sảnh & Lối Ra Phía Sau */}
-        <Html position={[0, 4.8, -31.5]} center distanceFactor={24} zIndexRange={[10, 0]}>
-          <div className="map-building-label">
-            <span className="map-label-icon">⛩️</span>
-            <span className="map-label-text">Hậu Sảnh & Lối Ra Cần Chánh Điện</span>
-          </div>
-        </Html>
+        {/* Nhãn tên nổi 3D tại Hậu Sảnh & Lối Ra Phía Sau (Tự ẩn khi mở bảng menu) */}
+        {!isAnyModalOpen && (
+          <Html position={[0, 4.8, -31.5]} center distanceFactor={24} zIndexRange={[10, 0]}>
+            <div className="map-building-label">
+              <span className="map-label-icon">⛩️</span>
+              <span className="map-label-text">Hậu Sảnh & Lối Ra Cần Chánh Điện</span>
+            </div>
+          </Html>
+        )}
       </group>
     </group>
   );

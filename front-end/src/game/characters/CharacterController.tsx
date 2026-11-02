@@ -31,6 +31,7 @@ export const CharacterController: React.FC = () => {
   const clearTeleportTarget = useGameStore((s) => s.clearTeleportTarget);
 
   const overheadBubbleText = useGameplayStore((s) => s.overheadBubbleText);
+  const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
 
   const { camera } = useThree();
   const prevSeatedSpotId = useRef<string | null>(null);
@@ -371,7 +372,7 @@ export const CharacterController: React.FC = () => {
   return (
     <group ref={characterGroupRef} position={[0, 0, 31]}>
       <Player />
-      {overheadBubbleText && (
+      {overheadBubbleText && !activeInteractableId && (
         <Html position={[0, 2.35, 0]} center zIndexRange={[20, 0]}>
           <div className="player-overhead-bubble">{overheadBubbleText}</div>
         </Html>

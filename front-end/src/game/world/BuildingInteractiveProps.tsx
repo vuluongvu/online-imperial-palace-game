@@ -6,6 +6,7 @@ import { InteractableEntity } from '../../types/gameplay';
 import { Player } from '../characters/Player';
 import { useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
+import { useUiStore } from '../../stores/useUiStore';
 
 /**
  * Mô hình 3D cho từng loại Vật thể tương tác (Bảng cáo thị, Bàn làm việc, Giá sách, Bản đồ, Rương vật chứng, Bàn trà đá)
@@ -158,9 +159,16 @@ const InteractivePropMesh: React.FC<{
 
 export const BuildingInteractiveProps: React.FC = () => {
   const sceneMode = useGameStore((s) => s.sceneMode);
+  const showAssetModal = useGameStore((s) => s.showAssetModal);
   const nearbyInteractableId = useGameplayStore((s) => s.nearbyInteractableId);
+  const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
   const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
   const openInteraction = useGameplayStore((s) => s.openInteraction);
+  const activeWindow = useUiStore((s) => s.activeWindow);
+
+  const isAnyModalOpen = Boolean(
+    activeInteractableId || activeWindow || showAssetModal
+  );
 
   const activeQuest = useMemo(
     () => PALACE_QUEST_CHAIN.find((q) => q.stepNumber === currentQuestStep),
@@ -266,35 +274,37 @@ export const BuildingInteractiveProps: React.FC = () => {
               <InteractivePropMesh entity={entity} materials={materials} />
             )}
 
-            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên */}
-            <Html
-              position={[0, labelY, 0]}
-              center
-              distanceFactor={sceneMode === 'compound_map' ? 32 : 16}
-              zIndexRange={[15, 0]}
-            >
-              <div
-                className={`interactable-3d-tag ${isNearby ? 'nearby' : ''} ${
-                  isQuestTarget ? 'quest-target' : ''
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openInteraction(entity.id);
-                }}
-                title="Nhấn chuột hoặc lại gần bấm phím E để tương tác"
+            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên (Tự ẩn khi mở bảng menu) */}
+            {!isAnyModalOpen && (
+              <Html
+                position={[0, labelY, 0]}
+                center
+                distanceFactor={sceneMode === 'compound_map' ? 32 : 16}
+                zIndexRange={[10, 0]}
               >
-                {isQuestTarget && (
-                  <span className="quest-excl-badge">❗ Nhiệm Vụ</span>
-                )}
-                <span className="interactable-tag-name">
-                  {entity.type === 'npc' ? '👤 ' : '✨ '}
-                  {entity.name}
-                </span>
-                {isNearby && (
-                  <span className="interactable-key-pill">[E] Tương tác</span>
-                )}
-              </div>
-            </Html>
+                <div
+                  className={`interactable-3d-tag ${isNearby ? 'nearby' : ''} ${
+                    isQuestTarget ? 'quest-target' : ''
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openInteraction(entity.id);
+                  }}
+                  title="Nhấn chuột hoặc lại gần bấm phím E để tương tác"
+                >
+                  {isQuestTarget && (
+                    <span className="quest-excl-badge">❗ Nhiệm Vụ</span>
+                  )}
+                  <span className="interactable-tag-name">
+                    {entity.type === 'npc' ? '👤 ' : '✨ '}
+                    {entity.name}
+                  </span>
+                  {isNearby && (
+                    <span className="interactable-key-pill">[E] Tương tác</span>
+                  )}
+                </div>
+              </Html>
+            )}
           </group>
         );
       })}

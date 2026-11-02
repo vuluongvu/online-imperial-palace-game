@@ -13,6 +13,7 @@ import { createImperialRoofGeometry } from './roofGeometry';
 import { Player } from '../characters/Player';
 import { useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
+import { useUiStore } from '../../stores/useUiStore';
 
 /**
  * Component dựng một Tòa Cung Điện Cổ Trang (Đế đá Bạch Ngọc + Tường Đỏ + Hàng Cột + Mái Đao Lưu Ly 1 hoặc 2 tầng)
@@ -26,6 +27,11 @@ const PalaceBuildingMesh: React.FC<{
   const [w, h, d] = zone.size;
   const isGate = zone.id === 'cong_chinh';
   const isMainHall = zone.id === 'chinh_dien';
+
+  const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const activeWindow = useUiStore((s) => s.activeWindow);
+  const showAssetModal = useGameStore((s) => s.showAssetModal);
+  const isAnyModalOpen = Boolean(activeInteractableId || activeWindow || showAssetModal);
 
   return (
     <group position={zone.position}>
@@ -112,30 +118,32 @@ const PalaceBuildingMesh: React.FC<{
         <TieredPalaceRoof zone={zone} materials={materials} />
       </group>
 
-      {/* Biển Tên Tòa Điện Nổi 3D (Giống hệt phong cách thẻ bài trong ảnh mẫu) */}
-      <Html
-        position={[0, zone.labelHeight + (isGate ? 3.8 : 1.2), 0]}
-        center
-        distanceFactor={48}
-        zIndexRange={[10, 0]}
-      >
-        <div
-          className={`map-building-label ${isMainHall ? 'main-hall-badge' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isMainHall && onEnterInterior) {
-              onEnterInterior();
-            } else {
-              onSelect(zone.id);
-            }
-          }}
-          title={zone.subtitle}
+      {/* Biển Tên Tòa Điện Nổi 3D (Tự ẩn khi mở bảng menu) */}
+      {!isAnyModalOpen && (
+        <Html
+          position={[0, zone.labelHeight + (isGate ? 3.8 : 1.2), 0]}
+          center
+          distanceFactor={48}
+          zIndexRange={[10, 0]}
         >
-          <span className="map-label-icon">{zone.icon}</span>
-          <span className="map-label-text">{zone.name}</span>
-          {isMainHall && <span className="map-label-sub">(Vào Điện)</span>}
-        </div>
-      </Html>
+          <div
+            className={`map-building-label ${isMainHall ? 'main-hall-badge' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isMainHall && onEnterInterior) {
+                onEnterInterior();
+              } else {
+                onSelect(zone.id);
+              }
+            }}
+            title={zone.subtitle}
+          >
+            <span className="map-label-icon">{zone.icon}</span>
+            <span className="map-label-text">{zone.name}</span>
+            {isMainHall && <span className="map-label-sub">(Vào Điện)</span>}
+          </div>
+        </Html>
+      )}
     </group>
   );
 };
