@@ -403,7 +403,7 @@ export const SideWingsAndAnnex: React.FC = () => {
 
         {/* Nhãn tên nổi 3D trong Gian Chờ Quan Viên (Tự ẩn khi mở bảng menu) */}
         {!isAnyModalOpen && (
-          <Html position={[-25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
+          <Html position={[-25.8, 4.8, 0]} center zIndexRange={[10, 0]}>
             <div className="map-building-label">
               <span className="map-label-icon">👥</span>
               <span className="map-label-text">Tả Vu – Gian Chờ Quan Viên</span>
@@ -573,7 +573,7 @@ export const SideWingsAndAnnex: React.FC = () => {
 
         {/* Nhãn tên nổi 3D trong Phòng Tiếp Khách (Tự ẩn khi mở bảng menu) */}
         {!isAnyModalOpen && (
-          <Html position={[25.8, 4.8, 0]} center distanceFactor={24} zIndexRange={[10, 0]}>
+          <Html position={[25.8, 4.8, 0]} center zIndexRange={[10, 0]}>
             <div className="map-building-label">
               <span className="map-label-icon">🍵</span>
               <span className="map-label-text">Hữu Vu – Phòng Phụ Tiếp Khách</span>
@@ -733,7 +733,7 @@ export const SideWingsAndAnnex: React.FC = () => {
 
         {/* Nhãn tên nổi 3D tại Hậu Sảnh & Lối Ra Phía Sau (Tự ẩn khi mở bảng menu) */}
         {!isAnyModalOpen && (
-          <Html position={[0, 4.8, -31.5]} center distanceFactor={24} zIndexRange={[10, 0]}>
+          <Html position={[0, 4.8, -31.5]} center zIndexRange={[10, 0]}>
             <div className="map-building-label">
               <span className="map-label-icon">⛩️</span>
               <span className="map-label-text">Hậu Sảnh & Lối Ra Cần Chánh Điện</span>

@@ -33,17 +33,17 @@ const OpenHallWalls: React.FC<{
   hallSignText,
 }) => {
   const wallThick = 0.42;
-  const wallH = h * 0.58;
+  const wallH = h * 0.65;
   const halfW = (w * 0.84) / 2;
   const halfD = (d * 0.8) / 2;
   const yCenter = wallH / 2;
 
   // Lắp ghép 4 vách tường dựa trên hướng cửa ra vào
   return (
-    <group position={[0, 0.45, 0]}>
-      {/* Sàn gỗ bóng cung đình bên trong sảnh */}
+    <group position={[0, 0, 0]}>
+      {/* Sàn gỗ bóng cung đình bên trong sảnh đặt sát mặt đất */}
       <mesh
-        position={[0, 0.02, 0]}
+        position={[0, 0.01, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         material={materials.darkWood}
         receiveShadow
@@ -54,7 +54,7 @@ const OpenHallWalls: React.FC<{
       {/* Thảm đỏ dẫn đường từ cửa vào án thư */}
       {faceDirection === 'south' ? (
         <mesh
-          position={[0, 0.025, halfD / 2 - 0.6]}
+          position={[0, 0.015, halfD / 2 - 0.6]}
           rotation={[-Math.PI / 2, 0, 0]}
           material={materials.redCarpet}
           receiveShadow
@@ -65,7 +65,7 @@ const OpenHallWalls: React.FC<{
         <mesh
           position={[
             faceDirection === 'east' ? halfW / 2 - 0.6 : -halfW / 2 + 0.6,
-            0.025,
+            0.015,
             0,
           ]}
           rotation={[-Math.PI / 2, 0, 0]}
@@ -473,7 +473,7 @@ export const LaiBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       />
 
       {/* Án thư Thượng Thư Phạm Công Trứ (Phía Tây sảnh điện) */}
-      <group position={[-3.8, 0.45, 0]}>
+      <group position={[-3.8, 0, 0]}>
         {/* Sập gụ nâng cao */}
         <mesh position={[0, 0.08, 0]} material={materials.darkWood} receiveShadow>
           <boxGeometry args={[2.4, 0.16, 1.8]} />
@@ -502,7 +502,7 @@ export const LaiBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Bàn Thư lại & Điểm danh bên sườn Bắc (Z = -2.8) */}
-      <group position={[-0.8, 0.45, -2.8]}>
+      <group position={[-0.8, 0, -2.8]}>
         <mesh position={[0, 0.42, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.6, 0.8, 0.8]} />
         </mesh>
@@ -512,7 +512,7 @@ export const LaiBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Tủ lưu trữ hồ sơ bổ nhiệm bên sườn Nam (Z = +2.8) */}
-      <group position={[-0.8, 0.45, 2.8]}>
+      <group position={[-0.8, 0, 2.8]}>
         <mesh position={[0, 1.25, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.8, 2.4, 0.6]} />
         </mesh>
@@ -547,7 +547,7 @@ export const HinhBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       />
 
       {/* Bàn Công Đường Thượng Thư Bao Thanh (Phía Đông sảnh điện) */}
-      <group position={[3.8, 0.45, 0]}>
+      <group position={[3.8, 0, 0]}>
         <mesh position={[0, 0.08, 0]} material={materials.darkWood} receiveShadow>
           <boxGeometry args={[2.4, 0.16, 1.8]} />
         </mesh>
@@ -575,7 +575,7 @@ export const HinhBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Bàn Hồ sơ Vụ án bên sườn Bắc (Z = -2.8) */}
-      <group position={[0.8, 0.45, -2.8]}>
+      <group position={[0.8, 0, -2.8]}>
         <mesh position={[0, 0.42, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.6, 0.8, 0.8]} />
         </mesh>
@@ -585,7 +585,7 @@ export const HinhBoInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Rương Thiết Giáp chứa Tang vật & Bằng chứng bên sườn Nam (Z = +2.8) */}
-      <group position={[0.8, 0.45, 2.8]}>
+      <group position={[0.8, 0, 2.8]}>
         <mesh position={[0, 0.32, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.2, 0.64, 0.7]} />
         </mesh>
@@ -619,7 +619,7 @@ export const HanLamVienInterior: React.FC<MinistryProps> = ({ materials }) => {
       />
 
       {/* Bàn Chủ Khảo Chu Văn (Phía Tây) */}
-      <group position={[-4.2, 0.45, 0]}>
+      <group position={[-4.2, 0, 0]}>
         <mesh position={[0, 0.08, 0]} material={materials.darkWood} receiveShadow>
           <boxGeometry args={[2.2, 0.16, 1.8]} />
         </mesh>
@@ -642,7 +642,7 @@ export const HanLamVienInterior: React.FC<MinistryProps> = ({ materials }) => {
       {/* Dãy bàn thấp Khảo Thí cho thí sinh (2 hàng bàn ngay ngắn) */}
       {[-1.6, 1.2].map((xPos, colIdx) =>
         [-1.8, 1.8].map((zPos, rowIdx) => (
-          <group key={`exam-desk-${colIdx}-${rowIdx}`} position={[xPos, 0.45, zPos]}>
+          <group key={`exam-desk-${colIdx}-${rowIdx}`} position={[xPos, 0, zPos]}>
             {/* Bàn thi gỗ thấp */}
             <mesh position={[0, 0.28, 0]} material={materials.darkWood} castShadow>
               <boxGeometry args={[1.1, 0.54, 0.7]} />
@@ -663,7 +663,7 @@ export const HanLamVienInterior: React.FC<MinistryProps> = ({ materials }) => {
       )}
 
       {/* Giá sách Cổ tịch dọc tường Bắc (Z = -3.4) */}
-      <group position={[-0.8, 0.45, -3.4]}>
+      <group position={[-0.8, 0, -3.4]}>
         <mesh position={[0, 1.25, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[2.8, 2.4, 0.55]} />
         </mesh>
@@ -676,7 +676,7 @@ export const HanLamVienInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Giá sách Cổ tịch dọc tường Nam (Z = +3.4) */}
-      <group position={[-0.8, 0.45, 3.4]}>
+      <group position={[-0.8, 0, 3.4]}>
         <mesh position={[0, 1.25, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[2.8, 2.4, 0.55]} />
         </mesh>
@@ -711,7 +711,7 @@ export const NguThuPhongInterior: React.FC<MinistryProps> = ({ materials }) => {
       />
 
       {/* Ngự Án Hoàng Đế phê duyệt quốc sự (Phía Bắc sảnh điện) */}
-      <group position={[0, 0.45, -2.6]}>
+      <group position={[0, 0, -2.6]}>
         {/* Bệ ngự tọa bọc gấm vàng hoàng gia */}
         <mesh position={[0, 0.08, 0]} material={materials.darkWood} receiveShadow>
           <boxGeometry args={[3.2, 0.16, 2.0]} />
@@ -741,7 +741,7 @@ export const NguThuPhongInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Sa bàn Bản Đồ Đại Nghiệp bên sườn Đông (X = +3.8, Z = -0.5) */}
-      <group position={[3.8, 0.45, -0.5]}>
+      <group position={[3.8, 0, -0.5]}>
         {/* Chân giá sa bàn gỗ lim */}
         <mesh position={[0, 0.42, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.8, 0.84, 1.4]} />
@@ -757,7 +757,7 @@ export const NguThuPhongInterior: React.FC<MinistryProps> = ({ materials }) => {
       </group>
 
       {/* Giá sách Hoàng Triều Thực Lục bên sườn Tây (X = -3.8, Z = -0.5) */}
-      <group position={[-3.8, 0.45, -0.5]}>
+      <group position={[-3.8, 0, -0.5]}>
         <mesh position={[0, 1.35, 0]} material={materials.darkWood} castShadow>
           <boxGeometry args={[1.5, 2.6, 0.6]} />
         </mesh>

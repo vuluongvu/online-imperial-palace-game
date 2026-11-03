@@ -225,13 +225,14 @@ export const BuildingInteractiveProps: React.FC = () => {
         const dz = playerPos[2] - entity.position[2];
         const dist = Math.hypot(dx, dz);
 
-        // Hiển thị theo khoảng cách chuẩn RPG:
-        // 1. Ở xa (> 8.0m): KHÔNG hiển thị nhãn chữ HTML (tránh rối màn hình)
-        // 2. Lại gần (4.5m < dist <= 8.0m): Chỉ hiển thị nhãn tên nhỏ gọn, mờ nhẹ nhận biết
-        // 3. Ở đủ gần tương tác (dist <= 4.5m hoặc isNearby): Hiển thị phím [E] Tương tác
-        // 4. Nếu đang mở bảng menu/đối thoại: Tự ẩn toàn bộ 100%
-        const shouldRenderTag = !isAnyModalOpen && dist <= 8.0;
-        const showFullPrompt = dist <= 4.5 || isNearby;
+        // Hiển thị theo khoảng cách chuẩn RPG tinh giản:
+        // 1. Chỉ hiển thị nhãn chữ cho đối tượng gần nhất (đang đứng trong tầm phím E)
+        //    HOẶC đối tượng mục tiêu nhiệm vụ khi đã ở cự ly gần (<= 5.0m)
+        // 2. Tuyệt đối không hiển thị đồng loạt nhiều nhãn gây rối mắt
+        // 3. Không dùng distanceFactor để tránh bị phóng to đột ngột khi camera lại gần
+        const shouldRenderTag =
+          !isAnyModalOpen && (isNearby || (isQuestTarget && dist <= 5.0));
+        const showFullPrompt = isNearby;
 
         return (
           <group
@@ -239,8 +240,8 @@ export const BuildingInteractiveProps: React.FC = () => {
             position={entity.position}
             rotation={[0, entity.rotationY ?? 0, 0]}
           >
-            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất (chỉ hiện khi trong tầm nhận biết <= 8m) */}
-            {dist <= 8.0 && (
+            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất (chỉ hiện khi gần đối tượng tương tác) */}
+            {(isNearby || (isQuestTarget && dist <= 8.0)) && (
               <mesh
                 position={[0, 0.05, 0]}
                 rotation={[-Math.PI / 2, 0, 0]}
@@ -290,12 +291,11 @@ export const BuildingInteractiveProps: React.FC = () => {
               <InteractivePropMesh entity={entity} materials={materials} />
             )}
 
-            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên */}
+            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên (Kích thước CSS pixel chuẩn, không bị phóng đại) */}
             {shouldRenderTag && (
               <Html
                 position={[0, labelY, 0]}
                 center
-                distanceFactor={sceneMode === 'compound_map' ? 24 : 16}
                 zIndexRange={[10, 0]}
               >
                 <div

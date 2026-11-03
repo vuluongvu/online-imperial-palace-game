@@ -34,6 +34,12 @@ const PalaceBuildingMesh: React.FC<{
   const [w, h, d] = zone.size;
   const isGate = zone.id === 'cong_chinh';
   const isMainHall = zone.id === 'chinh_dien';
+  const hasWalkableInterior = [
+    'lai_bo',
+    'hinh_bo',
+    'han_lam_vien',
+    'ngu_thu_phong',
+  ].includes(zone.id);
 
   const playerPos = useGameStore((s) => s.playerPosition);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
@@ -60,27 +66,25 @@ const PalaceBuildingMesh: React.FC<{
   return (
     <group position={zone.position}>
       {/* Bệ đá Bạch Ngọc nâng đỡ tòa điện */}
-      {!isGate ? (
+      {isMainHall ? (
         <group>
           <mesh position={[0, 0.45, 0]} material={materials.whiteMarble} receiveShadow castShadow>
             <boxGeometry args={[w + 2.6, 0.9, d + 2.6]} />
           </mesh>
-          {isMainHall && (
-            <mesh position={[0, 1.1, 0]} material={materials.whiteMarble} receiveShadow castShadow>
-              <boxGeometry args={[w + 1.0, 0.6, d + 1.0]} />
-            </mesh>
-          )}
+          <mesh position={[0, 1.1, 0]} material={materials.whiteMarble} receiveShadow castShadow>
+            <boxGeometry args={[w + 1.0, 0.6, d + 1.0]} />
+          </mesh>
           {/* Bậc thang đá & Thảm đỏ trước sảnh điện */}
           <mesh
-            position={[0, isMainHall ? 0.72 : 0.45, d / 2 + 1.6]}
+            position={[0, 0.72, d / 2 + 1.6]}
             rotation={[-0.45, 0, 0]}
-            material={isMainHall ? materials.redCarpet : materials.whiteMarble}
+            material={materials.redCarpet}
             receiveShadow
           >
-            <boxGeometry args={[isMainHall ? 4.6 : 3.2, 0.3, 2.4]} />
+            <boxGeometry args={[4.6, 0.3, 2.4]} />
           </mesh>
         </group>
-      ) : (
+      ) : isGate ? (
         /* Cổng Chính (Ngọ Môn) có vòm cổng ở giữa cho người chơi đi qua */
         <group>
           {/* Hai khối đài thành Đỏ hai bên vòm cổng */}
@@ -99,6 +103,34 @@ const PalaceBuildingMesh: React.FC<{
             <boxGeometry args={[w + 1.2, 0.35, d + 0.6]} />
           </mesh>
         </group>
+      ) : hasWalkableInterior ? (
+        /* Các gian nha môn có nội thất đi bộ: sàn ở mức mặt đất Y=0, chỉ thêm thềm đá thấp ngoài cửa */
+        <mesh
+          position={[
+            zone.id === 'lai_bo' || zone.id === 'han_lam_vien'
+              ? (w * 0.84) / 2 + 0.5
+              : zone.id === 'hinh_bo'
+                ? -(w * 0.84) / 2 - 0.5
+                : 0,
+            0.04,
+            zone.id === 'ngu_thu_phong' ? (d * 0.8) / 2 + 0.5 : 0,
+          ]}
+          material={materials.whiteMarble}
+          receiveShadow
+        >
+          <boxGeometry
+            args={[
+              zone.id === 'ngu_thu_phong' ? 3.6 : 1.0,
+              0.08,
+              zone.id === 'ngu_thu_phong' ? 1.0 : 3.6,
+            ]}
+          />
+        </mesh>
+      ) : (
+        /* Ngự Hoa Viên hoặc công trình phụ */
+        <mesh position={[0, 0.05, 0]} material={materials.whiteMarble} receiveShadow>
+          <boxGeometry args={[w + 1.2, 0.1, d + 1.2]} />
+        </mesh>
       )}
 
       {/* =================================================================== */}
@@ -160,7 +192,6 @@ const PalaceBuildingMesh: React.FC<{
         <Html
           position={[0, zone.labelHeight + (isGate ? 3.8 : 1.2), 0]}
           center
-          distanceFactor={32}
           zIndexRange={[10, 0]}
         >
           <div
