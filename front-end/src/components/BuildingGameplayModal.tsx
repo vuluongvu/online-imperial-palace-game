@@ -27,7 +27,7 @@ export const BuildingGameplayModal: React.FC = () => {
   // Thái Hòa Điện state
   const edicts = useGameplayStore((s) => s.edicts);
   const courtSessionCount = useGameplayStore((s) => s.courtSessionCount);
-  const holdCourtSession = useGameplayStore((s) => s.holdCourtSession);
+  const startCourtCeremony = useGameplayStore((s) => s.startCourtCeremony);
 
   // Ngự Thư Phòng state
   const memorials = useGameplayStore((s) => s.memorials);
@@ -266,9 +266,12 @@ export const BuildingGameplayModal: React.FC = () => {
                   <button
                     type="button"
                     className="action-btn gold"
-                    onClick={holdCourtSession}
+                    onClick={() => {
+                      closeInteraction();
+                      startCourtCeremony();
+                    }}
                   >
-                    🔔 Tham Gia Lễ Thiết Triều (+40 Công Trạng, +120 Bạc)
+                    👑 Khai Mở & Tham Dự Đại Triều Thiết Triều
                   </button>
                   <button
                     type="button"

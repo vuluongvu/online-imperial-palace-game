@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei';
 import { Player } from './Player';
 import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
+import { useUiStore } from '../../stores/useUiStore';
 import { INTERACTABLE_ENTITIES } from '../../data/palaceGameplayData';
 import { CharacterAnimationState } from './CharacterAnimations';
 import { RANK_OUTFITS } from './CharacterMaterials';
@@ -33,6 +34,16 @@ export const CharacterController: React.FC = () => {
 
   const overheadBubbleText = useGameplayStore((s) => s.overheadBubbleText);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
+  const activeWindow = useUiStore((s) => s.activeWindow);
+  const showAssetModal = useGameStore((s) => s.showAssetModal);
+  const isAnyModalOpen = Boolean(
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
+  );
+
   const characterRank = useGameStore((s) => s.characterRank);
   const playerTitle = useGameStore((s) => s.playerTitle);
   const isPhotoMode = useGameStore((s) => s.isPhotoMode);
@@ -377,7 +388,7 @@ export const CharacterController: React.FC = () => {
   return (
     <group ref={characterGroupRef} position={[0, 0, 31]}>
       <Player />
-      {!isPhotoMode && !activeInteractableId && (
+      {!isPhotoMode && !isAnyModalOpen && (
         <Html position={[0, 2.36, 0]} center zIndexRange={[20, 0]}>
           <div className="player-overhead-container">
             {overheadBubbleText && (

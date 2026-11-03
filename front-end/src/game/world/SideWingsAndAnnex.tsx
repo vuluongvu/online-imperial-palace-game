@@ -20,9 +20,15 @@ export const SideWingsAndAnnex: React.FC = () => {
   const showWireframe = useGameStore((s) => s.showWireframe);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
   const activeWindow = useUiStore((s) => s.activeWindow);
 
-  const isAnyModalOpen = Boolean(activeInteractableId || activeWindow || showAssetModal);
+  const isAnyModalOpen = Boolean(
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
+  );
   const materials = useMemo(() => createPalaceMaterialSet(showWireframe), [showWireframe]);
 
   // LatheGeometry cho Bình sứ Pháp Lam Huế & Ấm trà cung đình

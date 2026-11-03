@@ -290,9 +290,15 @@ const PalaceBuildingMesh: React.FC<{
   const playerPos = useGameStore((s) => s.playerPosition);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
   const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
   const activeWindow = useUiStore((s) => s.activeWindow);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
-  const isAnyModalOpen = Boolean(activeInteractableId || activeWindow || showAssetModal);
+  const isAnyModalOpen = Boolean(
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
+  );
 
   const activeQuest = useMemo(
     () => PALACE_QUEST_CHAIN.find((q) => q.stepNumber === currentQuestStep),
@@ -305,9 +311,19 @@ const PalaceBuildingMesh: React.FC<{
     playerPos[0] - zone.position[0],
     playerPos[2] - zone.position[2]
   );
-  // Hiển thị nhãn công trình khi người chơi ở cự ly hợp lý (<= 36m) hoặc là Chính Điện / Công trình mục tiêu
+
+  // Nếu người chơi đang ở bên trong gian nhà có nội thất, ẩn nhãn biển tên bên ngoài
+  const isInsideThisBuilding = hasWalkableInterior && distToPlayer <= 7.5;
+
+  // Hiển thị nhãn công trình chỉ khi người chơi lại gần hợp lý, hoặc là công trình mục tiêu nhiệm vụ
   const showBuildingLabel =
-    !isAnyModalOpen && (distToPlayer <= 36 || isMainHall || isQuestTargetBuilding);
+    !isAnyModalOpen &&
+    !isInsideThisBuilding &&
+    (isQuestTargetBuilding
+      ? distToPlayer <= 26
+      : isMainHall
+        ? distToPlayer <= 22
+        : distToPlayer <= 16);
 
   return (
     <group position={zone.position}>

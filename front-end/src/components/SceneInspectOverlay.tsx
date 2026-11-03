@@ -16,6 +16,7 @@ import { NotificationLayer } from './hud/NotificationLayer';
 import { PalaceEventBanner } from './hud/PalaceEventBanner';
 import { GardenSocialWidget } from './hud/GardenSocialWidget';
 import { PhotoModeOverlay } from './hud/PhotoModeOverlay';
+import { CourtCeremonyOverlay } from './hud/CourtCeremonyOverlay';
 
 import { NpcDialogue } from './dialogue/NpcDialogue';
 import { BuildingGameplayModal } from './BuildingGameplayModal';
@@ -38,6 +39,7 @@ export const SceneInspectOverlay: React.FC = () => {
 
   const nearbyInteractableId = useGameplayStore((s) => s.nearbyInteractableId);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
   const openInteraction = useGameplayStore((s) => s.openInteraction);
 
   const activeWindow = useUiStore((s) => s.activeWindow);
@@ -48,7 +50,10 @@ export const SceneInspectOverlay: React.FC = () => {
   );
 
   const isAnyModalOpen = Boolean(
-    activeInteractableId || activeWindow || showAssetModal
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
   );
 
   if (isPhotoMode) {
@@ -80,6 +85,11 @@ export const SceneInspectOverlay: React.FC = () => {
         <PalaceEventBanner />
 
         {/* ================================================================= */}
+        {/* ĐẠI TRIỀU THIẾT TRIỀU (GRAND COURT CEREMONY OVERLAY)             */}
+        {/* ================================================================= */}
+        <CourtCeremonyOverlay />
+
+        {/* ================================================================= */}
         {/* CỘT NỔI BÊN PHẢI: NHIỆM VỤ & BẢN ĐỒ RADAR (THEO ẢNH CONCEPT)     */}
         {/* ================================================================= */}
         <div className="hud-right-floating-col">
@@ -95,7 +105,7 @@ export const SceneInspectOverlay: React.FC = () => {
         {/* ================================================================= */}
         {/* GỢI Ý TƯƠNG TÁC DƯỚI CHÂN (KHI Ở GẦN)                           */}
         {/* ================================================================= */}
-        {!isPointerLocked && !isAnyModalOpen && (
+        {!isPointerLocked && !isAnyModalOpen && (currentNearbyEntity || currentNearbySpot) && (
           <div className="hud-center-prompt-anchor">
             {currentNearbyEntity ? (
               <div
@@ -103,7 +113,7 @@ export const SceneInspectOverlay: React.FC = () => {
                 onClick={() => openInteraction(currentNearbyEntity.id)}
               >
                 <span className="interact-key-pill">[E]</span>
-                <span>
+                <span className="toast-label-truncate">
                   {currentNearbyEntity.name} — <em>{currentNearbyEntity.title}</em>
                 </span>
               </div>
@@ -113,7 +123,7 @@ export const SceneInspectOverlay: React.FC = () => {
                 onClick={() => sitAtSpot(currentNearbySpot.id)}
               >
                 <span className="interact-key-pill">[E]</span>
-                <span>
+                <span className="toast-label-truncate">
                   Ngồi tại: <strong>{currentNearbySpot.label}</strong>
                 </span>
               </div>

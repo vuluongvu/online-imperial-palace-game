@@ -9,6 +9,8 @@ import {
   QuestStatus,
 } from '../types/gameplay';
 import { PalaceEvent, PALACE_EVENTS_CATALOG } from '../data/palaceEventsData';
+import { CourtCeremonyStage, COURT_CEREMONY_STAGES } from '../data/palaceCourtCeremony';
+import { playCourtChime, playJadeChime } from '../utils/palaceAudio';
 import {
   CRIMINAL_CASES,
   GARDEN_EMOTES,
@@ -112,6 +114,12 @@ interface GameplayState {
   // Quest Actions
   handleLaiBoQuestInteraction: () => void;
   completeQuestByStep: (stepNumber: number) => void;
+
+  // H. Đại Triều Thiết Triều (Grand Court Ceremony)
+  courtCeremonyStage: CourtCeremonyStage;
+  startCourtCeremony: () => void;
+  advanceCourtCeremony: () => void;
+  cancelCourtCeremony: () => void;
 
   // Thái Hòa Điện Actions
   issueImperialEdict: (
@@ -243,6 +251,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
 
   activePalaceEvent: null,
   eventTimeRemaining: 0,
+  courtCeremonyStage: 'idle',
 
   toasts: [],
   notificationLog: [],
@@ -410,6 +419,96 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
 
     get().pushToast('edict', cleanTitle, cleanContent);
     get().pushToast('reward', 'Ban bố chiếu chỉ', '+35 công trạng');
+  },
+
+  startCourtCeremony: () => {
+    // 1. Chuyển vào Nội Điện Thái Hòa
+    useGameStore.getState().setSceneMode('main_hall_interior');
+    useGameStore.getState().setPlayerPosition([0, 0, -9.5]);
+    useGameStore.getState().clearTeleportTarget();
+
+    // 2. Ngân vang tiếng chuông đồng Thái Hòa Điện
+    playCourtChime();
+
+    // 3. Đặt trạng thái nghi lễ bước 1: Tề tựu khai triều
+    set({
+      courtCeremonyStage: 'assembly',
+      activeInteractableId: null,
+    });
+
+    get().pushToast(
+      'edict',
+      'Đại Triều Thái Hòa Điện Khai Mạc!',
+      COURT_CEREMONY_STAGES.assembly.heraldAnnounce
+    );
+  },
+
+  advanceCourtCeremony: () => {
+    const { courtCeremonyStage } = get();
+
+    if (courtCeremonyStage === 'assembly') {
+      playJadeChime();
+      set({ courtCeremonyStage: 'kowtow' });
+      get().pushToast('edict', 'Bá Quan Triều Bái!', COURT_CEREMONY_STAGES.kowtow.heraldAnnounce);
+      // Tự động quỳ lạy hoặc cho người chơi bấm
+      useGameStore.getState().setPreviewAnimOverride('kneel');
+      setTimeout(() => {
+        useGameStore.getState().setPreviewAnimOverride(null);
+      }, 5000);
+      return;
+    }
+
+    if (courtCeremonyStage === 'kowtow') {
+      playJadeChime();
+      set({ courtCeremonyStage: 'decree' });
+      get().pushToast('edict', 'Tuyên Đọc Chiếu Chỉ!', COURT_CEREMONY_STAGES.decree.heraldAnnounce);
+      return;
+    }
+
+    if (courtCeremonyStage === 'decree') {
+      playCourtChime();
+      set({ courtCeremonyStage: 'rewarded' });
+
+      // Cập nhật bổng lộc và công trạng
+      set((state) => ({
+        courtSessionCount: state.courtSessionCount + 1,
+        meritPoints: state.meritPoints + 60,
+        silverCoins: state.silverCoins + 150,
+        meritLogs: [
+          {
+            id: `merit_court_${Date.now()}`,
+            reason: `Tham dự viên mãn Lễ Thiết Triều Đại Triều tại Thái Hòa Điện`,
+            amount: 60,
+            timestamp: 'Vừa xong',
+          },
+          ...state.meritLogs,
+        ],
+      }));
+
+      // Cập nhật danh hiệu đặc biệt
+      useGameStore.getState().setPlayerTitle('Đình Thần Đại Triều');
+
+      get().pushToast(
+        'reward',
+        'Lãnh Ban Thưởng Đại Triều!',
+        'Hoàng Đế ban thưởng +60 Công Trạng, +150 Bạc và Danh hiệu "Đình Thần Đại Triều"!'
+      );
+      return;
+    }
+
+    if (courtCeremonyStage === 'rewarded') {
+      set({ courtCeremonyStage: 'idle' });
+      get().pushToast(
+        'info',
+        'Bãi Triều',
+        'Lễ thiết triều đã kết thúc. Trăm quan cúi chào lui cung.'
+      );
+    }
+  },
+
+  cancelCourtCeremony: () => {
+    set({ courtCeremonyStage: 'idle' });
+    useGameStore.getState().setPreviewAnimOverride(null);
   },
 
   holdCourtSession: () => {

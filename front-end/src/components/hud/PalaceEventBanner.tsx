@@ -47,6 +47,12 @@ export const PalaceEventBanner: React.FC = () => {
   if (!activePalaceEvent || isPhotoMode) return null;
 
   const handleAction = () => {
+    if (activePalaceEvent.id === 'event_grand_court_session') {
+      useGameplayStore.getState().startCourtCeremony();
+      dismissPalaceEvent();
+      return;
+    }
+
     if (activePalaceEvent.buildingTargetId) {
       navigateToLandmark(activePalaceEvent.buildingTargetId);
     }

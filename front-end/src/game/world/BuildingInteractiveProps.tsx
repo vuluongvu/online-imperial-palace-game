@@ -165,10 +165,14 @@ export const BuildingInteractiveProps: React.FC = () => {
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
   const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
   const openInteraction = useGameplayStore((s) => s.openInteraction);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
   const activeWindow = useUiStore((s) => s.activeWindow);
 
   const isAnyModalOpen = Boolean(
-    activeInteractableId || activeWindow || showAssetModal
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
   );
 
   const activeQuest = useMemo(
@@ -226,13 +230,10 @@ export const BuildingInteractiveProps: React.FC = () => {
         const dist = Math.hypot(dx, dz);
 
         // Hiển thị theo khoảng cách chuẩn RPG tinh giản:
-        // 1. Chỉ hiển thị nhãn chữ cho đối tượng gần nhất (đang đứng trong tầm phím E)
-        //    HOẶC đối tượng mục tiêu nhiệm vụ khi đã ở cự ly gần (<= 5.0m)
-        // 2. Tuyệt đối không hiển thị đồng loạt nhiều nhãn gây rối mắt
-        // 3. Không dùng distanceFactor để tránh bị phóng to đột ngột khi camera lại gần
-        const shouldRenderTag =
-          !isAnyModalOpen && (isNearby || (isQuestTarget && dist <= 5.0));
-        const showFullPrompt = isNearby;
+        // 1. Chỉ hiển thị nhãn chữ cho DUY NHẤT đối tượng gần nhất (isNearby = true)
+        // 2. Tuyệt đối không hiển thị đồng loạt nhiều nhãn gây rối mắt hoặc đè nhau
+        // 3. Khi mở bất kỳ menu / modal nào, lập tức ẩn toàn bộ nhãn 3D
+        const shouldRenderTag = !isAnyModalOpen && isNearby;
 
         return (
           <group
@@ -300,7 +301,7 @@ export const BuildingInteractiveProps: React.FC = () => {
               <InteractivePropMesh entity={entity} materials={materials} />
             )}
 
-            {/* Nhãn Tên & Chỉ báo Nhiệm Vụ / Phím E nổi phía trên (Kích thước CSS pixel chuẩn, không bị phóng đại) */}
+            {/* Nhãn Tên & Chỉ báo Phím E nhỏ gọn nổi phía trên (Kích thước cố định, không phóng đại) */}
             {shouldRenderTag && (
               <Html
                 position={[0, labelY, 0]}
@@ -308,7 +309,7 @@ export const BuildingInteractiveProps: React.FC = () => {
                 zIndexRange={[10, 0]}
               >
                 <div
-                  className={`interactable-3d-tag ${showFullPrompt ? 'nearby' : 'minimal'} ${
+                  className={`interactable-3d-tag nearby ${
                     isQuestTarget ? 'quest-target' : ''
                   }`}
                   onClick={(e) => {
@@ -318,17 +319,13 @@ export const BuildingInteractiveProps: React.FC = () => {
                   title="Nhấn chuột hoặc lại gần bấm phím E để tương tác"
                 >
                   {isQuestTarget && (
-                    <span className="quest-excl-badge">
-                      {showFullPrompt ? '❗ Nhiệm Vụ' : '◆'}
-                    </span>
+                    <span className="quest-excl-badge">❗</span>
                   )}
+                  <span className="interact-key-pill">[E]</span>
                   <span className="interactable-tag-name">
                     {entity.type === 'npc' ? '👤 ' : '✨ '}
                     {entity.name}
                   </span>
-                  {showFullPrompt && (
-                    <span className="interactable-key-pill">[E] Tương tác</span>
-                  )}
                 </div>
               </Html>
             )}
