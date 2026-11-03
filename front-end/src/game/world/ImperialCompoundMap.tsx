@@ -336,15 +336,194 @@ const PalaceBuildingMesh: React.FC<{
           <mesh position={[0, 1.1, 0]} material={materials.whiteMarble} receiveShadow castShadow>
             <boxGeometry args={[w + 1.0, 0.6, d + 1.0]} />
           </mesh>
-          {/* Bậc thang đá & Thảm đỏ trước sảnh điện */}
+          {/* Thềm Rồng Bậc Tam Cấp & Lan Can Rồng Đá Chính Điện Thái Hòa */}
+          {/* 5 bậc đá Bạch Ngọc vững chãi cao từ Y=0 đến Y=1.4, sâu 3.0m (Z = 7.5 đến 10.5) */}
+          {[0, 1, 2, 3, 4].map((stepIdx) => {
+            const stepYTop = (stepIdx + 1) * 0.28;
+            const stepH = (stepIdx + 1) * 0.28;
+            const stepYCenter = stepH / 2;
+            const stepZCenter = 10.2 - stepIdx * 0.6;
+            const stepZFront = 10.5 - stepIdx * 0.6;
+
+            return (
+              <group key={`chinh-dien-step-${stepIdx}`}>
+                {/* Khối đá Bạch Ngọc toàn bộ bề rộng 12m của bậc thang */}
+                <mesh
+                  position={[0, stepYCenter, stepZCenter]}
+                  material={materials.whiteMarble}
+                  receiveShadow
+                  castShadow
+                >
+                  <boxGeometry args={[12.0, stepH, 0.6]} />
+                </mesh>
+
+                {/* Thảm đỏ Ngự Đạo phủ trên mặt bậc (rộng 4.0m) */}
+                <mesh
+                  position={[0, stepYTop + 0.008, stepZCenter]}
+                  material={materials.redCarpet}
+                  receiveShadow
+                >
+                  <boxGeometry args={[4.0, 0.016, 0.6]} />
+                </mesh>
+
+                {/* Nẹp chỉ viền vàng hai bên thảm đỏ */}
+                <mesh
+                  position={[-2.0, stepYTop + 0.012, stepZCenter]}
+                  material={materials.goldTrim}
+                >
+                  <boxGeometry args={[0.08, 0.012, 0.6]} />
+                </mesh>
+                <mesh
+                  position={[2.0, stepYTop + 0.012, stepZCenter]}
+                  material={materials.goldTrim}
+                >
+                  <boxGeometry args={[0.08, 0.012, 0.6]} />
+                </mesh>
+
+                {/* Thảm đỏ phủ cổ bậc (mặt đứng trước mỗi bậc) */}
+                <mesh
+                  position={[0, (stepIdx + 0.5) * 0.28, stepZFront + 0.008]}
+                  material={materials.redCarpet}
+                >
+                  <boxGeometry args={[4.0, 0.28, 0.016]} />
+                </mesh>
+              </group>
+            );
+          })}
+
+          {/* Thảm đỏ ngự đạo tiếp nối trên mặt sàn thềm trên (từ đầu cầu thang Z=7.5 đến cửa điện Z=5.46) */}
           <mesh
-            position={[0, 0.72, d / 2 + 1.6]}
-            rotation={[-0.45, 0, 0]}
+            position={[0, 1.408, 6.48]}
             material={materials.redCarpet}
             receiveShadow
           >
-            <boxGeometry args={[4.6, 0.3, 2.4]} />
+            <boxGeometry args={[4.0, 0.016, 2.04]} />
           </mesh>
+          <mesh position={[-2.0, 1.412, 6.48]} material={materials.goldTrim}>
+            <boxGeometry args={[0.08, 0.012, 2.04]} />
+          </mesh>
+          <mesh position={[2.0, 1.412, 6.48]} material={materials.goldTrim}>
+            <boxGeometry args={[0.08, 0.012, 2.04]} />
+          </mesh>
+
+          {/* 2 Lan can Rồng Đá ở giữa phân chia Ngự Đạo và bậc Quan Viên (X = -2.12 & +2.12) */}
+          {[-2.12, 2.12].map((xBal) => (
+            <group key={`dragon-rail-${xBal}`}>
+              {/* Thân lan can đá dốc nghiêng theo bậc thang */}
+              <mesh
+                position={[xBal, 1.02, 9.0]}
+                rotation={[0.437, 0, 0]}
+                material={materials.whiteMarble}
+                castShadow
+              >
+                <boxGeometry args={[0.24, 0.4, 3.32]} />
+              </mesh>
+              {/* Sống lưng rồng uốn lượn viền vàng */}
+              <mesh
+                position={[xBal, 1.2, 9.0]}
+                rotation={[0.437, 0, 0]}
+                material={materials.goldTrim}
+              >
+                <boxGeometry args={[0.08, 0.08, 3.2]} />
+              </mesh>
+              {/* Trụ bệ rồng đá ở chân cầu thang (Z = 10.52) */}
+              <mesh
+                position={[xBal, 0.3, 10.52]}
+                material={materials.whiteMarble}
+                castShadow
+              >
+                <boxGeometry args={[0.34, 0.6, 0.34]} />
+              </mesh>
+              {/* Đầu rồng chạm khắc thếp vàng uy nghiêm chầu ra sân */}
+              <mesh
+                position={[xBal, 0.68, 10.52]}
+                material={materials.goldTrim}
+                castShadow
+              >
+                <boxGeometry args={[0.26, 0.22, 0.3]} />
+              </mesh>
+              {/* Trụ đỉnh lan can trên thềm điện (Z = 7.48) */}
+              <mesh
+                position={[xBal, 1.65, 7.48]}
+                material={materials.whiteMarble}
+                castShadow
+              >
+                <boxGeometry args={[0.3, 0.5, 0.3]} />
+              </mesh>
+              <mesh position={[xBal, 1.98, 7.48]} material={materials.goldTrim}>
+                <sphereGeometry args={[0.13, 10, 8]} />
+              </mesh>
+            </group>
+          ))}
+
+          {/* 2 Lan can đá Bạch Ngọc ngoài cùng của cầu thang (X = -6.0 & +6.0) */}
+          {[-6.0, 6.0].map((xBal) => (
+            <group key={`outer-stair-rail-${xBal}`}>
+              <mesh
+                position={[xBal, 1.02, 9.0]}
+                rotation={[0.437, 0, 0]}
+                material={materials.whiteMarble}
+                castShadow
+              >
+                <boxGeometry args={[0.22, 0.38, 3.32]} />
+              </mesh>
+              <mesh
+                position={[xBal, 0.3, 10.52]}
+                material={materials.whiteMarble}
+              >
+                <boxGeometry args={[0.3, 0.6, 0.3]} />
+              </mesh>
+              <mesh
+                position={[xBal, 0.66, 10.52]}
+                material={materials.whiteMarble}
+              >
+                <sphereGeometry args={[0.12, 8, 8]} />
+              </mesh>
+              <mesh
+                position={[xBal, 1.65, 7.48]}
+                material={materials.whiteMarble}
+              >
+                <boxGeometry args={[0.3, 0.5, 0.3]} />
+              </mesh>
+              <mesh
+                position={[xBal, 1.98, 7.48]}
+                material={materials.whiteMarble}
+              >
+                <sphereGeometry args={[0.12, 8, 8]} />
+              </mesh>
+            </group>
+          ))}
+
+          {/* Lan can đá Bạch Ngọc mặt tiền hai bên thềm trên (X từ 6.0 đến 11.2) */}
+          {[-8.65, 8.65].map((xWing) => (
+            <group key={`front-terrace-rail-${xWing}`}>
+              <mesh
+                position={[xWing, 1.65, 7.48]}
+                material={materials.whiteMarble}
+                castShadow
+              >
+                <boxGeometry args={[5.1, 0.5, 0.2]} />
+              </mesh>
+              <mesh
+                position={[xWing < 0 ? -11.2 : 11.2, 1.65, 7.48]}
+                material={materials.whiteMarble}
+              >
+                <boxGeometry args={[0.3, 0.5, 0.3]} />
+              </mesh>
+              <mesh
+                position={[xWing < 0 ? -11.2 : 11.2, 1.98, 7.48]}
+                material={materials.whiteMarble}
+              >
+                <sphereGeometry args={[0.12, 8, 8]} />
+              </mesh>
+              <mesh
+                position={[xWing, 1.98, 7.48]}
+                material={materials.whiteMarble}
+              >
+                <sphereGeometry args={[0.12, 8, 8]} />
+              </mesh>
+            </group>
+          ))}
         </group>
       ) : isGate ? (
         /* Cổng Chính (Ngọ Môn) có vòm cổng ở giữa cho người chơi đi qua */
@@ -725,11 +904,11 @@ export const ImperialCompoundMap: React.FC = () => {
       </mesh>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.04, 5.5]}
+        position={[0, 0.04, 8.5]}
         receiveShadow
         material={materials.redCarpet}
       >
-        <planeGeometry args={[4.2, 10]} />
+        <planeGeometry args={[4.2, 8]} />
       </mesh>
 
       {/* Dãy núi non trùng điệp phía Bắc hậu cảnh (Giống ảnh mẫu) */}

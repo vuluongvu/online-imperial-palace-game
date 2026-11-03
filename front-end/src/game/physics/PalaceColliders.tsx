@@ -102,9 +102,10 @@ const STATIC_BOX_OBSTACLES: BoxObstacle[] = [
   { minX: -2.6, maxX: 2.6, minZ: -26.8, maxZ: -24.4 }, // Ngự Án Hậu Sảnh & Bình phong
 ];
 
-// Danh sách các công trình có nội thất 3D đi bộ vào trực tiếp (không bị chặn kín nguyên khối)
+// Danh sách các công trình có cấu trúc đi bộ vào trực tiếp hoặc có lối cầu thang riêng
 const OPEN_INTERIOR_BUILDING_IDS = new Set([
   'cong_chinh',
+  'chinh_dien',
   'lai_bo',
   'hinh_bo',
   'han_lam_vien',
@@ -114,7 +115,6 @@ const OPEN_INTERIOR_BUILDING_IDS = new Set([
 
 // Các khối kiến trúc trên Bản đồ Quần thể Hoàng Cung
 const COMPOUND_BUILDING_BOXES: BoxObstacle[] = [
-  // Chính Điện Thái Hòa vẫn giữ khối bao ngoài (để tương tác chuyển cảnh vào Nội Điện)
   ...PALACE_LANDMARKS.filter((l) => !OPEN_INTERIOR_BUILDING_IDS.has(l.id)).map((l) => {
     const [x, , z] = l.position;
     const [w, , d] = l.size;
@@ -128,6 +128,16 @@ const COMPOUND_BUILDING_BOXES: BoxObstacle[] = [
   // Hai mố tường hai bên vòm Cổng Chính (Để hở cổng vòm X từ -2.2 đến +2.2)
   { minX: -42, maxX: -2.3, minZ: 34.8, maxZ: 41.2 },
   { minX: 2.3, maxX: 42, minZ: 34.8, maxZ: 41.2 },
+
+  // =========================================================================
+  // 0. TƯỜNG BAO & BỆ ĐÁ CHÍNH ĐIỆN THÁI HÒA (Tâm: [0, 0, -6])
+  // Tường tòa điện phía trước tại Z = 0.8 (ngăn đi xuyên tường và cửa vào bên trong)
+  // Hai cánh bệ đá Bạch Ngọc hai bên sườn cầu thang (|X| > 6.0, Z ∈ [-14.3, 2.3])
+  // Lối cầu thang Thềm Rồng ở giữa (|X| <= 6.0, Z ∈ [0.8, 4.5]) cho phép bước lên bệ điện
+  // =========================================================================
+  { minX: -11.8, maxX: 11.8, minZ: -13.8, maxZ: 0.8 }, // Thân tòa Chính Điện Thái Hòa
+  { minX: -12.5, maxX: -6.0, minZ: -14.3, maxZ: 2.3 }, // Sườn Tây bệ đá Chính Điện
+  { minX: 6.0, maxX: 12.5, minZ: -14.3, maxZ: 2.3 },  // Sườn Đông bệ đá Chính Điện
 
   // =========================================================================
   // 1. TƯỜNG BAO & NỘI THẤT LẠI BỘ (Tâm: [-26, 0, -6], Cửa mở Đông tại X = -19.6, Z ∈ [-7.4, -4.6])
@@ -310,7 +320,18 @@ export function resolveCompoundMapMovement(
     [x, z] = resolveCircleAABB(x, z, CHAR_RADIUS, box);
   }
 
-  return [x, 0, z];
+  // Tính toán cao độ Y trên Thềm Rồng & Bệ đá Chính Điện Thái Hòa:
+  // Cầu thang thềm rồng tại world Z ∈ [1.5, 4.5], |x| <= 6.1: cao độ tăng dần từ Y=0 đến Y=1.4
+  // Thềm trên tại world Z ∈ [0.8, 1.5], |x| <= 11.2: cao độ Y = 1.4
+  let y = 0;
+  if (Math.abs(x) <= 6.1 && z >= 1.5 && z <= 4.5) {
+    const t = (4.5 - z) / 3.0;
+    y = Math.max(0, Math.min(1.4, t * 1.4));
+  } else if (Math.abs(x) <= 11.2 && z >= 0.8 && z < 1.5) {
+    y = 1.4;
+  }
+
+  return [x, y, z];
 }
 
 export const PalaceColliders: React.FC = () => {
