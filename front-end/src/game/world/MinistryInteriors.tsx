@@ -415,21 +415,78 @@ const OpenHallWalls: React.FC<{
             </group>
           )}
 
-          {/* Cánh cửa mở */}
-          <mesh
-            position={[-doorWidth / 2 - 0.15, doorHeight / 2, halfD - 0.45]}
-            rotation={[0, 0, 0.25]}
-            material={materials.darkWood}
+          {/* Cánh cửa mở hướng Nam (Ngự Thư Phòng) - Bản lề chuẩn xác, góc mở tự nhiên, không bị nghiêng trục Z */}
+          {/* Cánh cửa phía Tây (bên trái theo hướng nhìn từ ngoài vào) */}
+          <group
+            position={[-doorWidth / 2 + 0.08, 0, halfD - 0.1]}
+            rotation={[0, 1.35, 0]}
           >
-            <boxGeometry args={[doorWidth * 0.48, doorHeight * 0.95, 0.12]} />
-          </mesh>
-          <mesh
-            position={[doorWidth / 2 + 0.15, doorHeight / 2, halfD - 0.45]}
-            rotation={[0, 0, -0.25]}
-            material={materials.darkWood}
+            {/* Thân cánh cửa gỗ lim */}
+            <mesh
+              position={[doorWidth * 0.23, doorHeight * 0.475, 0]}
+              material={materials.darkWood}
+              castShadow
+            >
+              <boxGeometry args={[doorWidth * 0.46, doorHeight * 0.95, 0.08]} />
+            </mesh>
+            {/* Khung nẹp thếp vàng hoàng gia */}
+            <mesh
+              position={[doorWidth * 0.23, doorHeight * 0.475, 0.045]}
+              material={materials.goldTrim}
+            >
+              <boxGeometry args={[doorWidth * 0.40, doorHeight * 0.88, 0.015]} />
+            </mesh>
+            {/* Lõi ván gỗ chìm tạo độ sâu panô cửa bức bàn */}
+            <mesh
+              position={[doorWidth * 0.23, doorHeight * 0.475, 0.048]}
+              material={materials.darkWood}
+            >
+              <boxGeometry args={[doorWidth * 0.36, doorHeight * 0.82, 0.015]} />
+            </mesh>
+            {/* Núm khâu đồng cài cửa truyền thống */}
+            <mesh
+              position={[doorWidth * 0.38, doorHeight * 0.46, 0.06]}
+              material={materials.goldTrim}
+            >
+              <cylinderGeometry args={[0.05, 0.05, 0.03, 12]} />
+            </mesh>
+          </group>
+
+          {/* Cánh cửa phía Đông (bên phải theo hướng nhìn từ ngoài vào) */}
+          <group
+            position={[doorWidth / 2 - 0.08, 0, halfD - 0.1]}
+            rotation={[0, -1.35, 0]}
           >
-            <boxGeometry args={[doorWidth * 0.48, doorHeight * 0.95, 0.12]} />
-          </mesh>
+            {/* Thân cánh cửa gỗ lim */}
+            <mesh
+              position={[-doorWidth * 0.23, doorHeight * 0.475, 0]}
+              material={materials.darkWood}
+              castShadow
+            >
+              <boxGeometry args={[doorWidth * 0.46, doorHeight * 0.95, 0.08]} />
+            </mesh>
+            {/* Khung nẹp thếp vàng hoàng gia */}
+            <mesh
+              position={[-doorWidth * 0.23, doorHeight * 0.475, 0.045]}
+              material={materials.goldTrim}
+            >
+              <boxGeometry args={[doorWidth * 0.40, doorHeight * 0.88, 0.015]} />
+            </mesh>
+            {/* Lõi ván gỗ chìm tạo độ sâu panô cửa bức bàn */}
+            <mesh
+              position={[-doorWidth * 0.23, doorHeight * 0.475, 0.048]}
+              material={materials.darkWood}
+            >
+              <boxGeometry args={[doorWidth * 0.36, doorHeight * 0.82, 0.015]} />
+            </mesh>
+            {/* Núm khâu đồng cài cửa truyền thống */}
+            <mesh
+              position={[-doorWidth * 0.38, doorHeight * 0.46, 0.06]}
+              material={materials.goldTrim}
+            >
+              <cylinderGeometry args={[0.05, 0.05, 0.03, 12]} />
+            </mesh>
+          </group>
         </>
       )}
 
