@@ -169,15 +169,71 @@ body,
   font-weight: 800;
 }
 
+.player-overhead-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  user-select: none;
+}
+
 .player-overhead-bubble {
-  background: var(--bg-panel);
+  background: rgba(22, 14, 10, 0.94);
   border: 1px solid var(--imperial-gold);
   color: var(--text-main);
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-md);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   white-space: nowrap;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  animation: overheadBounce 0.25s ease-out;
+}
+
+@keyframes overheadBounce {
+  0% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.player-overhead-nametag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(18, 12, 8, 0.82);
+  border: 1px solid rgba(229, 169, 50, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+.player-overhead-nametag.rank-emperor {
+  border-color: #ffd875;
+  background: rgba(45, 14, 12, 0.9);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
+}
+
+.overhead-title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ffd875;
+  letter-spacing: 0.2px;
+}
+
+.overhead-char-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.overhead-special-title {
+  color: #a8d5ba;
+  font-weight: 600;
 }
 
 /* ===================================================================== */
@@ -3182,4 +3238,365 @@ body,
 .status-tag.pending {
   background: rgba(236, 201, 75, 0.2);
   color: #ecc94b;
+}
+
+/* ===================================================================== */
+/* PALACE EVENT BANNER (DẢI THÔNG BÁO HOẠT ĐỘNG HOÀNG CUNG NỔI BẬT)      */
+/* ===================================================================== */
+.palace-event-banner-root {
+  position: absolute;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  pointer-events: auto;
+  animation: bannerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 90vw;
+}
+
+@keyframes bannerSlideDown {
+  0% { transform: translate(-50%, -18px); opacity: 0; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.palace-event-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, rgba(46, 16, 12, 0.96) 0%, rgba(26, 12, 8, 0.96) 100%);
+  border: 1.5px solid #ffd875;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65), 0 0 12px rgba(234, 179, 56, 0.3);
+}
+
+.event-icon-badge {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.event-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-tag-pill {
+  background: #ffd875;
+  color: #1a0f0a;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.4px;
+}
+
+.event-title-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.event-timer-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffd875;
+}
+
+.event-announcement-text {
+  font-size: 0.73rem;
+  color: #e2d3be;
+  max-width: 480px;
+  line-height: 1.35;
+}
+
+.event-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.event-join-btn {
+  background: linear-gradient(180deg, #c7382d 0%, #8b1d16 100%);
+  color: #ffffff;
+  border: 1px solid #ffaa99;
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.16s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.event-join-btn:hover {
+  transform: scale(1.04);
+  background: #d44a42;
+}
+
+.event-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d1c1ab;
+  border: none;
+  border-radius: var(--radius-pill);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.72rem;
+}
+
+.event-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* ===================================================================== */
+/* GARDEN SOCIAL WIDGET (KHU VỰC GIAO LƯU & THƯỞNG TRÀ NGỰ HOA VIÊN)       */
+/* ===================================================================== */
+.garden-social-widget-root {
+  position: absolute;
+  bottom: 88px;
+  left: 20px;
+  z-index: 35;
+  pointer-events: auto;
+  animation: bannerSlideDown 0.3s ease;
+  max-width: 420px;
+}
+
+.garden-social-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(24, 16, 12, 0.94);
+  border: 1.5px solid rgba(229, 169, 50, 0.65);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.garden-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.garden-badge-icon {
+  font-size: 1rem;
+}
+
+.garden-badge-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffd875;
+  flex: 1;
+}
+
+.garden-camera-shortcut-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffd875;
+  border: 1px solid rgba(229, 169, 50, 0.4);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.garden-camera-shortcut-btn:hover {
+  background: rgba(229, 169, 50, 0.25);
+}
+
+.garden-emotes-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.garden-emote-pill {
+  background: rgba(38, 24, 18, 0.9);
+  color: #e5dacb;
+  border: 1px solid rgba(229, 169, 50, 0.35);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.garden-emote-pill:hover {
+  border-color: #ffd875;
+  color: #ffffff;
+  background: rgba(56, 34, 24, 0.98);
+  transform: translateY(-1px);
+}
+
+.garden-emote-pill.festive-btn {
+  background: linear-gradient(135deg, #a62b24 0%, #691712 100%);
+  border-color: #ffd875;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.garden-chat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.garden-chat-input {
+  flex: 1;
+  background: rgba(14, 9, 6, 0.85);
+  border: 1px solid rgba(229, 169, 50, 0.4);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #ffffff;
+  font-size: 0.74rem;
+  outline: none;
+}
+
+.garden-chat-input:focus {
+  border-color: #ffd875;
+}
+
+.garden-chat-send-btn {
+  background: #8b1d16;
+  color: #ffffff;
+  border: 1px solid #ffd875;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===================================================================== */
+/* PHOTO MODE (CHẾ ĐỘ CHỤP ẢNH ĐIỆN ẢNH HOÀNG CUNG)                       */
+/* ===================================================================== */
+.photo-mode-overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: auto;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.cinematic-bar {
+  width: 100%;
+  height: 52px;
+  background: #000000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.photo-mode-watermark {
+  position: absolute;
+  bottom: 74px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.88;
+}
+
+.watermark-seal {
+  background: #9e1f1b;
+  color: #ffd875;
+  border: 2px solid #ffd875;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+  line-height: 1.1;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.watermark-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.watermark-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffd875;
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.watermark-sub {
+  font-size: 0.72rem;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.photo-mode-controls {
+  position: absolute;
+  bottom: 74px;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.photo-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  transition: all 0.16s ease;
+}
+
+.photo-btn.capture-btn {
+  background: linear-gradient(135deg, #d4a238 0%, #9e7118 100%);
+  color: #1a0f0a;
+  border: 1.5px solid #fff2a8;
+}
+
+.photo-btn.capture-btn:hover {
+  transform: scale(1.05);
+  background: #ffd875;
+}
+
+.photo-btn.exit-btn {
+  background: rgba(22, 14, 10, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.photo-btn.exit-btn:hover {
+  background: rgba(45, 20, 16, 0.95);
+  border-color: #ffd875;
+}
+
+.photo-mode-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.72rem;
+  white-space: nowrap;
 }

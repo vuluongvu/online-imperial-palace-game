@@ -13,6 +13,9 @@ import { ChatPanel } from './hud/ChatPanel';
 import { ActionBar } from './hud/ActionBar';
 import { VirtualPad } from './hud/VirtualPad';
 import { NotificationLayer } from './hud/NotificationLayer';
+import { PalaceEventBanner } from './hud/PalaceEventBanner';
+import { GardenSocialWidget } from './hud/GardenSocialWidget';
+import { PhotoModeOverlay } from './hud/PhotoModeOverlay';
 
 import { NpcDialogue } from './dialogue/NpcDialogue';
 import { BuildingGameplayModal } from './BuildingGameplayModal';
@@ -27,6 +30,7 @@ import { SettingsWindow } from './windows/SettingsWindow';
 
 export const SceneInspectOverlay: React.FC = () => {
   const isPointerLocked = useGameStore((s) => s.isPointerLocked);
+  const isPhotoMode = useGameStore((s) => s.isPhotoMode);
   const nearbySeatId = useGameStore((s) => s.nearbySeatId);
   const sitAtSpot = useGameStore((s) => s.sitAtSpot);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
@@ -46,6 +50,10 @@ export const SceneInspectOverlay: React.FC = () => {
   const isAnyModalOpen = Boolean(
     activeInteractableId || activeWindow || showAssetModal
   );
+
+  if (isPhotoMode) {
+    return <PhotoModeOverlay />;
+  }
 
   return (
     <>
@@ -67,12 +75,22 @@ export const SceneInspectOverlay: React.FC = () => {
         </div>
 
         {/* ================================================================= */}
+        {/* DẢI BANNER HOẠT ĐỘNG HOÀNG CUNG NỔI BẬT ĐỊNH KỲ                  */}
+        {/* ================================================================= */}
+        <PalaceEventBanner />
+
+        {/* ================================================================= */}
         {/* CỘT NỔI BÊN PHẢI: NHIỆM VỤ & BẢN ĐỒ RADAR (THEO ẢNH CONCEPT)     */}
         {/* ================================================================= */}
         <div className="hud-right-floating-col">
           <QuestTracker />
           <MiniMap />
         </div>
+
+        {/* ================================================================= */}
+        {/* KHU VỰC GIAO LƯU & BIỂU CẢM NGỰ HOA VIÊN                         */}
+        {/* ================================================================= */}
+        <GardenSocialWidget />
 
         {/* ================================================================= */}
         {/* GỢI Ý TƯƠNG TÁC DƯỚI CHÂN (KHI Ở GẦN)                           */}

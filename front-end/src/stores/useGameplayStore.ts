@@ -8,6 +8,7 @@ import {
   LocalChatMessage,
   QuestStatus,
 } from '../types/gameplay';
+import { PalaceEvent, PALACE_EVENTS_CATALOG } from '../data/palaceEventsData';
 import {
   CRIMINAL_CASES,
   GARDEN_EMOTES,
@@ -85,6 +86,13 @@ interface GameplayState {
   gardenChats: LocalChatMessage[];
   overheadBubbleText: string | null;
   banquetHostedCount: number;
+
+  // G. Hoạt động ngẫu nhiên định kỳ trong Cung (Palace Happenings & Events)
+  activePalaceEvent: PalaceEvent | null;
+  eventTimeRemaining: number;
+  triggerPalaceEvent: (eventId?: string) => void;
+  dismissPalaceEvent: () => void;
+  tickPalaceEvent: (deltaSec: number) => void;
 
   // Hệ thống Thông báo nổi (Toasts) & Nhật ký thông báo (kênh Hệ thống)
   toasts: GameplayToast[];
@@ -232,6 +240,9 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   gardenChats: INITIAL_GARDEN_CHATS,
   overheadBubbleText: null,
   banquetHostedCount: 0,
+
+  activePalaceEvent: null,
+  eventTimeRemaining: 0,
 
   toasts: [],
   notificationLog: [],
@@ -729,6 +740,34 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       'Khai Tiệc Ngự Hoa Viên!',
       'Tổ chức thành công Hội Thơ Hoa Đào cùng bá quan (+30 Công Trạng).'
     );
+  },
+
+  triggerPalaceEvent: (eventId) => {
+    let target = PALACE_EVENTS_CATALOG.find((e) => e.id === eventId);
+    if (!target) {
+      const idx = Math.floor(Math.random() * PALACE_EVENTS_CATALOG.length);
+      target = PALACE_EVENTS_CATALOG[idx];
+    }
+    set({
+      activePalaceEvent: target,
+      eventTimeRemaining: target.durationSeconds,
+    });
+    get().pushToast('edict', target.title, target.announcement);
+  },
+
+  dismissPalaceEvent: () => {
+    set({ activePalaceEvent: null, eventTimeRemaining: 0 });
+  },
+
+  tickPalaceEvent: (deltaSec) => {
+    const { activePalaceEvent, eventTimeRemaining } = get();
+    if (!activePalaceEvent) return;
+    const nextTime = eventTimeRemaining - deltaSec;
+    if (nextTime <= 0) {
+      set({ activePalaceEvent: null, eventTimeRemaining: 0 });
+    } else {
+      set({ eventTimeRemaining: nextTime });
+    }
   },
 
   resetProgress: () => {

@@ -208,7 +208,30 @@ export const Player: React.FC<PlayerProps> = ({
     };
   }, [materials]);
 
-  useFrame(({ clock }, delta) => {
+  const frameCountRef = useRef(0);
+
+  useFrame(({ clock, camera }, delta) => {
+    if (!rootRef.current) return;
+    frameCountRef.current++;
+
+    // Tối ưu hóa chuyển động theo khoảng cách (Distance-based Animation LOD):
+    // 1. Gần (< 10m): Cập nhật 60 FPS mượt mà
+    // 2. Trung bình (10m - 24m): Giảm tần suất cập nhật (mỗi 2 frames)
+    // 3. Xa (24m - 42m): Cập nhật mỗi 4 frames
+    // 4. Rất xa (> 42m): Đóng băng animation, tiết kiệm tuyệt đối CPU/GPU
+    const worldPos = rootRef.current.getWorldPosition(new THREE.Vector3());
+    const distToCam = camera.position.distanceTo(worldPos);
+
+    if (distToCam > 42) {
+      return;
+    }
+    if (distToCam > 24 && frameCountRef.current % 4 !== 0) {
+      return;
+    }
+    if (distToCam > 10 && frameCountRef.current % 2 !== 0) {
+      return;
+    }
+
     const rig: ChibiRigRefs = {
       root: rootRef.current,
       bodyGroup: bodyGroupRef.current,

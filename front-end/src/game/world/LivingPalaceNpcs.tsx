@@ -45,8 +45,17 @@ export const PatrolNpc: React.FC<PatrolNpcProps> = ({
 
   const [currentAnim, setCurrentAnim] = useState<CharacterAnimationState>('walk');
 
-  useFrame((_, delta) => {
+  const frameRef = useRef(0);
+
+  useFrame(({ camera }, delta) => {
     if (!groupRef.current) return;
+    frameRef.current++;
+
+    // Tối ưu hóa cự ly (LOD Optimization):
+    const distToCam = camera.position.distanceTo(groupRef.current.position);
+    if (distToCam > 45) return;
+    if (distToCam > 24 && frameRef.current % 2 !== 0) return;
+
     const clampedDelta = Math.min(delta, 0.1);
     const s = stateRef.current;
 
@@ -163,10 +172,11 @@ export const ConversingPair: React.FC<ConversingPairProps> = ({
   const midZ = (npcA.pos[2] + npcB.pos[2]) / 2;
 
   useFrame((_, delta) => {
+    const distPlayer = Math.hypot(playerPos[0] - midX, playerPos[2] - midZ);
+    if (distPlayer > 40) return;
+
     const clampedDelta = Math.min(delta, 0.1);
     timerRef.current += clampedDelta;
-
-    const distPlayer = Math.hypot(playerPos[0] - midX, playerPos[2] - midZ);
 
     // Khi người chơi tới gần (< 3.2m), hai quan viên tạm dừng việc riêng, quay ra cúi chào
     if (distPlayer <= 3.2) {
@@ -229,6 +239,7 @@ export const GreetingNpc: React.FC<GreetingNpcProps> = ({
 
   useFrame(() => {
     const dist = Math.hypot(playerPos[0] - pos[0], playerPos[2] - pos[2]);
+    if (dist > 38) return;
     if (dist <= saluteRadius) {
       if (!isGreetingRef.current) {
         isGreetingRef.current = true;

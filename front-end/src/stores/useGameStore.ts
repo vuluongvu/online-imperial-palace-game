@@ -253,6 +253,8 @@ interface GameState {
   showWireframe: boolean;
   lanternAnimationEnabled: boolean;
   isPointerLocked: boolean;
+  isPhotoMode: boolean;
+  playerTitle: string;
   clickToLockEnabled: boolean;
   mouseSensitivity: number;
   invertY: boolean;
@@ -283,6 +285,8 @@ interface GameState {
   toggleInvertY: () => void;
   requestMouseLock: () => void;
   exitMouseLock: () => void;
+  setPhotoMode: (isPhotoMode: boolean) => void;
+  setPlayerTitle: (playerTitle: string) => void;
   updateMetrics: (metrics: PerformanceMetrics) => void;
 }
 
@@ -308,6 +312,8 @@ export const useGameStore = create<GameState>((set) => ({
   showWireframe: false,
   lanternAnimationEnabled: true,
   isPointerLocked: false,
+  isPhotoMode: false,
+  playerTitle: 'Tân Khoa Khảo Cử',
   clickToLockEnabled: true,
   mouseSensitivity: 1.0,
   invertY: false,
@@ -428,6 +434,8 @@ export const useGameStore = create<GameState>((set) => ({
   toggleLanternAnimation: () =>
     set((state) => ({ lanternAnimationEnabled: !state.lanternAnimationEnabled })),
   setPointerLocked: (isPointerLocked) => set({ isPointerLocked }),
+  setPhotoMode: (isPhotoMode) => set({ isPhotoMode }),
+  setPlayerTitle: (playerTitle) => set({ playerTitle }),
   toggleClickToLock: () =>
     set((state) => ({ clickToLockEnabled: !state.clickToLockEnabled })),
   setMouseSensitivity: (mouseSensitivity) => set({ mouseSensitivity }),

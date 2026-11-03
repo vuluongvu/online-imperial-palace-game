@@ -180,6 +180,7 @@ export const CharacterWindow: React.FC = () => {
                   { id: 'run', label: 'Chạy nhanh' },
                   { id: 'sit', label: 'Ngồi chầu' },
                   { id: 'bow', label: 'Cúi chào' },
+                  { id: 'kneel', label: 'Quỳ lạy' },
                   { id: 'write', label: 'Viết văn thư' },
                   { id: 'talk', label: 'Đàm đạo' },
                 ] as { id: CharacterAnimationState | null; label: string }[]

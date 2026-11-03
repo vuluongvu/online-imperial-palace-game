@@ -7,7 +7,8 @@ export type CharacterAnimationState =
   | 'sit'
   | 'write'
   | 'bow'
-  | 'talk';
+  | 'talk'
+  | 'kneel';
 
 export interface ChibiRigRefs {
   root: THREE.Group | null;
@@ -183,6 +184,25 @@ export function updateChibiAnimation(
     targetRightArmZ = -0.26 + Math.cos(talkPhase * 0.9) * 0.08;
 
     tasselSway = Math.sin(talkPhase) * 0.04;
+  } else if (state === 'kneel') {
+    // Quỳ lạy / Hành lễ Đại Triều (Hai đầu gối chạm đất, phủ phục bái lạy Thiên Tử)
+    const breathPhase = elapsedTime * 1.6;
+    targetBodyY = -0.26 + Math.sin(breathPhase) * 0.005;
+    targetBodyPitch = 0.52; // Phủ phục người về phía trước
+    targetHeadPitch = 0.35; // Cúi đầu bái lạy sát đất
+    targetHeadYaw = 0;
+
+    // Chân gập quỳ sát đất
+    targetLeftLegX = -1.55;
+    targetRightLegX = -1.55;
+
+    // Hai tay chắp trước trán hoặc chạm sàn theo nghi lễ
+    targetLeftArmX = -1.02;
+    targetLeftArmZ = 0.32;
+    targetRightArmX = -1.02;
+    targetRightArmZ = -0.32;
+
+    tasselSway = 0.04;
   }
 
   // Nội suy mượt các khớp xương (Smooth blending)

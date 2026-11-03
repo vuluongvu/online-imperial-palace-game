@@ -7,6 +7,7 @@ import { SEATING_SPOTS, useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
 import { INTERACTABLE_ENTITIES } from '../../data/palaceGameplayData';
 import { CharacterAnimationState } from './CharacterAnimations';
+import { RANK_OUTFITS } from './CharacterMaterials';
 import {
   resolveCompoundMapMovement,
   resolvePalaceMovement,
@@ -32,6 +33,10 @@ export const CharacterController: React.FC = () => {
 
   const overheadBubbleText = useGameplayStore((s) => s.overheadBubbleText);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const characterRank = useGameStore((s) => s.characterRank);
+  const playerTitle = useGameStore((s) => s.playerTitle);
+  const isPhotoMode = useGameStore((s) => s.isPhotoMode);
+  const outfit = RANK_OUTFITS[characterRank];
 
   const { camera } = useThree();
   const prevSeatedSpotId = useRef<string | null>(null);
@@ -372,9 +377,33 @@ export const CharacterController: React.FC = () => {
   return (
     <group ref={characterGroupRef} position={[0, 0, 31]}>
       <Player />
-      {overheadBubbleText && !activeInteractableId && (
-        <Html position={[0, 2.35, 0]} center zIndexRange={[20, 0]}>
-          <div className="player-overhead-bubble">{overheadBubbleText}</div>
+      {!isPhotoMode && !activeInteractableId && (
+        <Html position={[0, 2.36, 0]} center zIndexRange={[20, 0]}>
+          <div className="player-overhead-container">
+            {overheadBubbleText && (
+              <div className="player-overhead-bubble">{overheadBubbleText}</div>
+            )}
+            <div className={`player-overhead-nametag rank-${characterRank}`}>
+              <div className="overhead-title-row">
+                <span className="overhead-rank-icon">
+                  {characterRank === 'emperor'
+                    ? '👑'
+                    : characterRank === 'minister'
+                      ? '🔴'
+                      : characterRank === 'mid_official'
+                        ? '🔷'
+                        : '💠'}
+                </span>
+                <span className="overhead-rank-title">{outfit.titleVi}</span>
+                {playerTitle && (
+                  <span className="overhead-special-title">• {playerTitle}</span>
+                )}
+              </div>
+              <div className="overhead-char-name">
+                {characterRank === 'emperor' ? 'Minh Vương Đế' : 'Minh Vương'}
+              </div>
+            </div>
+          </div>
         </Html>
       )}
     </group>

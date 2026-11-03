@@ -9,6 +9,7 @@ export const TopBar: React.FC = () => {
   const isPointerLocked = useGameStore((s) => s.isPointerLocked);
   const requestMouseLock = useGameStore((s) => s.requestMouseLock);
   const exitMouseLock = useGameStore((s) => s.exitMouseLock);
+  const setPhotoMode = useGameStore((s) => s.setPhotoMode);
 
   const meritPoints = useGameplayStore((s) => s.meritPoints);
   const silverCoins = useGameplayStore((s) => s.silverCoins);
@@ -59,6 +60,17 @@ export const TopBar: React.FC = () => {
         <span className="lock-label">
           {isPointerLocked ? 'Khóa Chuột' : 'Xoay Chuột [L]'}
         </span>
+      </button>
+
+      {/* 2.5 Nút Chụp Ảnh Phong Cảnh Cung Đình */}
+      <button
+        type="button"
+        className="hud-lock-pill"
+        onClick={() => setPhotoMode(true)}
+        title="Chế độ chụp ảnh phong cảnh Hoàng Cung (Phím P)"
+      >
+        <span className="lock-icon">📷</span>
+        <span className="lock-label">Chụp Ảnh [P]</span>
       </button>
 
       {/* 3. Khối tiền tệ & tiện ích góc trên bên phải giống hệt ảnh concept */}
