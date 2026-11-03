@@ -12,6 +12,7 @@ import {
   updateChibiAnimation,
 } from './CharacterAnimations';
 import { useGameStore } from '../../stores/useGameStore';
+import { useGameplayStore } from '../../stores/useGameplayStore';
 
 interface PlayerProps {
   rank?: OfficialRank;
@@ -35,6 +36,8 @@ export const Player: React.FC<PlayerProps> = ({
   const previewAnimOverride = useGameStore((s) => s.previewAnimOverride);
   const holdingJadeTablet = useGameStore((s) => s.holdingJadeTablet);
   const showWireframe = useGameStore((s) => s.showWireframe);
+  const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
+  const hasCourierScroll = currentQuestStep === 2;
 
   const activeRank = propRank ?? storeRank;
   const activeAnim = previewAnimOverride ?? propAnimState ?? storeAnim;
@@ -451,6 +454,26 @@ export const Player: React.FC<PlayerProps> = ({
               </mesh>
               <mesh position={[0, -0.14, 0]} material={materials.goldTrim}>
                 <boxGeometry args={[0.082, 0.07, 0.03]} />
+              </mesh>
+            </group>
+          )}
+
+          {/* Cuộn Văn Thư Mật Tấu cầm trên tay khi đang làm Nhiệm Vụ 2 chuyển giao văn thư */}
+          {hasCourierScroll && !holdingJadeTablet && (
+            <group position={[0.09, -0.36, 0.14]} rotation={[0.65, -0.25, 0.3]}>
+              {/* Thân cuộn văn thư bằng gấm hoàng gia */}
+              <mesh material={materials.robeSecondary} castShadow>
+                <cylinderGeometry args={[0.034, 0.034, 0.28, 16]} />
+              </mesh>
+              {/* Hai đầu trục cuộn văn thư mạ vàng */}
+              {[-0.145, 0.145].map((yEnd, eIdx) => (
+                <mesh key={`scroll-tip-${eIdx}`} position={[0, yEnd, 0]} material={materials.goldTrim}>
+                  <cylinderGeometry args={[0.044, 0.044, 0.02, 16]} />
+                </mesh>
+              ))}
+              {/* Dải ruy băng buộc văn thư màu đỏ thắm */}
+              <mesh position={[0, 0, 0]} material={materials.pearlRed}>
+                <cylinderGeometry args={[0.038, 0.038, 0.04, 16]} />
               </mesh>
             </group>
           )}

@@ -6,7 +6,6 @@ import { PALACE_QUEST_CHAIN } from '../../data/palaceGameplayData';
 
 export const QuestTracker: React.FC = () => {
   const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
-  const openInteraction = useGameplayStore((s) => s.openInteraction);
 
   const navigateToLandmark = useGameStore((s) => s.navigateToLandmark);
   const setSceneMode = useGameStore((s) => s.setSceneMode);
@@ -29,12 +28,6 @@ export const QuestTracker: React.FC = () => {
     }
 
     navigateToLandmark(currentQuest.targetBuildingId);
-
-    if (currentQuest.targetInteractableId) {
-      setTimeout(() => {
-        openInteraction(currentQuest.targetInteractableId);
-      }, 500);
-    }
   };
 
   return (

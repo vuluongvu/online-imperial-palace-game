@@ -36,8 +36,18 @@ export const GardenSocialWidget: React.FC = () => {
   };
 
   return (
-    <div className="garden-social-widget-root">
-      <div className="garden-social-card">
+    <div
+      className="garden-social-widget-root"
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
+      <div
+        className="garden-social-card"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <div className="garden-header-row">
           <span className="garden-badge-icon">🌸</span>
           <span className="garden-badge-text">Ngự Hoa Viên • Thượng Uyển Giao Lưu</span>

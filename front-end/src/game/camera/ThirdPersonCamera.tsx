@@ -5,6 +5,7 @@ import { OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { CAMERA_PRESETS, useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
+import { useUiStore } from '../../stores/useUiStore';
 
 /**
  * Hệ thống Camera MMORPG hỗ trợ:
@@ -17,6 +18,17 @@ export const ThirdPersonCamera: React.FC = () => {
   const cameraMode = useGameStore((s) => s.cameraMode);
   const cameraPreset = useGameStore((s) => s.cameraPreset);
   const isPointerLocked = useGameStore((s) => s.isPointerLocked);
+  const showAssetModal = useGameStore((s) => s.showAssetModal);
+  const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
+  const activeWindow = useUiStore((s) => s.activeWindow);
+
+  const isAnyModalOpen = Boolean(
+    activeInteractableId ||
+    activeWindow ||
+    showAssetModal ||
+    (courtCeremonyStage && courtCeremonyStage !== 'idle')
+  );
 
   const { camera, gl } = useThree();
 
@@ -28,6 +40,13 @@ export const ThirdPersonCamera: React.FC = () => {
   );
   const isTransitioning = useRef(true);
   const prevPlayerPos = useRef<THREE.Vector3 | null>(null);
+
+  // Tự động nhả Pointer Lock nếu đang mở bảng hội thoại / chức năng
+  useEffect(() => {
+    if (isAnyModalOpen && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  }, [isAnyModalOpen]);
 
   // Tọa độ cầu (Spherical: radius, phi, theta) phục vụ chế độ Khóa Chuột (Mouse Lock)
   const sphericalRef = useRef(new THREE.Spherical(10.5, 1.12, 0));
@@ -101,7 +120,7 @@ export const ThirdPersonCamera: React.FC = () => {
     };
 
     const handleWheel = (e: WheelEvent) => {
-      if (document.pointerLockElement !== canvasEl) return;
+      if (document.pointerLockElement !== canvasEl || isAnyModalOpen) return;
       e.preventDefault();
       const maxRadius =
         useGameStore.getState().sceneMode === 'compound_map' ? 34 : 15;
@@ -304,10 +323,12 @@ export const ThirdPersonCamera: React.FC = () => {
     <OrbitControls
       ref={controlsRef}
       makeDefault
-      enabled={!isPointerLocked}
+      enabled={!isPointerLocked && !isAnyModalOpen}
       enableDamping
       dampingFactor={0.08}
-      enablePan={true}
+      enablePan={!isAnyModalOpen}
+      enableZoom={!isAnyModalOpen}
+      enableRotate={!isAnyModalOpen}
       minDistance={1.6}
       maxDistance={sceneMode === 'compound_map' ? 95 : 24}
       minPolarAngle={0.18}

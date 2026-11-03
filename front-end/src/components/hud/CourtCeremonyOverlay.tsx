@@ -69,8 +69,18 @@ export const CourtCeremonyOverlay: React.FC = () => {
   };
 
   return (
-    <div className="court-ceremony-overlay-root">
-      <div className="court-ceremony-scroll-box">
+    <div
+      className="court-ceremony-overlay-root"
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
+      <div
+        className="court-ceremony-scroll-box"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         {/* Phần đầu bảng thánh chỉ nghi lễ */}
         <div className="ceremony-top-bar">
           <div className="ceremony-seal-badge">NGHI LỄ THIẾT TRIỀU</div>

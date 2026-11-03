@@ -144,8 +144,19 @@ export const BuildingGameplayModal: React.FC = () => {
   const canPromote = nextGrade && meritPoints >= nextGrade.requiredMerit;
 
   return (
-    <div className="modal-backdrop" onClick={closeInteraction}>
-      <div className="gameplay-modal-card" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-backdrop"
+      onClick={closeInteraction}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
+      <div
+        className="gameplay-modal-card"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         {/* =============================================================== */}
         {/* HEADER CHUNG CUNG ĐÌNH                                          */}
         {/* =============================================================== */}

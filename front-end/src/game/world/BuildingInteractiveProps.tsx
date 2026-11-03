@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { INTERACTABLE_ENTITIES, PALACE_QUEST_CHAIN } from '../../data/palaceGameplayData';
 import { InteractableEntity } from '../../types/gameplay';
@@ -158,6 +159,9 @@ const InteractivePropMesh: React.FC<{
 };
 
 export const BuildingInteractiveProps: React.FC = () => {
+  const { camera } = useThree();
+  const tempVec = useMemo(() => new THREE.Vector3(), []);
+
   const sceneMode = useGameStore((s) => s.sceneMode);
   const playerPos = useGameStore((s) => s.playerPosition);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
@@ -229,11 +233,15 @@ export const BuildingInteractiveProps: React.FC = () => {
         const dz = playerPos[2] - entity.position[2];
         const dist = Math.hypot(dx, dz);
 
+        // Kiểm tra xem đối tượng có đang ở phía trước camera hay không (tránh lỗi nhãn bị lật ngược khi ở sau camera)
+        tempVec.set(entity.position[0], labelY, entity.position[2]).project(camera);
+        const isInFrontOfCamera = tempVec.z < 1.0;
+
         // Hiển thị theo khoảng cách chuẩn RPG tinh giản:
-        // 1. Chỉ hiển thị nhãn chữ cho DUY NHẤT đối tượng gần nhất (isNearby = true)
+        // 1. Chỉ hiển thị nhãn chữ cho DUY NHẤT đối tượng gần nhất (isNearby = true, dist <= 2.5m)
         // 2. Tuyệt đối không hiển thị đồng loạt nhiều nhãn gây rối mắt hoặc đè nhau
-        // 3. Khi mở bất kỳ menu / modal nào, lập tức ẩn toàn bộ nhãn 3D
-        const shouldRenderTag = !isAnyModalOpen && isNearby;
+        // 3. Khi mở bất kỳ menu / modal nào hoặc khi ở phía sau camera, ẩn toàn bộ nhãn 3D
+        const shouldRenderTag = !isAnyModalOpen && isNearby && isInFrontOfCamera;
 
         return (
           <group
@@ -241,8 +249,8 @@ export const BuildingInteractiveProps: React.FC = () => {
             position={entity.position}
             rotation={[0, entity.rotationY ?? 0, 0]}
           >
-            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất (chỉ hiện khi gần đối tượng tương tác) */}
-            {(isNearby || (isQuestTarget && dist <= 8.0)) && (
+            {/* Vòng tròn chỉ dẫn tương tác dưới mặt đất (chỉ hiện khi trong tầm nhận biết <= 5m) */}
+            {(isNearby || (isQuestTarget && dist <= 5.0)) && (
               <mesh
                 position={[0, 0.05, 0]}
                 rotation={[-Math.PI / 2, 0, 0]}

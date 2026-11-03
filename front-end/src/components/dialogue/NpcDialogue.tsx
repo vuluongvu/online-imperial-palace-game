@@ -66,10 +66,18 @@ export const NpcDialogue: React.FC = () => {
   };
 
   return (
-    <div className="npc-dialogue-overlay" onClick={closeInteraction}>
+    <div
+      className="npc-dialogue-overlay"
+      onClick={closeInteraction}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
       <div
         className="npc-dialogue-card"
         onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="npc-dialogue-portrait-side">
           <div className="npc-dialogue-avatar-box">

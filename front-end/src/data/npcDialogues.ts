@@ -20,6 +20,23 @@ export function getNpcDialogue(
 ): NpcDialogueScript {
   switch (npcId) {
     case 'npc_gate_captain':
+      if (currentQuestStep > 1) {
+        return {
+          portrait: '💂‍♂️',
+          greeting: 'Ngọ Môn Quan Thị Vệ Thống Lĩnh – Trần Uy',
+          quote:
+            'Bẩm đại nhân! Cấm thành ngày đêm canh phòng nghiêm mật. Chúc đại nhân hoàn thành xuất sắc công vụ phụng sự giang sơn!',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Xem sơ đồ 7 đại công trình',
+              action: 'open_panel',
+              targetTab: 'directory',
+            },
+            { id: 'c2', label: 'Tạ ơn tướng quân, ta tiếp tục công vụ', action: 'close' },
+          ],
+        };
+      }
       return {
         portrait: '💂‍♂️',
         greeting: 'Ngọ Môn Quan Thị Vệ Thống Lĩnh – Trần Uy',
@@ -61,6 +78,40 @@ export function getNpcDialogue(
               targetTab: 'ranks',
             },
             { id: 'c3', label: 'Tiểu quan xin phép cáo lui', action: 'close' },
+          ],
+        };
+      }
+      if (currentQuestStep === 2) {
+        return {
+          portrait: '👨‍💼',
+          greeting: 'Lại Bộ Thượng Thư – Phạm Công Trứ',
+          quote:
+            'Đại nhân đã mang Lệnh Bài và Mật Tấu. Mau chóng sang Hình Bộ gặp Thượng Thư Bao Thanh để thụ lý điều tra vụ án mật tấu thất lạc!',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Xem nhật ký nhiệm vụ Hình Bộ',
+              action: 'open_panel',
+              targetTab: 'quests',
+            },
+            { id: 'c2', label: 'Thần xin sang Hình Bộ ngay', action: 'close' },
+          ],
+        };
+      }
+      if (currentQuestStep === 3) {
+        return {
+          portrait: '👨‍💼',
+          greeting: 'Lại Bộ Thượng Thư – Phạm Công Trứ',
+          quote:
+            'Bản bộ đã nghe tin ngươi phá án thành công tại Hình Bộ! Hãy tiếp tục đến Hàn Lâm Viện vượt qua kỳ khảo thí trước khi quay về nộp báo cáo.',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Xem yêu cầu khảo thí Hàn Lâm Viện',
+              action: 'open_panel',
+              targetTab: 'quests',
+            },
+            { id: 'c2', label: 'Tiểu quan xin tới Hàn Lâm Viện', action: 'close' },
           ],
         };
       }
@@ -109,53 +160,121 @@ export function getNpcDialogue(
       };
 
     case 'npc_hinh_bo_judge':
+      if (currentQuestStep < 2) {
+        return {
+          portrait: '⚖️',
+          greeting: 'Hình Bộ Thượng Thư – Bao Thanh',
+          quote:
+            'Hình Bộ là nơi giữ nghiêm phép nước. Quan nhân hãy đến Lại Bộ nhận Lệnh Bài Tập Sự và chỉ thị trước khi đến công đường.',
+          choices: [
+            { id: 'c1', label: 'Tiểu quan đã rõ, xin tới Lại Bộ', action: 'close' },
+          ],
+        };
+      }
+      if (currentQuestStep === 2) {
+        return {
+          portrait: '⚖️',
+          greeting: 'Hình Bộ Thượng Thư – Bao Thanh',
+          quote:
+            'Đại nhân từ Lại Bộ mang lệnh bài sang đúng lúc lắm! Đêm qua có kẻ lén tráo bản mật tấu biên thùy. Mời đại nhân vào bàn hồ sơ đối chiếu chứng cứ và hạ phán quyết!',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Bắt đầu phá án: Xem xét chứng cứ & Khẩu cung',
+              action: 'open_panel',
+              targetTab: 'clues',
+            },
+            {
+              id: 'c2',
+              label: 'Đưa ra phán quyết vụ án',
+              action: 'open_panel',
+              targetTab: 'verdict',
+            },
+            { id: 'c3', label: 'Tiểu quan xin xem xét thêm', action: 'close' },
+          ],
+        };
+      }
       return {
         portrait: '⚖️',
         greeting: 'Hình Bộ Thượng Thư – Bao Thanh',
         quote:
-          'Pháp bất vị thân, kỷ cương như núi. Đêm qua có kẻ lén xâm nhập tráo bản mật tấu biên cương. Hiện vật chứng và khẩu cung đã thu thập đủ, chỉ đợi người có mắt tinh đời đến phá án.',
+          'Mật án biên cương đã được đại nhân phá giải phân minh, kẻ gian chịu tội! Công đức của đại nhân bản bộ đã ghi nhận đầy đủ gửi sang Lại Bộ.',
         choices: [
           {
             id: 'c1',
-            label: 'Kiểm tra hồ sơ & lời khai nhân chứng',
+            label: 'Xem lại hồ sơ vụ án đã phá',
             action: 'open_panel',
-            targetTab: 'clues',
+            targetTab: 'case_overview',
           },
-          {
-            id: 'c2',
-            label: 'Đưa ra kết luận phán quyết vụ án',
-            action: 'open_panel',
-            targetTab: 'verdict',
-          },
-          { id: 'c3', label: 'Tiểu quan xin xem xét thêm', action: 'close' },
+          { id: 'c2', label: 'Cảm tạ Thượng Thư, tiểu quan xin cáo lui', action: 'close' },
         ],
       };
 
     case 'npc_han_lam_examiner':
+      if (currentQuestStep < 3) {
+        return {
+          portrait: '📖',
+          greeting: 'Hàn Lâm Chưởng Viện Học Sĩ – Chu Văn',
+          quote:
+            'Hàn Lâm Viện là đất thánh hiền. Quan nhân hãy hoàn tất công vụ điều tra bên Hình Bộ trước khi tới ứng thí.',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Đọc trước tài liệu ôn thi tại Tàng Thư Các',
+              action: 'open_panel',
+              targetTab: 'library',
+            },
+            { id: 'c2', label: 'Tiểu quan xin phép lui', action: 'close' },
+          ],
+        };
+      }
+      if (currentQuestStep === 3) {
+        return {
+          portrait: '📖',
+          greeting: 'Hàn Lâm Chưởng Viện Học Sĩ – Chu Văn',
+          quote:
+            'Văn dĩ tải đạo. Triều đình đang mở kỳ khảo thí sát hạch năng lực tiến cử quan viên. Mời đại nhân ngồi vào bàn thi làm bài trắc nghiệm 3 câu!',
+          choices: [
+            {
+              id: 'c1',
+              label: 'Bắt đầu làm bài thi (3 câu trắc nghiệm)',
+              action: 'open_panel',
+              targetTab: 'exam',
+            },
+            {
+              id: 'c2',
+              label: 'Đọc tài liệu ôn tập tại Tàng Thư Các',
+              action: 'open_panel',
+              targetTab: 'library',
+            },
+            {
+              id: 'c3',
+              label: 'Xem Bảng Vàng khoa cử vinh danh',
+              action: 'open_panel',
+              targetTab: 'leaderboard',
+            },
+          ],
+        };
+      }
       return {
         portrait: '📖',
         greeting: 'Hàn Lâm Chưởng Viện Học Sĩ – Chu Văn',
         quote:
-          'Văn dĩ tải đạo. Người làm quan muốn giúp dân giúp nước trước hết phải thấu tỏ điển chế và đạo lý thánh hiền. Đề thi khoa cử đã niêm phong, ngươi đã sẵn sàng chấp bút chưa?',
+          'Chúc mừng đại nhân đã đỗ kỳ khảo thí vẻ vang! Văn tài của đại nhân đã được lưu danh trên Bảng Vàng. Hãy mau về Lại Bộ phục mệnh nhận thưởng.',
         choices: [
           {
             id: 'c1',
-            label: 'Bắt đầu làm bài thi (5 câu trắc nghiệm)',
-            action: 'open_panel',
-            targetTab: 'exam',
-          },
-          {
-            id: 'c2',
-            label: 'Đọc tài liệu ôn tập tại Tàng Thư Các',
-            action: 'open_panel',
-            targetTab: 'library',
-          },
-          {
-            id: 'c3',
-            label: 'Xem Bảng Vàng khoa cử vinh danh',
+            label: 'Xem Bảng Vàng Tiến Sĩ',
             action: 'open_panel',
             targetTab: 'leaderboard',
           },
+          {
+            id: 'c2',
+            label: 'Thi lại để nâng cao điểm số',
+            action: 'open_panel',
+            targetTab: 'exam',
+          },
+          { id: 'c3', label: 'Tiểu quan xin cáo lui', action: 'close' },
         ],
       };
 

@@ -57,6 +57,7 @@ interface GameplayState {
   nearbyInteractableId: string | null;
   activeInteractableId: string | null;
   activeTab: string;
+  isInteracting: boolean;
 
   // Hệ thống Nhiệm vụ xuyên suốt (5 Nhiệm vụ chính tuyến)
   currentQuestStep: number; // 1 -> 5 (6 = Hoàn thành toàn bộ chuỗi)
@@ -110,6 +111,7 @@ interface GameplayState {
   setActiveTab: (tab: string) => void;
   showInteractionPanel: (tab?: string) => void;
   closeInteraction: () => void;
+  setIsInteracting: (val: boolean) => void;
 
   // Quest Actions
   handleLaiBoQuestInteraction: () => void;
@@ -200,6 +202,37 @@ function persistGameplayData(data: {
   }
 }
 
+/**
+ * Tự động xét duyệt thăng phẩm hàm khi điểm Công trạng đạt mốc
+ */
+function checkAutoPromotion(
+  currentGradeIndex: number,
+  meritPoints: number,
+  pushToast: (type: GameplayToast['type'], title: string, message: string) => void
+): number {
+  let highestIndex = currentGradeIndex;
+  for (let i = currentGradeIndex + 1; i < OFFICIAL_PROMOTION_LADDER.length; i++) {
+    if (meritPoints >= OFFICIAL_PROMOTION_LADDER[i].requiredMerit) {
+      highestIndex = i;
+    } else {
+      break;
+    }
+  }
+
+  if (highestIndex > currentGradeIndex) {
+    const newGrade = OFFICIAL_PROMOTION_LADDER[highestIndex];
+    useGameStore.getState().setCharacterRank(newGrade.visualRank);
+    useGameStore.getState().setPlayerTitle(newGrade.titleVi);
+
+    pushToast(
+      'promotion',
+      `Sắc Phong Phẩm Cấp: ${newGrade.gradeCode}!`,
+      `Công trạng tích lũy đạt ${meritPoints} điểm! Ngươi được triều đình sắc phong thăng hàm "${newGrade.titleVi}"!`
+    );
+  }
+  return highestIndex;
+}
+
 const savedData = loadSavedGameplayData();
 
 export const useGameplayStore = create<GameplayState>((set, get) => ({
@@ -256,8 +289,10 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
   toasts: [],
   notificationLog: [],
   interactionView: 'panel',
+  isInteracting: false,
 
   setNearbyInteractableId: (nearbyInteractableId) => set({ nearbyInteractableId }),
+  setIsInteracting: (isInteracting) => set({ isInteracting }),
 
   openInteraction: (interactableId, tabOverride) => {
     const entity = INTERACTABLE_ENTITIES.find((e) => e.id === interactableId);
@@ -267,6 +302,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     const view: InteractionView =
       entity.type === 'npc' && !tabOverride ? 'dialogue' : 'panel';
     set({
+      isInteracting: true,
       activeInteractableId: interactableId,
       interactionView: view,
       activeTab: tabOverride ?? entity.defaultTab,
@@ -300,7 +336,7 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     })),
 
   closeInteraction: () =>
-    set({ activeInteractableId: null, interactionView: 'panel' }),
+    set({ activeInteractableId: null, interactionView: 'panel', isInteracting: false }),
 
   pushToast: (type, title, message) => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -338,12 +374,14 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
 
     const newMerit = state.meritPoints + quest.reward.merit;
     const newCoins = state.silverCoins + quest.reward.coins;
+    const newGrade = checkAutoPromotion(state.officialGradeIndex, newMerit, get().pushToast);
 
     set({
       currentQuestStep: nextStep,
       questStatuses: updatedStatuses,
       meritPoints: newMerit,
       silverCoins: newCoins,
+      officialGradeIndex: newGrade,
       meritLogs: [
         {
           id: `merit_q_${stepNumber}_${Date.now()}`,
@@ -666,13 +704,16 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     const alreadySolved = state.solvedCaseIds.includes(caseId);
     const gainedMerit = alreadySolved ? 20 : targetCase.rewardMerit;
     const gainedCoins = alreadySolved ? 50 : targetCase.rewardCoins;
+    const newMerit = state.meritPoints + gainedMerit;
+    const newGrade = checkAutoPromotion(state.officialGradeIndex, newMerit, get().pushToast);
 
     set({
       solvedCaseIds: alreadySolved
         ? state.solvedCaseIds
         : [...state.solvedCaseIds, caseId],
-      meritPoints: state.meritPoints + gainedMerit,
+      meritPoints: newMerit,
       silverCoins: state.silverCoins + gainedCoins,
+      officialGradeIndex: newGrade,
       lastVerdictFeedback: {
         isCorrect: true,
         message: chosenOption.explanation,
@@ -729,13 +770,17 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       .sort((a, b) => b.score - a.score || a.timeTakenSec - b.timeTakenSec)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
+    const newMerit = state.meritPoints + gainedMerit;
+    const newGrade = checkAutoPromotion(state.officialGradeIndex, newMerit, get().pushToast);
+
     set({
       bestExamScore: Math.max(state.bestExamScore, score),
       lastExamCorrectCount: correctCount,
       examCompletedCount: state.examCompletedCount + 1,
       leaderboard: mergedBoard,
-      meritPoints: state.meritPoints + gainedMerit,
+      meritPoints: newMerit,
       silverCoins: state.silverCoins + gainedCoins,
+      officialGradeIndex: newGrade,
       meritLogs: [
         {
           id: `merit_exam_${Date.now()}`,

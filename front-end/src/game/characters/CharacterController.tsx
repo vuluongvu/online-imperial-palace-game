@@ -34,6 +34,7 @@ export const CharacterController: React.FC = () => {
 
   const overheadBubbleText = useGameplayStore((s) => s.overheadBubbleText);
   const activeInteractableId = useGameplayStore((s) => s.activeInteractableId);
+  const currentQuestStep = useGameplayStore((s) => s.currentQuestStep);
   const courtCeremonyStage = useGameplayStore((s) => s.courtCeremonyStage);
   const activeWindow = useUiStore((s) => s.activeWindow);
   const showAssetModal = useGameStore((s) => s.showAssetModal);
@@ -51,6 +52,7 @@ export const CharacterController: React.FC = () => {
 
   const { camera } = useThree();
   const prevSeatedSpotId = useRef<string | null>(null);
+  const lastInteractTime = useRef<number>(0);
 
   const keys = useRef({
     forward: false,
@@ -97,6 +99,11 @@ export const CharacterController: React.FC = () => {
           gpState.closeInteraction();
           return;
         }
+        const uiState = useUiStore.getState();
+        if (uiState.activeWindow) {
+          uiState.closeWindow();
+          return;
+        }
         const gameState = useGameStore.getState();
         if (gameState.showAssetModal) {
           gameState.setShowAssetModal(false);
@@ -104,21 +111,43 @@ export const CharacterController: React.FC = () => {
         }
       }
 
-      // Không bắt phím WASD/E/F khi người chơi đang gõ chữ trong ô input/textarea
+      // Khóa hoàn toàn input di chuyển WASD/Arrow khi đang mở bất kỳ modal / dialog / cửa sổ UI nào
+      // hoặc khi người chơi đang gõ trong ô input/textarea
       const activeTag = document.activeElement?.tagName.toLowerCase();
-      if (activeTag === 'input' || activeTag === 'textarea') {
+      const isChatInputFocused = activeTag === 'input' || activeTag === 'textarea';
+
+      const gpState = useGameplayStore.getState();
+      const uiState = useUiStore.getState();
+      const gameState = useGameStore.getState();
+
+      const isAnyModalActive = Boolean(
+        gpState.activeInteractableId ||
+        uiState.activeWindow ||
+        gameState.showAssetModal ||
+        (gpState.courtCeremonyStage && gpState.courtCeremonyStage !== 'idle')
+      );
+
+      if (isChatInputFocused || isAnyModalActive) {
+        keys.current.forward = false;
+        keys.current.backward = false;
+        keys.current.left = false;
+        keys.current.right = false;
+        keys.current.shift = false;
         return;
       }
 
-      // Phím E: Tương tác với NPC hoặc Vật thể công trình gần nhất
+      // Phím E: Tương tác với NPC hoặc Vật thể công trình gần nhất (chống spam phím E với debounce 350ms)
       if (e.code === 'KeyE') {
-        const gpState = useGameplayStore.getState();
-        const gameState = useGameStore.getState();
+        const now = Date.now();
+        if (now - lastInteractTime.current < 350) return;
+        lastInteractTime.current = now;
 
         if (gpState.activeInteractableId) {
           gpState.closeInteraction();
           return;
         }
+
+        if (gpState.isInteracting) return;
 
         if (gpState.nearbyInteractableId) {
           gpState.openInteraction(gpState.nearbyInteractableId);
@@ -268,10 +297,21 @@ export const CharacterController: React.FC = () => {
       }
     }
 
-    // 2. Di chuyển bằng bàn phím WASD hoặc nút điều hướng ảo góc trái dưới HUD
+    // 2. Di chuyển bằng bàn phím WASD hoặc nút điều hướng ảo góc trái dưới HUD (khóa khi mở UI hoặc Chat)
+    const activeTag = document.activeElement?.tagName.toLowerCase();
+    const isChatInputFocused = activeTag === 'input' || activeTag === 'textarea';
+    const gpState = useGameplayStore.getState();
+    const uiState = useUiStore.getState();
+    const isAnyModalActive = Boolean(
+      gpState.activeInteractableId ||
+      uiState.activeWindow ||
+      storeState.showAssetModal ||
+      (gpState.courtCeremonyStage && gpState.courtCeremonyStage !== 'idle')
+    );
+
     const { forward, backward, left, right, shift } = keys.current;
-    const hasKeyMove = forward || backward || left || right;
-    const hasVirtualMove = Math.abs(vInput.x) > 0.01 || Math.abs(vInput.z) > 0.01;
+    const hasKeyMove = !isAnyModalActive && !isChatInputFocused && (forward || backward || left || right);
+    const hasVirtualMove = !isAnyModalActive && !isChatInputFocused && (Math.abs(vInput.x) > 0.01 || Math.abs(vInput.z) > 0.01);
     const isMoving = hasKeyMove || hasVirtualMove;
 
     camera.getWorldDirection(forwardVec.current);
@@ -343,7 +383,7 @@ export const CharacterController: React.FC = () => {
       setAnimationState(nextAnim);
     }
 
-    // 3. Kiểm tra đối tượng NPC / Vật thể tương tác gần nhất (Hệ thống tương tác Phím E dùng chung)
+    // 3. Kiểm tra đối tượng NPC / Vật thể tương tác gần nhất (chuẩn hóa cự ly tương tác <= 2.5m)
     let closestEntityId: string | null = null;
     let minEntityDist = Infinity;
 
@@ -352,7 +392,7 @@ export const CharacterController: React.FC = () => {
       const dx = nextX - entity.position[0];
       const dz = nextZ - entity.position[2];
       const dist = Math.hypot(dx, dz);
-      if (dist <= entity.interactRadius && dist < minEntityDist) {
+      if (dist <= 2.5 && dist < minEntityDist) {
         minEntityDist = dist;
         closestEntityId = entity.id;
       }
@@ -363,7 +403,7 @@ export const CharacterController: React.FC = () => {
       useGameplayStore.getState().setNearbyInteractableId(closestEntityId);
     }
 
-    // 4. Kiểm tra ghế ngồi gần nhất (Trong Nội Điện hoặc Ghế Đá Ngự Hoa Viên)
+    // 4. Kiểm tra ghế ngồi gần nhất (chuẩn hóa cự ly <= 2.2m)
     let closestSpotId: string | null = null;
     let minSeatDist = Infinity;
 
@@ -373,7 +413,7 @@ export const CharacterController: React.FC = () => {
       const dx = nextX - spot.seatPosition[0];
       const dz = nextZ - spot.seatPosition[2];
       const dist = Math.hypot(dx, dz);
-      if (dist <= spot.interactRadius && dist < minSeatDist) {
+      if (dist <= 2.2 && dist < minSeatDist) {
         minSeatDist = dist;
         closestSpotId = spot.id;
       }
@@ -393,6 +433,9 @@ export const CharacterController: React.FC = () => {
           <div className="player-overhead-container">
             {overheadBubbleText && (
               <div className="player-overhead-bubble">{overheadBubbleText}</div>
+            )}
+            {currentQuestStep === 2 && (
+              <div className="overhead-courier-tag">📜 Đang Chuyển Mật Tấu</div>
             )}
             <div className={`player-overhead-nametag rank-${characterRank}`}>
               <div className="overhead-title-row">

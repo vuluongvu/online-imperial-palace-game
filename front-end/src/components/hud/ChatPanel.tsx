@@ -41,7 +41,12 @@ export const ChatPanel: React.FC = () => {
   }
 
   return (
-    <div className="hud-chat-panel">
+    <div
+      className="hud-chat-panel"
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
       <div className="chat-panel-header">
         <div className="chat-tabs-row">
           {(

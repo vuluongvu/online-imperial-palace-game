@@ -36,11 +36,19 @@ export const GameWindow: React.FC<GameWindowProps> = ({
   }, []);
 
   return (
-    <div className="game-window-backdrop" onClick={handleClose}>
+    <div
+      className="game-window-backdrop"
+      onClick={handleClose}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
       <div
         className="game-window-shell"
         style={{ width: typeof width === 'number' ? `${width}px` : width }}
         onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <header className="game-window-header">
           <div className="game-window-title-group">
