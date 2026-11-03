@@ -23,6 +23,253 @@ import { useGameplayStore } from '../../stores/useGameplayStore';
 import { useUiStore } from '../../stores/useUiStore';
 
 /**
+ * Thủy Đình Lục Giác Mái Xanh Ngọc (Hexagonal Garden Pavilion)
+ */
+const HexagonalPavilion: React.FC<{
+  position: [number, number, number];
+  materials: Record<string, THREE.Material>;
+}> = ({ position, materials }) => {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.25, 0]} material={materials.whiteMarble} receiveShadow>
+        <cylinderGeometry args={[2.3, 2.5, 0.5, 6]} />
+      </mesh>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const angle = (i * Math.PI) / 3;
+        return (
+          <mesh
+            key={`pav-col-${i}`}
+            position={[Math.cos(angle) * 1.85, 1.65, Math.sin(angle) * 1.85]}
+            material={materials.pillarRed}
+            castShadow
+          >
+            <cylinderGeometry args={[0.12, 0.14, 2.4, 8]} />
+          </mesh>
+        );
+      })}
+      <mesh position={[0, 3.35, 0]} material={materials.roofJade} castShadow>
+        <coneGeometry args={[2.85, 1.45, 6]} />
+      </mesh>
+      <mesh position={[0, 4.15, 0]} material={materials.goldTrim}>
+        <sphereGeometry args={[0.2, 10, 10]} />
+      </mesh>
+    </group>
+  );
+};
+
+/**
+ * Cầu Vồng Gỗ Đỏ Bắc Qua Hồ Sen (Arched Red Wooden Bridge)
+ */
+const ArchedRedBridge: React.FC<{
+  position: [number, number, number];
+  rotationY?: number;
+  materials: Record<string, THREE.Material>;
+}> = ({ position, rotationY = 0, materials }) => {
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <mesh position={[0, 0.22, 0]} material={materials.pillarRed} castShadow receiveShadow>
+        <boxGeometry args={[4.4, 0.24, 2.2]} />
+      </mesh>
+      {[-0.98, 0.98].map((zRail, idx) => (
+        <mesh
+          key={`bridge-rail-${idx}`}
+          position={[0, 0.65, zRail]}
+          material={materials.pillarRed}
+          castShadow
+        >
+          <boxGeometry args={[4.4, 0.45, 0.12]} />
+        </mesh>
+      ))}
+      {[-2.1, 0, 2.1].map((xPost) =>
+        [-0.98, 0.98].map((zRail) => (
+          <mesh
+            key={`bpost-${xPost}-${zRail}`}
+            position={[xPost, 1.0, zRail]}
+            material={materials.goldTrim}
+          >
+            <sphereGeometry args={[0.1, 8, 8]} />
+          </mesh>
+        ))
+      )}
+    </group>
+  );
+};
+
+/**
+ * Không Gian Mở Ngự Hoa Viên (Imperial Royal Garden)
+ * Tọa độ tâm công trình: [26, 0, 17]
+ * Không gian mở ngoài trời: hồ sen trong xanh, thủy đình lục giác, cầu đỏ, đào nở hoa, thạch đăng
+ */
+const NguHoaVienGarden: React.FC<{
+  materials: Record<string, THREE.Material>;
+}> = ({ materials }) => {
+  const lotusPads = useMemo(
+    () => [
+      { x: -1.8, z: -2.8, r: 0.38, hasFlower: true },
+      { x: -2.6, z: -1.9, r: 0.32, hasFlower: false },
+      { x: -1.2, z: 2.6, r: 0.42, hasFlower: true },
+      { x: -2.4, z: 3.1, r: 0.34, hasFlower: false },
+      { x: 2.2, z: -2.9, r: 0.4, hasFlower: true },
+      { x: 3.4, z: -2.2, r: 0.3, hasFlower: false },
+      { x: 2.1, z: 2.7, r: 0.36, hasFlower: true },
+      { x: 3.2, z: 2.0, r: 0.33, hasFlower: false },
+      { x: 0.0, z: -3.8, r: 0.44, hasFlower: true },
+      { x: 0.0, z: 3.8, r: 0.44, hasFlower: true },
+    ],
+    []
+  );
+
+  return (
+    <group name="NguHoaVienGarden">
+      {/* 1. Thềm viền đá Bạch Ngọc quanh hồ sen */}
+      <mesh position={[0, 0.08, -5.8]} material={materials.whiteMarble} receiveShadow>
+        <boxGeometry args={[13.6, 0.16, 0.6]} />
+      </mesh>
+      <mesh position={[0, 0.08, 5.8]} material={materials.whiteMarble} receiveShadow>
+        <boxGeometry args={[13.6, 0.16, 0.6]} />
+      </mesh>
+      <mesh position={[6.6, 0.08, 0]} material={materials.whiteMarble} receiveShadow>
+        <boxGeometry args={[0.6, 0.16, 11.6]} />
+      </mesh>
+      <mesh position={[-6.6, 0.08, -3.5]} material={materials.whiteMarble} receiveShadow>
+        <boxGeometry args={[0.6, 0.16, 4.6]} />
+      </mesh>
+      <mesh position={[-6.6, 0.08, 3.5]} material={materials.whiteMarble} receiveShadow>
+        <boxGeometry args={[0.6, 0.16, 4.6]} />
+      </mesh>
+
+      {/* 2. Mặt nước Hồ Sen trong biếc */}
+      <mesh
+        position={[0, 0.03, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        material={materials.waterPond}
+      >
+        <planeGeometry args={[13.0, 11.2]} />
+      </mesh>
+
+      {/* 3. Lá sen xanh biếc và búp hoa sen hồng */}
+      {lotusPads.map((pad, idx) => (
+        <group key={`lotus-${idx}`} position={[pad.x, 0.045, pad.z]}>
+          <mesh rotation={[-Math.PI / 2, 0, idx * 0.7]} material={materials.foliageGreen}>
+            <circleGeometry args={[pad.r, 10]} />
+          </mesh>
+          {pad.hasFlower && (
+            <mesh position={[pad.r * 0.35, 0.06, 0]} material={materials.foliageBlossom}>
+              <sphereGeometry args={[0.1, 8, 6]} />
+            </mesh>
+          )}
+        </group>
+      ))}
+
+      {/* 4. Lan can đá chạm khắc bảo vệ quanh hồ sen */}
+      <mesh position={[0, 0.38, -5.8]} material={materials.whiteMarble}>
+        <boxGeometry args={[13.6, 0.44, 0.16]} />
+      </mesh>
+      <mesh position={[0, 0.38, 5.8]} material={materials.whiteMarble}>
+        <boxGeometry args={[13.6, 0.44, 0.16]} />
+      </mesh>
+      <mesh position={[6.6, 0.38, 0]} material={materials.whiteMarble}>
+        <boxGeometry args={[0.16, 0.44, 11.6]} />
+      </mesh>
+      <mesh position={[-6.6, 0.38, -3.5]} material={materials.whiteMarble}>
+        <boxGeometry args={[0.16, 0.44, 4.6]} />
+      </mesh>
+      <mesh position={[-6.6, 0.38, 3.5]} material={materials.whiteMarble}>
+        <boxGeometry args={[0.16, 0.44, 4.6]} />
+      </mesh>
+
+      {/* Trụ góc lan can đá */}
+      {[
+        [-6.6, -5.8],
+        [6.6, -5.8],
+        [6.6, 5.8],
+        [-6.6, 5.8],
+        [-6.6, -1.3],
+        [-6.6, 1.3],
+      ].map(([px, pz], pIdx) => (
+        <group key={`post-${pIdx}`} position={[px, 0.35, pz]}>
+          <mesh material={materials.whiteMarble}>
+            <boxGeometry args={[0.26, 0.7, 0.26]} />
+          </mesh>
+          <mesh position={[0, 0.42, 0]} material={materials.goldTrim}>
+            <sphereGeometry args={[0.1, 8, 8]} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* 5. Cầu Gỗ Đỏ Vòm (Arched Red Bridge) bắc từ bờ Tây sang Thủy Đình trung tâm */}
+      <ArchedRedBridge position={[-4.2, 0, 0]} materials={materials} />
+
+      {/* 6. Thủy Đình Lục Giác trung tâm [0, 0, 0] */}
+      <mesh position={[0, 0.16, 0]} material={materials.whiteMarble} receiveShadow>
+        <cylinderGeometry args={[2.7, 2.9, 0.32, 6]} />
+      </mesh>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const angle = (i * Math.PI) / 3;
+        return (
+          <mesh
+            key={`nhv-col-${i}`}
+            position={[Math.cos(angle) * 2.2, 1.48, Math.sin(angle) * 2.2]}
+            material={materials.pillarRed}
+            castShadow
+          >
+            <cylinderGeometry args={[0.12, 0.14, 2.4, 8]} />
+          </mesh>
+        );
+      })}
+      <mesh position={[0, 3.1, 0]} material={materials.roofJade} castShadow>
+        <coneGeometry args={[3.2, 1.5, 6]} />
+      </mesh>
+      <mesh position={[0, 3.95, 0]} material={materials.goldTrim}>
+        <sphereGeometry args={[0.24, 10, 10]} />
+      </mesh>
+      <mesh position={[0, 4.2, 0]} material={materials.goldTrim}>
+        <coneGeometry args={[0.1, 0.3, 6]} />
+      </mesh>
+
+      {/* 7. Hai Cây Hoa Đào Cung Đình tô điểm góc hồ */}
+      {[
+        [4.8, -4.0],
+        [4.8, 4.0],
+      ].map(([tx, tz], tIdx) => (
+        <group key={`garden-peach-${tIdx}`} position={[tx, 0, tz]}>
+          <mesh position={[0, 1.1, 0]} material={materials.treeTrunk} castShadow>
+            <cylinderGeometry args={[0.2, 0.3, 2.2, 8]} />
+          </mesh>
+          <mesh position={[0, 2.6, 0]} material={materials.foliageBlossom} castShadow>
+            <sphereGeometry args={[1.5, 12, 10]} />
+          </mesh>
+          <mesh position={[0.6, 2.2, 0.3]} material={materials.foliageBlossom}>
+            <sphereGeometry args={[0.9, 10, 8]} />
+          </mesh>
+          <mesh position={[-0.5, 2.3, -0.3]} material={materials.foliageBlossom}>
+            <sphereGeometry args={[0.95, 10, 8]} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* 8. Đèn Lồng Trụ Đá (Thạch Đăng) đầu lối vào cầu đỏ */}
+      {[
+        [-5.8, -1.8],
+        [-5.8, 1.8],
+      ].map(([lx, lz], lIdx) => (
+        <group key={`garden-lantern-${lIdx}`} position={[lx, 0, lz]}>
+          <mesh position={[0, 0.65, 0]} material={materials.whiteMarble} castShadow>
+            <cylinderGeometry args={[0.12, 0.16, 1.3, 8]} />
+          </mesh>
+          <mesh position={[0, 1.45, 0]} material={materials.lanternGlow}>
+            <sphereGeometry args={[0.26, 12, 10]} />
+          </mesh>
+          <mesh position={[0, 1.78, 0]} material={materials.roofSlate}>
+            <coneGeometry args={[0.42, 0.28, 6]} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+};
+
+/**
  * Component dựng một Tòa Cung Điện Cổ Trang (Đế đá Bạch Ngọc + Tường Đỏ + Hàng Cột + Mái Đao Lưu Ly 1 hoặc 2 tầng)
  */
 const PalaceBuildingMesh: React.FC<{
@@ -126,15 +373,15 @@ const PalaceBuildingMesh: React.FC<{
             ]}
           />
         </mesh>
-      ) : (
-        /* Ngự Hoa Viên hoặc công trình phụ */
+      ) : zone.id === 'ngu_hoa_vien' ? null : (
+        /* Công trình phụ khác */
         <mesh position={[0, 0.05, 0]} material={materials.whiteMarble} receiveShadow>
           <boxGeometry args={[w + 1.2, 0.1, d + 1.2]} />
         </mesh>
       )}
 
       {/* =================================================================== */}
-      {/* THÂN TÒA ĐIỆN: CÓ KHÔNG GIAN NỘI THẤT 3D CHO 4 NHA MÔN              */}
+      {/* THÂN TÒA ĐIỆN: CÓ KHÔNG GIAN NỘI THẤT 3D CHO 4 NHA MÔN & VƯỜN HOA    */}
       {/* =================================================================== */}
       {zone.id === 'lai_bo' ? (
         <LaiBoInterior materials={materials} />
@@ -144,6 +391,8 @@ const PalaceBuildingMesh: React.FC<{
         <HanLamVienInterior materials={materials} />
       ) : zone.id === 'ngu_thu_phong' ? (
         <NguThuPhongInterior materials={materials} />
+      ) : zone.id === 'ngu_hoa_vien' ? (
+        <NguHoaVienGarden materials={materials} />
       ) : (
         /* Thân tòa điện ngoài cho Chính Điện & Cổng */
         <group position={[0, isGate ? 4.8 : isMainHall ? 1.4 : 0.9, 0]}>
@@ -184,13 +433,15 @@ const PalaceBuildingMesh: React.FC<{
         </group>
       )}
 
-      {/* Hệ Thống Mái Cung Đình Cổ Trang (Mái Đao Trùng Diêm / Đơn Diêm Chuẩn Cung Đình) */}
-      <TieredPalaceRoof zone={zone} materials={materials} />
+      {/* Hệ Thống Mái Cung Đình Cổ Trang (Chỉ dành cho các tòa kiến trúc khép kín, Ngự Hoa Viên dùng Thủy Đình mái ngọc riêng) */}
+      {zone.id !== 'ngu_hoa_vien' && (
+        <TieredPalaceRoof zone={zone} materials={materials} />
+      )}
 
       {/* Biển Tên Tòa Điện Nổi 3D (Tự ẩn khi mở bảng menu hoặc ở quá xa) */}
       {showBuildingLabel && (
         <Html
-          position={[0, zone.labelHeight + (isGate ? 3.8 : 1.2), 0]}
+          position={[0, zone.labelHeight + (isGate ? 3.8 : zone.id === 'ngu_hoa_vien' ? 0.3 : 1.2), 0]}
           center
           zIndexRange={[10, 0]}
         >
@@ -211,79 +462,6 @@ const PalaceBuildingMesh: React.FC<{
             {isMainHall && <span className="map-label-sub">(Vào Điện)</span>}
           </div>
         </Html>
-      )}
-    </group>
-  );
-};
-
-/**
- * Thủy Đình Lục Giác Mái Xanh Ngọc (Hexagonal Garden Pavilion)
- */
-const HexagonalPavilion: React.FC<{
-  position: [number, number, number];
-  materials: Record<string, THREE.Material>;
-}> = ({ position, materials }) => {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.25, 0]} material={materials.whiteMarble} receiveShadow>
-        <cylinderGeometry args={[2.3, 2.5, 0.5, 6]} />
-      </mesh>
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const angle = (i * Math.PI) / 3;
-        return (
-          <mesh
-            key={`pav-col-${i}`}
-            position={[Math.cos(angle) * 1.85, 1.65, Math.sin(angle) * 1.85]}
-            material={materials.pillarRed}
-            castShadow
-          >
-            <cylinderGeometry args={[0.12, 0.14, 2.4, 8]} />
-          </mesh>
-        );
-      })}
-      <mesh position={[0, 3.35, 0]} material={materials.roofJade} castShadow>
-        <coneGeometry args={[2.85, 1.45, 6]} />
-      </mesh>
-      <mesh position={[0, 4.15, 0]} material={materials.goldTrim}>
-        <sphereGeometry args={[0.2, 10, 10]} />
-      </mesh>
-    </group>
-  );
-};
-
-/**
- * Cầu Vồng Gỗ Đỏ Bắc Qua Hồ Sen (Arched Red Wooden Bridge)
- */
-const ArchedRedBridge: React.FC<{
-  position: [number, number, number];
-  rotationY?: number;
-  materials: Record<string, THREE.Material>;
-}> = ({ position, rotationY = 0, materials }) => {
-  return (
-    <group position={position} rotation={[0, rotationY, 0]}>
-      <mesh position={[0, 0.45, 0]} material={materials.pillarRed} castShadow receiveShadow>
-        <boxGeometry args={[4.4, 0.28, 2.1]} />
-      </mesh>
-      {[-0.92, 0.92].map((zRail, idx) => (
-        <mesh
-          key={`bridge-rail-${idx}`}
-          position={[0, 0.85, zRail]}
-          material={materials.pillarRed}
-          castShadow
-        >
-          <boxGeometry args={[4.4, 0.55, 0.14]} />
-        </mesh>
-      ))}
-      {[-2.1, 0, 2.1].map((xPost) =>
-        [-0.92, 0.92].map((zRail) => (
-          <mesh
-            key={`bpost-${xPost}-${zRail}`}
-            position={[xPost, 1.22, zRail]}
-            material={materials.goldTrim}
-          >
-            <sphereGeometry args={[0.12, 8, 8]} />
-          </mesh>
-        ))
       )}
     </group>
   );
@@ -574,22 +752,6 @@ export const ImperialCompoundMap: React.FC = () => {
       />
       <HexagonalPavilion position={[-11.5, 0, 12.2]} materials={materials} />
       <HexagonalPavilion position={[-11.5, 0, 24.5]} materials={materials} />
-
-      {/* Hồ Sen Ngự Hoa Viên bên Đông */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[14.5, 0.03, 20.5]}
-        material={materials.waterPond}
-      >
-        <planeGeometry args={[14.5, 16.5]} />
-      </mesh>
-      <ArchedRedBridge
-        position={[14.5, 0, 18.5]}
-        rotationY={0}
-        materials={materials}
-      />
-      <HexagonalPavilion position={[11.5, 0, 12.2]} materials={materials} />
-      <HexagonalPavilion position={[21.5, 0, 23.5]} materials={materials} />
 
       {/* Hai hồ tiểu cảnh đối xứng trước Lại Bộ & Hình Bộ */}
       {[-11.2, 11.2].map((xPool, idx) => (

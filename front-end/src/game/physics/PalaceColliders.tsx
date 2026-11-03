@@ -178,6 +178,17 @@ const COMPOUND_BUILDING_BOXES: BoxObstacle[] = [
   { minX: -2.0, maxX: 2.0, minZ: -34.8, maxZ: -31.8 }, // Ngự Án Hoàng Đế & Bình phong
   { minX: 2.8, maxX: 5.0, minZ: -32.6, maxZ: -30.4 },  // Sa bàn Bản đồ
   { minX: -5.0, maxX: -2.8, minZ: -32.6, maxZ: -30.4 }, // Giá sách thực lục
+
+  // =========================================================================
+  // 5. LAN CAN & NỘI THẤT THỦY ĐÌNH NGỰ HOA VIÊN (Tâm: [26, 0, 17])
+  // Lối vào cầu đỏ phía Tây: X ∈ [19.2, 23.8], Z ∈ [15.6, 18.4]
+  // =========================================================================
+  { minX: 19.2, maxX: 32.8, minZ: 11.0, maxZ: 11.6 }, // Lan can Bắc hồ sen
+  { minX: 19.2, maxX: 32.8, minZ: 22.4, maxZ: 23.0 }, // Lan can Nam hồ sen
+  { minX: 32.2, maxX: 32.8, minZ: 11.0, maxZ: 23.0 }, // Lan can Đông hồ sen
+  { minX: 19.2, maxX: 19.8, minZ: 11.0, maxZ: 15.6 }, // Lan can Tây Bắc hồ sen
+  { minX: 19.2, maxX: 19.8, minZ: 18.4, maxZ: 23.0 }, // Lan can Tây Nam hồ sen
+  { minX: 25.3, maxX: 26.7, minZ: 16.3, maxZ: 17.7 }, // Bàn trà đá cẩm thạch trung tâm Thủy Đình
 ];
 
 function resolveCircleAABB(
