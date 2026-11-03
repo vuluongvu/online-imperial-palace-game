@@ -1,4 +1,5 @@
 import { OfficialRank } from '../game/characters/CharacterMaterials';
+import { CharacterAnimationState } from '../game/characters/CharacterAnimations';
 import { SceneZoneMode } from '../game/world/compoundLayout';
 
 export type BuildingId =
@@ -25,6 +26,7 @@ export interface InteractableEntity {
   interactRadius: number;
   defaultTab: string;
   npcRank?: OfficialRank;
+  defaultAnim?: CharacterAnimationState;
   propKind?:
     | 'board'
     | 'desk'

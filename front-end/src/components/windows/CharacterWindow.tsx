@@ -179,6 +179,9 @@ export const CharacterWindow: React.FC = () => {
                   { id: 'walk', label: 'Đi bộ' },
                   { id: 'run', label: 'Chạy nhanh' },
                   { id: 'sit', label: 'Ngồi chầu' },
+                  { id: 'bow', label: 'Cúi chào' },
+                  { id: 'write', label: 'Viết văn thư' },
+                  { id: 'talk', label: 'Đàm đạo' },
                 ] as { id: CharacterAnimationState | null; label: string }[]
               ).map((btn) => (
                 <button

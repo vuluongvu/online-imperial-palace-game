@@ -33,7 +33,8 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     rotationY: 0.35,
     interactRadius: 4.5,
     defaultTab: 'guide',
-    npcRank: 'mid_official',
+    npcRank: 'guard',
+    defaultAnim: 'idle',
   },
   {
     id: 'obj_gate_notice_board',
@@ -66,6 +67,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.8,
     defaultTab: 'court',
     npcRank: 'minister',
+    defaultAnim: 'idle',
   },
   {
     id: 'obj_thai_hoa_edict_out',
@@ -109,6 +111,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.2,
     defaultTab: 'officials',
     npcRank: 'minister',
+    defaultAnim: 'talk',
   },
   {
     id: 'obj_interior_edict_board',
@@ -141,6 +144,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.0,
     defaultTab: 'reports',
     npcRank: 'minister',
+    defaultAnim: 'write',
   },
   {
     id: 'obj_ntp_work_desk',
@@ -201,6 +205,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.2,
     defaultTab: 'quests',
     npcRank: 'minister',
+    defaultAnim: 'write',
   },
   {
     id: 'obj_lb_promotion_desk',
@@ -247,6 +252,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.2,
     defaultTab: 'case_overview',
     npcRank: 'minister',
+    defaultAnim: 'write',
   },
   {
     id: 'obj_hb_case_files',
@@ -293,6 +299,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.2,
     defaultTab: 'exam',
     npcRank: 'mid_official',
+    defaultAnim: 'write',
   },
   {
     id: 'obj_hlv_exam_desk',
@@ -353,6 +360,7 @@ export const INTERACTABLE_ENTITIES: InteractableEntity[] = [
     interactRadius: 4.2,
     defaultTab: 'chat',
     npcRank: 'low_official',
+    defaultAnim: 'idle',
   },
   {
     id: 'obj_nhv_stone_bench',

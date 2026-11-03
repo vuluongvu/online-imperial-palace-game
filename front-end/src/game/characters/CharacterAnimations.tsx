@@ -1,6 +1,13 @@
 import * as THREE from 'three';
 
-export type CharacterAnimationState = 'idle' | 'walk' | 'run' | 'sit';
+export type CharacterAnimationState =
+  | 'idle'
+  | 'walk'
+  | 'run'
+  | 'sit'
+  | 'write'
+  | 'bow'
+  | 'talk';
 
 export interface ChibiRigRefs {
   root: THREE.Group | null;
@@ -115,6 +122,67 @@ export function updateChibiAnimation(
     targetRightArmZ = -0.26;
 
     tasselSway = Math.sin(runFreq) * 0.22;
+  } else if (state === 'write') {
+    // Quan lại ngồi trước bàn viết văn thư / tấu chương / chấm thi
+    const breathPhase = elapsedTime * 2.0;
+    const writeCycle = elapsedTime * 4.2;
+    targetBodyY = -0.15 + Math.sin(breathPhase) * 0.008;
+    targetBodyPitch = 0.12; // Hơi cúi người về phía bàn làm việc
+    targetHeadPitch = 0.32; // Đầu cúi chăm chú nhìn mặt giấy / sớ tấu
+    targetHeadYaw = Math.sin(elapsedTime * 0.8) * 0.06; // Đảo mắt/nghiêng đầu đọc dòng chữ
+
+    // Hai chân gập ngồi ghế
+    targetLeftLegX = -1.42;
+    targetRightLegX = -1.42;
+
+    // Tay trái tỳ nhẹ lên bàn đè giấy
+    targetLeftArmX = -0.72;
+    targetLeftArmZ = 0.22;
+
+    // Tay phải cầm bút lông đưa nét mực đều đặn
+    targetRightArmX = -0.74 + Math.sin(writeCycle) * 0.06;
+    targetRightArmZ = -0.22 + Math.cos(writeCycle * 1.4) * 0.05;
+
+    tasselSway = Math.sin(elapsedTime * 1.5) * 0.015;
+  } else if (state === 'bow') {
+    // Cúi chào / Hành lễ cung đình (Chắp hai tay áo thụng trước ngực, cúi đầu)
+    const breathPhase = elapsedTime * 1.5;
+    targetBodyY = -0.05 + Math.sin(breathPhase) * 0.006;
+    targetBodyPitch = 0.38; // Cúi người trang trọng về phía trước
+    targetHeadPitch = 0.22; // Đầu cúi hành lễ
+    targetHeadYaw = 0;
+
+    // Hai chân đứng nghiêm trang
+    targetLeftLegX = 0;
+    targetRightLegX = 0;
+
+    // Hai tay chắp trước ngực theo lễ tiết triều đình
+    targetLeftArmX = -0.86;
+    targetLeftArmZ = 0.36;
+    targetRightArmX = -0.86;
+    targetRightArmZ = -0.36;
+
+    tasselSway = 0.06;
+  } else if (state === 'talk') {
+    // Quan lại đứng đàm đạo / trò chuyện (nghiêng đầu, vung tay nhẹ khi nói)
+    const talkPhase = elapsedTime * 2.8;
+    targetBodyY = Math.sin(talkPhase) * 0.014;
+    targetBodyPitch = 0.02;
+    targetHeadPitch = 0.04 + Math.sin(talkPhase * 1.4) * 0.05; // Gật đầu theo nhịp nói
+    targetHeadYaw = Math.sin(elapsedTime * 1.2) * 0.14; // Hướng mặt về người nghe
+
+    targetLeftLegX = 0;
+    targetRightLegX = 0;
+
+    // Tay trái xuôi tự nhiên bên hông
+    targetLeftArmX = -0.15 + Math.sin(talkPhase * 0.8) * 0.03;
+    targetLeftArmZ = 0.16;
+
+    // Tay phải vung tay áo mở ra theo lời nói
+    targetRightArmX = -0.46 + Math.sin(talkPhase) * 0.14;
+    targetRightArmZ = -0.26 + Math.cos(talkPhase * 0.9) * 0.08;
+
+    tasselSway = Math.sin(talkPhase) * 0.04;
   }
 
   // Nội suy mượt các khớp xương (Smooth blending)

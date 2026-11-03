@@ -393,9 +393,9 @@ export const SideWingsAndAnnex: React.FC = () => {
           </group>
         ))}
 
-        {/* NPC Quan Văn & Quan Võ đang đứng chờ thiết triều trong Tả Vu */}
+        {/* NPC Quan Văn & Quan Võ đang đứng chờ thiết triều trong Tả Vu đàm đạo */}
         <group position={[-27.2, 0, -1.6]} rotation={[0, Math.PI / 3, 0]}>
-          <Player rank="mid_official" animationState="idle" />
+          <Player rank="mid_official" animationState="talk" />
         </group>
         <group position={[-27.2, 0, 1.6]} rotation={[0, (Math.PI * 2) / 3, 0]}>
           <Player rank="minister" animationState="idle" />

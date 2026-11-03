@@ -284,9 +284,18 @@ export const BuildingInteractiveProps: React.FC = () => {
               </group>
             )}
 
-            {/* Render NPC Chibi hoặc Vật thể 3D */}
+            {/* Render NPC Chibi hoặc Vật thể 3D với animation sinh động */}
             {entity.type === 'npc' ? (
-              <Player rank={entity.npcRank ?? 'minister'} animationState="idle" />
+              <Player
+                rank={entity.npcRank ?? 'minister'}
+                animationState={
+                  isNearby
+                    ? entity.defaultAnim === 'write'
+                      ? 'talk'
+                      : 'bow'
+                    : (entity.defaultAnim ?? 'idle')
+                }
+              />
             ) : (
               <InteractivePropMesh entity={entity} materials={materials} />
             )}

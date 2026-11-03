@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 
-export type OfficialRank = 'emperor' | 'minister' | 'mid_official' | 'low_official';
+export type OfficialRank =
+  | 'emperor'
+  | 'minister'
+  | 'mid_official'
+  | 'low_official'
+  | 'guard'
+  | 'eunuch';
 
 export interface RankOutfitConfig {
   rank: OfficialRank;
@@ -52,6 +58,26 @@ export const RANK_OUTFITS: Record<OfficialRank, RankOutfitConfig> = {
     secondaryColor: '#1D5078',
     trimColor: '#B8C4CC',
     beltColor: '#3B2314',
+    hatType: 'o_sa_mao',
+  },
+  guard: {
+    rank: 'guard',
+    titleVi: 'Cấm Vệ Quân (Thị Vệ)',
+    subtitleVi: 'Thị Vệ Hoàng Cung – Chiến Bào Đỏ Đồng & Mũ Ô Sa Quân Tráng',
+    primaryColor: '#8C1D18',
+    secondaryColor: '#4A0C08',
+    trimColor: '#E5A932',
+    beltColor: '#2B1A12',
+    hatType: 'o_sa_mao',
+  },
+  eunuch: {
+    rank: 'eunuch',
+    titleVi: 'Thái Giám Cung Đình',
+    subtitleVi: 'Nội Thị Phụng Sự – Thanh Y Bào Lụa & Mũ Nội Thị',
+    primaryColor: '#2B5768',
+    secondaryColor: '#173540',
+    trimColor: '#C4B495',
+    beltColor: '#6B5848',
     hatType: 'o_sa_mao',
   },
 };

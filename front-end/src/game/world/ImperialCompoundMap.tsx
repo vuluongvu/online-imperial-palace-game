@@ -2,7 +2,6 @@ import React, { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { Html } from '@react-three/drei';
 import {
-  COMPOUND_NPC_POSITIONS,
   COMPOUND_STREET_LANTERNS,
   COMPOUND_TREES,
   LandmarkZone,
@@ -17,7 +16,7 @@ import {
   NguThuPhongInterior,
 } from './MinistryInteriors';
 import { PALACE_QUEST_CHAIN } from '../../data/palaceGameplayData';
-import { Player } from '../characters/Player';
+import { LivingPalaceNpcs } from './LivingPalaceNpcs';
 import { useGameStore } from '../../stores/useGameStore';
 import { useGameplayStore } from '../../stores/useGameplayStore';
 import { useUiStore } from '../../stores/useUiStore';
@@ -910,17 +909,9 @@ export const ImperialCompoundMap: React.FC = () => {
       ))}
 
       {/* ================================================================= */}
-      {/* 6. CÁC QUAN VIÊN & THỊ VỆ CHIBI ĐỨNG CHẦU TRÊN SÂN RỒNG           */}
+      {/* 6. HỆ THỐNG NPC CUNG ĐÌNH SỐNG ĐỘNG (TUẦN TRA, THÁI GIÁM, ĐÀM ĐẠO) */}
       {/* ================================================================= */}
-      {COMPOUND_NPC_POSITIONS.map((npc, idx) => (
-        <group
-          key={`compound-npc-${idx}`}
-          position={npc.pos}
-          rotation={[0, npc.rotY, 0]}
-        >
-          <Player rank={npc.rank} animationState="idle" />
-        </group>
-      ))}
+      <LivingPalaceNpcs />
     </group>
   );
 };
